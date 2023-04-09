@@ -1,0 +1,105 @@
+# Prerequisites
+*.d
+
+*.HE2
+*.HE4
+*.HE3
+*.HE1
+*.HE0
+*.a
+
+input/
+output/
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+*.user
+
+# Build results
+Debug/
+debug/
+build/
+Build/
+DebugPublic/
+debugPublic/
+Release/
+release/
+Releases/
+releases/
+x64/
+x86/
+Win32/
+WIN32/
+Arm/
+ARM/
+Arm64/
+ARM64/
+bld/
+Bin/
+bin/
+Obj/
+obj/
+Log/
+log/
+Logs/
+logs/
+
+.vs/
+
+# Files built by Visual Studio
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+## *.obj  # .obj is an OBJ model file.
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.tlog
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
