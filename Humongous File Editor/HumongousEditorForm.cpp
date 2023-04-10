@@ -9,6 +9,6 @@ void Main(array<String^>^ args)
 	Application::EnableVisualStyles();
 	Application::SetCompatibleTextRenderingDefault(false);
 
-	hfe::HumongousEditorForm form;
+	HumongousFileEditor::HumongousEditorForm form;
 	Application::Run(% form);
 }

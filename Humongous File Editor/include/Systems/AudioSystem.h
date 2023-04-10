@@ -7,7 +7,7 @@ class IXAudio2;
 class IXAudio2MasteringVoice;
 class IXAudio2SourceVoice;
 
-namespace hfe
+namespace HumongousFileEditor
 {
 	class AudioSystem
 	{

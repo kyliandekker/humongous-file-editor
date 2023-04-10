@@ -3,9 +3,9 @@
 #include <xaudio2.h>
 #include <iostream>
 
-hfe::AudioSystem hfe::audioSystem;
+HumongousFileEditor::AudioSystem HumongousFileEditor::audioSystem;
 
-namespace hfe
+namespace HumongousFileEditor
 {
 	AudioSystem::AudioSystem()
 	{

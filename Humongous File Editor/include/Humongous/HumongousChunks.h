@@ -4,7 +4,7 @@
 #include <uaudio_wave_reader/Utils.h>
 #include <corecrt_malloc.h>
 
-namespace hfe
+namespace HumongousFileEditor
 {
 #pragma pack(push, 1)
 	constexpr auto TLKB_CHUNK_ID = "TLKB";

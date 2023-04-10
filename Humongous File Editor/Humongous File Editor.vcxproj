@@ -45,7 +45,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -149,6 +149,7 @@
     <ClInclude Include="HumongousEditorForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="include\CFILE.h" />
     <ClInclude Include="include\delegate.h" />
     <ClInclude Include="include\DesignerExtras.h" />
     <ClInclude Include="include\Humongous\Decompiler.h" />
@@ -162,7 +163,10 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">
-      <DependentUpon>HumongousEditorForm.h</DependentUpon>
+      <LogicalName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
+      <LogicalName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
+      <LogicalName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
+      <LogicalName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

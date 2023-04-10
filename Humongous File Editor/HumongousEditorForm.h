@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ShlObj_core.h>
+#include "utils/utils.h"
 #include <windows.h>
 #include <string>
 #include "Humongous/FileContainer.h"
@@ -8,7 +9,7 @@
 #include <Systems/AudioSystem.h>
 #include "DesignerExtras.h"
 
-namespace hfe
+namespace HumongousFileEditor
 {
 	/// <summary>
 	/// Summary for EditorForm
@@ -28,7 +29,8 @@ namespace hfe
 		System::Windows::Forms::ToolStripMenuItem^ optionSeperator1;
 
 		System::Windows::Forms::ToolStripMenuItem^ optionOpen;
-		System::Windows::Forms::ToolStripMenuItem^ optionSave;
+	public: System::Windows::Forms::ToolStripMenuItem^ optionSaveAs;
+
 
 		System::Windows::Forms::ToolStripSeparator^ toolStripSeparator2;
 		System::Windows::Forms::ToolStripMenuItem^ optionQuit;
@@ -42,12 +44,37 @@ namespace hfe
 		System::Windows::Forms::ToolStripProgressBar^ toolProgressBar;
 		System::Windows::Forms::TreeView^ fileView;
 
-		System::Windows::Forms::Label^ filenameContainer;
+
 		System::Windows::Forms::Panel^ treeActionPanel;
 
 		System::Windows::Forms::Button^ exportSelected;
 		System::Windows::Forms::Button^ unselectAll;
 		System::Windows::Forms::Button^ selectAllButton;
+	private: System::Windows::Forms::Button^ openButton;
+	public:
+
+
+	private: System::Windows::Forms::Panel^ panel1;
+	private: System::Windows::Forms::Button^ saveButton;
+	private: System::Windows::Forms::Button^ helpButton;
+	private: System::Windows::Forms::Panel^ panel2;
+	private: System::Windows::Forms::Button^ saveAsButton;
+
+	private: System::Windows::Forms::Panel^ panel3;
+	private: System::Windows::Forms::ToolStripMenuItem^ optionSave;
+	private: System::Windows::Forms::ToolStripSeparator^ toolStripSeparator1;
+
+
+
+
+
+
+
+	public:
+
+	public:
+
+	public:
 		System::Windows::Forms::TabControl^ tabControl1;
 	public:
 
@@ -76,6 +103,7 @@ namespace hfe
 		/// </summary>
 		void InitializeComponent(void)
 		{
+			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(HumongousEditorForm::typeid));
 			this->splitContainer = (gcnew System::Windows::Forms::SplitContainer());
 			this->treeActionPanel = (gcnew System::Windows::Forms::Panel());
 			this->exportSelected = (gcnew System::Windows::Forms::Button());
@@ -86,6 +114,7 @@ namespace hfe
 			this->optionSeperator1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->optionOpen = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->optionSave = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->optionSaveAs = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->toolStripSeparator2 = (gcnew System::Windows::Forms::ToolStripSeparator());
 			this->optionQuit = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->helpMenu = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -93,7 +122,14 @@ namespace hfe
 			this->topMenu = (gcnew System::Windows::Forms::MenuStrip());
 			this->statusStrip2 = (gcnew System::Windows::Forms::StatusStrip());
 			this->toolProgressBar = (gcnew System::Windows::Forms::ToolStripProgressBar());
-			this->filenameContainer = (gcnew System::Windows::Forms::Label());
+			this->openButton = (gcnew System::Windows::Forms::Button());
+			this->panel1 = (gcnew System::Windows::Forms::Panel());
+			this->panel3 = (gcnew System::Windows::Forms::Panel());
+			this->saveAsButton = (gcnew System::Windows::Forms::Button());
+			this->panel2 = (gcnew System::Windows::Forms::Panel());
+			this->helpButton = (gcnew System::Windows::Forms::Button());
+			this->saveButton = (gcnew System::Windows::Forms::Button());
+			this->toolStripSeparator1 = (gcnew System::Windows::Forms::ToolStripSeparator());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->splitContainer))->BeginInit();
 			this->splitContainer->Panel1->SuspendLayout();
 			this->splitContainer->Panel2->SuspendLayout();
@@ -101,6 +137,7 @@ namespace hfe
 			this->treeActionPanel->SuspendLayout();
 			this->topMenu->SuspendLayout();
 			this->statusStrip2->SuspendLayout();
+			this->panel1->SuspendLayout();
 			this->SuspendLayout();
 			// 
 			// splitContainer
@@ -127,8 +164,8 @@ namespace hfe
 			this->splitContainer->Panel2->Margin = System::Windows::Forms::Padding(5);
 			this->splitContainer->Panel2->Padding = System::Windows::Forms::Padding(10);
 			this->splitContainer->Panel2->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &HumongousEditorForm::splitContainer_Panel2_Paint);
-			this->splitContainer->Size = System::Drawing::Size(717, 363);
-			this->splitContainer->SplitterDistance = 390;
+			this->splitContainer->Size = System::Drawing::Size(933, 416);
+			this->splitContainer->SplitterDistance = 505;
 			this->splitContainer->TabIndex = 1;
 			// 
 			// treeActionPanel
@@ -139,7 +176,7 @@ namespace hfe
 			this->treeActionPanel->Dock = System::Windows::Forms::DockStyle::Top;
 			this->treeActionPanel->Location = System::Drawing::Point(10, 10);
 			this->treeActionPanel->Name = L"treeActionPanel";
-			this->treeActionPanel->Size = System::Drawing::Size(370, 29);
+			this->treeActionPanel->Size = System::Drawing::Size(485, 29);
 			this->treeActionPanel->TabIndex = 1;
 			// 
 			// exportSelected
@@ -182,7 +219,7 @@ namespace hfe
 			this->fileView->ItemHeight = 20;
 			this->fileView->Location = System::Drawing::Point(10, 45);
 			this->fileView->Name = L"fileView";
-			this->fileView->Size = System::Drawing::Size(370, 308);
+			this->fileView->Size = System::Drawing::Size(485, 361);
 			this->fileView->TabIndex = 0;
 			this->fileView->AfterCheck += gcnew System::Windows::Forms::TreeViewEventHandler(this, &HumongousEditorForm::fileView_Check);
 			this->fileView->NodeMouseClick += gcnew System::Windows::Forms::TreeNodeMouseClickEventHandler(this, &HumongousEditorForm::fileView_Click);
@@ -196,14 +233,14 @@ namespace hfe
 			this->tabControl1->Location = System::Drawing::Point(10, 10);
 			this->tabControl1->Name = L"tabControl1";
 			this->tabControl1->SelectedIndex = 0;
-			this->tabControl1->Size = System::Drawing::Size(303, 343);
+			this->tabControl1->Size = System::Drawing::Size(404, 396);
 			this->tabControl1->TabIndex = 0;
 			// 
 			// optionSeperator1
 			// 
-			this->optionSeperator1->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(4) {
+			this->optionSeperator1->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(6) {
 				this->optionOpen,
-					this->optionSave, this->toolStripSeparator2, this->optionQuit
+					this->toolStripSeparator1, this->optionSave, this->optionSaveAs, this->toolStripSeparator2, this->optionQuit
 			});
 			this->optionSeperator1->Name = L"optionSeperator1";
 			this->optionSeperator1->Size = System::Drawing::Size(37, 20);
@@ -213,7 +250,7 @@ namespace hfe
 			// 
 			this->optionOpen->Name = L"optionOpen";
 			this->optionOpen->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::O));
-			this->optionOpen->Size = System::Drawing::Size(146, 22);
+			this->optionOpen->Size = System::Drawing::Size(186, 22);
 			this->optionOpen->Text = L"Open";
 			this->optionOpen->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionOpen_Click);
 			// 
@@ -221,21 +258,29 @@ namespace hfe
 			// 
 			this->optionSave->Name = L"optionSave";
 			this->optionSave->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::S));
-			this->optionSave->Size = System::Drawing::Size(146, 22);
+			this->optionSave->Size = System::Drawing::Size(186, 22);
 			this->optionSave->Text = L"Save";
-			this->optionSave->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionSave_Click);
+			// 
+			// optionSaveAs
+			// 
+			this->optionSaveAs->Name = L"optionSaveAs";
+			this->optionSaveAs->ShortcutKeys = static_cast<System::Windows::Forms::Keys>(((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::Shift)
+				| System::Windows::Forms::Keys::S));
+			this->optionSaveAs->Size = System::Drawing::Size(186, 22);
+			this->optionSaveAs->Text = L"Save As";
+			this->optionSaveAs->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionSave_Click);
 			// 
 			// toolStripSeparator2
 			// 
 			this->toolStripSeparator2->Name = L"toolStripSeparator2";
-			this->toolStripSeparator2->Size = System::Drawing::Size(143, 6);
+			this->toolStripSeparator2->Size = System::Drawing::Size(183, 6);
 			// 
 			// optionQuit
 			// 
 			this->optionQuit->Name = L"optionQuit";
 			this->optionQuit->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::Q));
-			this->optionQuit->Size = System::Drawing::Size(146, 22);
-			this->optionQuit->Text = L"Quit";
+			this->optionQuit->Size = System::Drawing::Size(186, 22);
+			this->optionQuit->Text = L"Exit";
 			// 
 			// helpMenu
 			// 
@@ -249,7 +294,7 @@ namespace hfe
 			this->optionAbout->Name = L"optionAbout";
 			this->optionAbout->Size = System::Drawing::Size(107, 22);
 			this->optionAbout->Text = L"About";
-			this->optionAbout->Click += gcnew System::EventHandler(this, &HumongousEditorForm::toolStripMenuItem5_Click);
+			this->optionAbout->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionAbout_Click);
 			// 
 			// topMenu
 			// 
@@ -257,7 +302,7 @@ namespace hfe
 			this->topMenu->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) { this->optionSeperator1, this->helpMenu });
 			this->topMenu->Location = System::Drawing::Point(0, 0);
 			this->topMenu->Name = L"topMenu";
-			this->topMenu->Size = System::Drawing::Size(717, 24);
+			this->topMenu->Size = System::Drawing::Size(933, 24);
 			this->topMenu->TabIndex = 0;
 			this->topMenu->Text = L"menuStrip2";
 			// 
@@ -265,10 +310,10 @@ namespace hfe
 			// 
 			this->statusStrip2->ImageScalingSize = System::Drawing::Size(22, 22);
 			this->statusStrip2->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->toolProgressBar });
-			this->statusStrip2->Location = System::Drawing::Point(0, 433);
+			this->statusStrip2->Location = System::Drawing::Point(0, 486);
 			this->statusStrip2->Margin = System::Windows::Forms::Padding(5);
 			this->statusStrip2->Name = L"statusStrip2";
-			this->statusStrip2->Size = System::Drawing::Size(717, 25);
+			this->statusStrip2->Size = System::Drawing::Size(933, 25);
 			this->statusStrip2->TabIndex = 2;
 			this->statusStrip2->Text = L"statusStrip2";
 			// 
@@ -277,21 +322,111 @@ namespace hfe
 			this->toolProgressBar->Name = L"toolProgressBar";
 			this->toolProgressBar->Size = System::Drawing::Size(100, 19);
 			// 
-			// filenameContainer
+			// openButton
 			// 
-			this->filenameContainer->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
-			this->filenameContainer->Dock = System::Windows::Forms::DockStyle::Top;
-			this->filenameContainer->Location = System::Drawing::Point(0, 24);
-			this->filenameContainer->Name = L"filenameContainer";
-			this->filenameContainer->Size = System::Drawing::Size(717, 37);
-			this->filenameContainer->TabIndex = 3;
-			this->filenameContainer->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
-			this->filenameContainer->Click += gcnew System::EventHandler(this, &HumongousEditorForm::filenameContainer_Click);
+			this->openButton->BackColor = System::Drawing::Color::Transparent;
+			this->openButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"openButton.BackgroundImage")));
+			this->openButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+			this->openButton->FlatAppearance->BorderSize = 0;
+			this->openButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->openButton->Location = System::Drawing::Point(6, 2);
+			this->openButton->Name = L"openButton";
+			this->openButton->Size = System::Drawing::Size(40, 40);
+			this->openButton->TabIndex = 4;
+			this->openButton->UseVisualStyleBackColor = false;
+			this->openButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionOpen_Click);
+			this->openButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
+			this->openButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
+			// 
+			// panel1
+			// 
+			this->panel1->BackColor = System::Drawing::SystemColors::ControlLight;
+			this->panel1->Controls->Add(this->panel3);
+			this->panel1->Controls->Add(this->saveAsButton);
+			this->panel1->Controls->Add(this->panel2);
+			this->panel1->Controls->Add(this->helpButton);
+			this->panel1->Controls->Add(this->saveButton);
+			this->panel1->Controls->Add(this->openButton);
+			this->panel1->Dock = System::Windows::Forms::DockStyle::Top;
+			this->panel1->Location = System::Drawing::Point(0, 24);
+			this->panel1->Name = L"panel1";
+			this->panel1->Padding = System::Windows::Forms::Padding(10);
+			this->panel1->Size = System::Drawing::Size(933, 44);
+			this->panel1->TabIndex = 4;
+			// 
+			// panel3
+			// 
+			this->panel3->BackColor = System::Drawing::SystemColors::ButtonShadow;
+			this->panel3->Location = System::Drawing::Point(150, 4);
+			this->panel3->Name = L"panel3";
+			this->panel3->Size = System::Drawing::Size(1, 36);
+			this->panel3->TabIndex = 9;
+			// 
+			// saveAsButton
+			// 
+			this->saveAsButton->BackColor = System::Drawing::Color::Transparent;
+			this->saveAsButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"saveAsButton.BackgroundImage")));
+			this->saveAsButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+			this->saveAsButton->FlatAppearance->BorderSize = 0;
+			this->saveAsButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->saveAsButton->Location = System::Drawing::Point(104, 2);
+			this->saveAsButton->Name = L"saveAsButton";
+			this->saveAsButton->Size = System::Drawing::Size(40, 40);
+			this->saveAsButton->TabIndex = 8;
+			this->saveAsButton->UseVisualStyleBackColor = false;
+			this->saveAsButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionSave_Click);
+			this->saveAsButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
+			this->saveAsButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
+			// 
+			// panel2
+			// 
+			this->panel2->BackColor = System::Drawing::SystemColors::ButtonShadow;
+			this->panel2->Location = System::Drawing::Point(52, 4);
+			this->panel2->Name = L"panel2";
+			this->panel2->Size = System::Drawing::Size(1, 36);
+			this->panel2->TabIndex = 7;
+			// 
+			// helpButton
+			// 
+			this->helpButton->BackColor = System::Drawing::Color::Transparent;
+			this->helpButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"helpButton.BackgroundImage")));
+			this->helpButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+			this->helpButton->FlatAppearance->BorderSize = 0;
+			this->helpButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->helpButton->ForeColor = System::Drawing::Color::Transparent;
+			this->helpButton->Location = System::Drawing::Point(157, 2);
+			this->helpButton->Name = L"helpButton";
+			this->helpButton->Size = System::Drawing::Size(40, 40);
+			this->helpButton->TabIndex = 6;
+			this->helpButton->UseVisualStyleBackColor = false;
+			this->helpButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionAbout_Click);
+			this->helpButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
+			this->helpButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
+			// 
+			// saveButton
+			// 
+			this->saveButton->BackColor = System::Drawing::Color::Transparent;
+			this->saveButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"saveButton.BackgroundImage")));
+			this->saveButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+			this->saveButton->FlatAppearance->BorderSize = 0;
+			this->saveButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->saveButton->Location = System::Drawing::Point(59, 2);
+			this->saveButton->Name = L"saveButton";
+			this->saveButton->Size = System::Drawing::Size(40, 40);
+			this->saveButton->TabIndex = 5;
+			this->saveButton->UseVisualStyleBackColor = false;
+			this->saveButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
+			this->saveButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
+			// 
+			// toolStripSeparator1
+			// 
+			this->toolStripSeparator1->Name = L"toolStripSeparator1";
+			this->toolStripSeparator1->Size = System::Drawing::Size(183, 6);
 			// 
 			// HumongousEditorForm
 			// 
-			this->ClientSize = System::Drawing::Size(717, 458);
-			this->Controls->Add(this->filenameContainer);
+			this->ClientSize = System::Drawing::Size(933, 511);
+			this->Controls->Add(this->panel1);
 			this->Controls->Add(this->statusStrip2);
 			this->Controls->Add(this->splitContainer);
 			this->Controls->Add(this->topMenu);
@@ -307,6 +442,7 @@ namespace hfe
 			this->topMenu->PerformLayout();
 			this->statusStrip2->ResumeLayout(false);
 			this->statusStrip2->PerformLayout();
+			this->panel1->ResumeLayout(false);
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -315,7 +451,7 @@ namespace hfe
 	private:
 		System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e)
 		{
-
+			this->Text = "Humongous File Editor";
 		}
 		System::Void saveToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e)
 		{
@@ -362,10 +498,21 @@ namespace hfe
 				std::string pathString = std::string(path);
 				std::string extension = pathString.substr(pathString.find_last_of(".") + 1);
 
-				if (extension != "HE4" && extension != "he4")
+				System::String^ title = gcnew System::String("Humongous File Editor - [") + gcnew System::String(pathString.c_str()) + gcnew System::String("]");
+				this->Text = title;
+
+				if (extension != "HE4" && extension != "he4" && extension != "HE2" && extension != "he2")
 				{
-					MessageBox::Show("This file is unsupported as of right now.", "Cannot open file", MessageBoxButtons::OK, MessageBoxIcon::Error);
-					return;
+					if (extension == "(a)" || extension == "(A)")
+					{
+						fileContainer.Clear();
+						decompiler::decompile(path);
+					}
+					else
+					{
+						MessageBox::Show("This file is unsupported as of right now.", "Cannot open file", MessageBoxButtons::OK, MessageBoxIcon::Error);
+						return;
+					}
 				}
 				else
 				{
@@ -401,10 +548,17 @@ namespace hfe
 				std::string pathString = std::string(path);
 				std::string extension = pathString.substr(pathString.find_last_of(".") + 1);
 
-				if (extension != "HE4" && extension != "he4")
+				if (extension != "HE4" && extension != "he4" && extension != "HE2" && extension != "he2")
 				{
-					MessageBox::Show("This file is unsupported as of right now.", "Cannot open file", MessageBoxButtons::OK, MessageBoxIcon::Error);
-					return;
+					if (extension == "(a)" || extension == "(A)")
+					{
+
+					}
+					else
+					{
+						MessageBox::Show("This file is unsupported as of right now.", "Cannot open file", MessageBoxButtons::OK, MessageBoxIcon::Error);
+						return;
+					}
 				}
 				else
 				{
@@ -413,7 +567,7 @@ namespace hfe
 				delete[] path;
 			}
 		}
-		System::Void toolStripMenuItem5_Click(System::Object^ sender, System::EventArgs^ e)
+		System::Void optionAbout_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			MessageBox::Show("Humongous File Editor by Kylian Dekker\nVersion: 0.0.1", "About", MessageBoxButtons::OK, MessageBoxIcon::Information);
 		}
@@ -590,37 +744,30 @@ namespace hfe
 			actionPanel->Size = System::Drawing::Size(418, 87);
 			actionPanel->TabIndex = 1;
 
-			std::string type;
-			switch (file->fileType)
-			{
-			case FileType::FileType_Song:
-			{
-				type = "Song";
-				break;
-			}
-			case FileType::FileType_Sound:
-			{
-				type = "Sound";
-				break;
-			}
-			}
+			std::string type = FileTypeToString(file->fileType);
+
 			AddInfoRow(name, name, table);
 			AddInfoRow("Type", gcnew System::String(type.c_str()), table);
 			switch (file->fileType)
 			{
-			case FileType::FileType_Song:
-			{
-				SongFile* songFile = static_cast<SongFile*>(file);
-				AddInfoRow("Sample Rate", gcnew System::String(std::to_string(songFile->sample_rate).c_str()), table);
-				AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(songFile->size).c_str()), table);
-				AddButtons(actionPanel, songFile, num);
-				break;
-			}
-			case FileType::FileType_Sound:
-			{
-				type = "Sound";
-				break;
-			}
+				case FileType::FileType_Song:
+				{
+					SongFile* songFile = static_cast<SongFile*>(file);
+					AddInfoRow("Sample Rate", gcnew System::String(std::to_string(songFile->sample_rate).c_str()), table);
+					AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(songFile->size).c_str()), table);
+					AddButtons(actionPanel, songFile, num);
+					break;
+				}
+				case FileType::FileType_Talkie:
+				{
+					TalkieFile* talkieFile = static_cast<TalkieFile*>(file);
+					AddInfoRow("Sample Rate", gcnew System::String(std::to_string(talkieFile->sample_rate).c_str()), table);
+					AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(talkieFile->size).c_str()), table);
+					AddInfoRow("SBNG", gcnew System::String(talkieFile->hasSbng ? "true" : "false"), table);
+					AddButtons(actionPanel, talkieFile, num);
+					type = "Sound";
+					break;
+				}
 			}
 
 			HumongousButton^ exportButton;
@@ -677,6 +824,18 @@ namespace hfe
 		{
 			audioSystem.Stop();
 		}
+		System::Void buttonHover(System::Object^ sender, System::EventArgs^ e)
+		{
+			Button^ button = static_cast<Button^>(sender);
+			button->BackColor = System::Drawing::SystemColors::GradientActiveCaption;
+			button->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+		}
+		System::Void buttonExit(System::Object^ sender, System::EventArgs^ e)
+		{
+			Button^ button = static_cast<Button^>(sender);
+			button->BackColor = System::Drawing::Color::Transparent;
+			button->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+		}
 		System::Void selectAllButton_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			for (size_t i = 0; i < fileView->Nodes->Count; i++)
@@ -732,5 +891,5 @@ namespace hfe
 				files[i]->Save(path);
 			}
 		}
-	};
+};
 }

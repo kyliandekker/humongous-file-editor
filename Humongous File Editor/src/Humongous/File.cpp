@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <string>
 
-namespace hfe
+namespace HumongousFileEditor
 {
 	void File::OpenSave()
 	{
@@ -84,4 +84,45 @@ namespace hfe
 
 		fclose(newFile);
 	}
+
+    void TalkieFile::Save(std::string path)
+    {
+		FILE* newFile = nullptr;
+		errno_t t = fopen_s(&newFile, path.c_str(), "wb");
+		if (newFile == nullptr)
+		{
+			std::cout << "Cannot save file \"" << path.c_str() << "\"." << std::endl;
+			return;
+		}
+
+		// Construct the riff chunk.
+		uaudio::wave_reader::RIFF_Chunk riff_chunk;
+		memcpy(riff_chunk.chunk_id, uaudio::wave_reader::RIFF_CHUNK_ID, uaudio::wave_reader::CHUNK_ID_SIZE);
+		riff_chunk.chunkSize = sizeof(uaudio::wave_reader::RIFF_Chunk) + size + sizeof(uaudio::wave_reader::FMT_Chunk);
+		memcpy(riff_chunk.format, uaudio::wave_reader::RIFF_CHUNK_FORMAT, uaudio::wave_reader::CHUNK_ID_SIZE);
+		fwrite(&riff_chunk, sizeof(uaudio::wave_reader::RIFF_Chunk), 1, newFile);
+
+		// Construct the fmt chunk.
+		uaudio::wave_reader::FMT_Chunk fmt_chunk;
+		memcpy(fmt_chunk.chunk_id, uaudio::wave_reader::FMT_CHUNK_ID, uaudio::wave_reader::CHUNK_ID_SIZE);
+		fmt_chunk.chunkSize = sizeof(uaudio::wave_reader::FMT_Chunk) - sizeof(uaudio::wave_reader::ChunkHeader);
+		fmt_chunk.audioFormat = 1;
+		fmt_chunk.numChannels = 1;
+		fmt_chunk.sampleRate = sample_rate;
+		fmt_chunk.byteRate = sample_rate;
+		fmt_chunk.bitsPerSample = 8;
+		fmt_chunk.blockAlign = fmt_chunk.numChannels * fmt_chunk.bitsPerSample / 8;
+		fwrite(&fmt_chunk, sizeof(uaudio::wave_reader::FMT_Chunk), 1, newFile);
+
+		// Construct the data chunk.
+		uaudio::wave_reader::DATA_Chunk data_chunk;
+		memcpy(data_chunk.chunk_id, uaudio::wave_reader::DATA_CHUNK_ID, uaudio::wave_reader::CHUNK_ID_SIZE);
+		data_chunk.chunkSize = size;
+		fwrite(&data_chunk, sizeof(uaudio::wave_reader::DATA_Chunk) - sizeof(data_chunk.data), 1, newFile);
+		fwrite(data, size, 1, newFile);
+
+		std::cout << "Saved " << path.c_str() << "." << std::endl;
+
+		fclose(newFile);
+    }
 }

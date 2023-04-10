@@ -74,5 +74,13 @@
     <ClInclude Include="ExTabsControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\CFILE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="HumongousEditorForm.resx">
+      <Filter>Resource Files</Filter>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

@@ -3,7 +3,7 @@
 #include "FileType.h"
 #include <string>
 
-namespace hfe
+namespace HumongousFileEditor
 {
 	class File
 	{
@@ -43,9 +43,20 @@ namespace hfe
 			return std::to_string(num) + ".wav\0";
 		}
 
-	public:
 		unsigned char* data = nullptr;
 		uint32_t size = 0;
 		uint16_t sample_rate = 0;
+	};
+
+	class TalkieFile : public SongFile
+	{
+	public:
+		TalkieFile() : SongFile()
+		{
+			fileType = FileType::FileType_Talkie;
+		}
+		virtual void Save(std::string path);
+
+		bool hasSbng = false;
 	};
 }

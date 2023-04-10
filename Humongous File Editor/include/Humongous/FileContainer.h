@@ -3,7 +3,7 @@
 #include <vector>
 #include "File.h"
 
-namespace hfe
+namespace HumongousFileEditor
 {
 	public class FileContainer
 	{

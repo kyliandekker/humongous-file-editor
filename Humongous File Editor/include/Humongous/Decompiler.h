@@ -4,7 +4,7 @@
 
 #include "Humongous/HumongousChunks.h"
 
-namespace hfe
+namespace HumongousFileEditor
 {
 	namespace decompiler
 	{
@@ -14,6 +14,8 @@ namespace hfe
 		SGHD_Chunk getSGHDChunk(FILE* file);
 		HSHD_Chunk getHSHDChunk(FILE* file);
 		SDAT_Chunk getSDATChunk(FILE* file);
+		TALK_Chunk getTALKChunk(FILE* file);
+		SBNG_Chunk getSBNGChunk(FILE* file);
 		int decompile(std::string path);
 	}
 }

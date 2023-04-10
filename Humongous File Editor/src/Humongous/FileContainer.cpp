@@ -1,8 +1,8 @@
 #include "Humongous/FileContainer.h"
 
-hfe::FileContainer hfe::fileContainer;
+HumongousFileEditor::FileContainer HumongousFileEditor::fileContainer;
 
-namespace hfe
+namespace HumongousFileEditor
 {
 	void FileContainer::Clear()
 	{
