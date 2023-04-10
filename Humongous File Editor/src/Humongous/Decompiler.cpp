@@ -113,6 +113,8 @@ namespace HumongousFileEditor
 
 			fileContainer.Clear();
 			form->fileView->Nodes->Clear();
+			for (size_t i = form->tabControl1->TabPages->Count - 1; i > 0; i--)
+				form->tabControl1->TabPages->RemoveAt(i);
 
 			CFILE cfile;
 			cfile.cfopen_s(path.c_str(), "rb");

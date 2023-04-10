@@ -32,24 +32,24 @@ namespace HumongousFileEditor
 	public: System::Windows::Forms::ToolStripMenuItem^ optionSaveAs;
 
 
-		System::Windows::Forms::ToolStripSeparator^ toolStripSeparator2;
-		System::Windows::Forms::ToolStripMenuItem^ optionQuit;
+		  System::Windows::Forms::ToolStripSeparator^ toolStripSeparator2;
+		  System::Windows::Forms::ToolStripMenuItem^ optionQuit;
 
-		System::Windows::Forms::ToolStripMenuItem^ helpMenu;
-		System::Windows::Forms::ToolStripMenuItem^ optionAbout;
+		  System::Windows::Forms::ToolStripMenuItem^ helpMenu;
+		  System::Windows::Forms::ToolStripMenuItem^ optionAbout;
 
-		System::Windows::Forms::MenuStrip^ topMenu;
+		  System::Windows::Forms::MenuStrip^ topMenu;
 
-		System::Windows::Forms::StatusStrip^ statusStrip2;
-		System::Windows::Forms::ToolStripProgressBar^ toolProgressBar;
-		System::Windows::Forms::TreeView^ fileView;
+		  System::Windows::Forms::StatusStrip^ statusStrip2;
+		  System::Windows::Forms::ToolStripProgressBar^ toolProgressBar;
+		  System::Windows::Forms::TreeView^ fileView;
 
 
-		System::Windows::Forms::Panel^ treeActionPanel;
+		  System::Windows::Forms::Panel^ treeActionPanel;
 
-		System::Windows::Forms::Button^ exportSelected;
-		System::Windows::Forms::Button^ unselectAll;
-		System::Windows::Forms::Button^ selectAllButton;
+		  System::Windows::Forms::Button^ exportSelected;
+		  System::Windows::Forms::Button^ unselectAll;
+		  System::Windows::Forms::Button^ selectAllButton;
 	private: System::Windows::Forms::Button^ openButton;
 	public:
 
@@ -63,6 +63,15 @@ namespace HumongousFileEditor
 	private: System::Windows::Forms::Panel^ panel3;
 	private: System::Windows::Forms::ToolStripMenuItem^ optionSave;
 	private: System::Windows::Forms::ToolStripSeparator^ toolStripSeparator1;
+	private: System::Windows::Forms::TabPage^ tabWelcome;
+	private: System::Windows::Forms::Label^ welcomeLabel;
+	private: System::Windows::Forms::PictureBox^ pictureBox1;
+
+
+
+
+
+
 
 
 
@@ -114,6 +123,7 @@ namespace HumongousFileEditor
 			this->selectAllButton = (gcnew System::Windows::Forms::Button());
 			this->fileView = (gcnew System::Windows::Forms::TreeView());
 			this->tabControl1 = (gcnew System::Windows::Forms::TabControl());
+			this->tabWelcome = (gcnew System::Windows::Forms::TabPage());
 			this->optionSeperator1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->optionOpen = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->toolStripSeparator1 = (gcnew System::Windows::Forms::ToolStripSeparator());
@@ -133,14 +143,19 @@ namespace HumongousFileEditor
 			this->panel2 = (gcnew System::Windows::Forms::Panel());
 			this->helpButton = (gcnew System::Windows::Forms::Button());
 			this->saveButton = (gcnew System::Windows::Forms::Button());
+			this->welcomeLabel = (gcnew System::Windows::Forms::Label());
+			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->splitContainer))->BeginInit();
 			this->splitContainer->Panel1->SuspendLayout();
 			this->splitContainer->Panel2->SuspendLayout();
 			this->splitContainer->SuspendLayout();
 			this->treeActionPanel->SuspendLayout();
+			this->tabControl1->SuspendLayout();
+			this->tabWelcome->SuspendLayout();
 			this->topMenu->SuspendLayout();
 			this->statusStrip2->SuspendLayout();
 			this->panel1->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// splitContainer
@@ -158,7 +173,6 @@ namespace HumongousFileEditor
 			this->splitContainer->Panel1->Controls->Add(this->treeActionPanel);
 			this->splitContainer->Panel1->Controls->Add(this->fileView);
 			this->splitContainer->Panel1->Padding = System::Windows::Forms::Padding(10);
-			this->splitContainer->Panel1->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &HumongousEditorForm::splitContainer_Panel1_Paint);
 			// 
 			// splitContainer.Panel2
 			// 
@@ -166,9 +180,8 @@ namespace HumongousFileEditor
 			this->splitContainer->Panel2->Controls->Add(this->tabControl1);
 			this->splitContainer->Panel2->Margin = System::Windows::Forms::Padding(5);
 			this->splitContainer->Panel2->Padding = System::Windows::Forms::Padding(10);
-			this->splitContainer->Panel2->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &HumongousEditorForm::splitContainer_Panel2_Paint);
-			this->splitContainer->Size = System::Drawing::Size(855, 625);
-			this->splitContainer->SplitterDistance = 462;
+			this->splitContainer->Size = System::Drawing::Size(900, 402);
+			this->splitContainer->SplitterDistance = 512;
 			this->splitContainer->TabIndex = 1;
 			// 
 			// treeActionPanel
@@ -179,7 +192,7 @@ namespace HumongousFileEditor
 			this->treeActionPanel->Dock = System::Windows::Forms::DockStyle::Top;
 			this->treeActionPanel->Location = System::Drawing::Point(10, 10);
 			this->treeActionPanel->Name = L"treeActionPanel";
-			this->treeActionPanel->Size = System::Drawing::Size(442, 29);
+			this->treeActionPanel->Size = System::Drawing::Size(492, 29);
 			this->treeActionPanel->TabIndex = 1;
 			// 
 			// exportSelected
@@ -215,6 +228,7 @@ namespace HumongousFileEditor
 			// 
 			// fileView
 			// 
+			this->fileView->AllowDrop = true;
 			this->fileView->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
 				| System::Windows::Forms::AnchorStyles::Left)
 				| System::Windows::Forms::AnchorStyles::Right));
@@ -224,22 +238,35 @@ namespace HumongousFileEditor
 			this->fileView->ItemHeight = 20;
 			this->fileView->Location = System::Drawing::Point(10, 45);
 			this->fileView->Name = L"fileView";
-			this->fileView->Size = System::Drawing::Size(442, 545);
+			this->fileView->Size = System::Drawing::Size(519, 345);
 			this->fileView->TabIndex = 0;
 			this->fileView->AfterCheck += gcnew System::Windows::Forms::TreeViewEventHandler(this, &HumongousEditorForm::fileView_Check);
 			this->fileView->NodeMouseClick += gcnew System::Windows::Forms::TreeNodeMouseClickEventHandler(this, &HumongousEditorForm::fileView_Click);
+			this->fileView->DragDrop += gcnew System::Windows::Forms::DragEventHandler(this, &HumongousEditorForm::fileView_Drop);
 			this->fileView->MouseDoubleClick += gcnew System::Windows::Forms::MouseEventHandler(this, &HumongousEditorForm::fileView_DoubleClick);
 			// 
 			// tabControl1
 			// 
 			this->tabControl1->AllowDrop = true;
+			this->tabControl1->Controls->Add(this->tabWelcome);
 			this->tabControl1->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->tabControl1->ImeMode = System::Windows::Forms::ImeMode::NoControl;
 			this->tabControl1->Location = System::Drawing::Point(10, 10);
 			this->tabControl1->Name = L"tabControl1";
 			this->tabControl1->SelectedIndex = 0;
-			this->tabControl1->Size = System::Drawing::Size(369, 605);
+			this->tabControl1->Size = System::Drawing::Size(364, 382);
 			this->tabControl1->TabIndex = 0;
+			// 
+			// tabWelcome
+			// 
+			this->tabWelcome->Controls->Add(this->pictureBox1);
+			this->tabWelcome->Controls->Add(this->welcomeLabel);
+			this->tabWelcome->Location = System::Drawing::Point(4, 22);
+			this->tabWelcome->Name = L"tabWelcome";
+			this->tabWelcome->Size = System::Drawing::Size(356, 356);
+			this->tabWelcome->TabIndex = 0;
+			this->tabWelcome->Text = L"Welcome!";
+			this->tabWelcome->UseVisualStyleBackColor = true;
 			// 
 			// optionSeperator1
 			// 
@@ -313,7 +340,7 @@ namespace HumongousFileEditor
 			this->topMenu->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) { this->optionSeperator1, this->helpMenu });
 			this->topMenu->Location = System::Drawing::Point(0, 0);
 			this->topMenu->Name = L"topMenu";
-			this->topMenu->Size = System::Drawing::Size(855, 24);
+			this->topMenu->Size = System::Drawing::Size(900, 24);
 			this->topMenu->TabIndex = 0;
 			this->topMenu->Text = L"menuStrip2";
 			// 
@@ -321,10 +348,10 @@ namespace HumongousFileEditor
 			// 
 			this->statusStrip2->ImageScalingSize = System::Drawing::Size(22, 22);
 			this->statusStrip2->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->toolProgressBar });
-			this->statusStrip2->Location = System::Drawing::Point(0, 695);
+			this->statusStrip2->Location = System::Drawing::Point(0, 472);
 			this->statusStrip2->Margin = System::Windows::Forms::Padding(5);
 			this->statusStrip2->Name = L"statusStrip2";
-			this->statusStrip2->Size = System::Drawing::Size(855, 25);
+			this->statusStrip2->Size = System::Drawing::Size(900, 25);
 			this->statusStrip2->TabIndex = 2;
 			this->statusStrip2->Text = L"statusStrip2";
 			// 
@@ -362,7 +389,7 @@ namespace HumongousFileEditor
 			this->panel1->Location = System::Drawing::Point(0, 24);
 			this->panel1->Name = L"panel1";
 			this->panel1->Padding = System::Windows::Forms::Padding(10);
-			this->panel1->Size = System::Drawing::Size(855, 44);
+			this->panel1->Size = System::Drawing::Size(900, 44);
 			this->panel1->TabIndex = 4;
 			// 
 			// panel3
@@ -429,9 +456,31 @@ namespace HumongousFileEditor
 			this->saveButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
 			this->saveButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
 			// 
+			// welcomeLabel
+			// 
+			this->welcomeLabel->AutoSize = true;
+			this->welcomeLabel->Dock = System::Windows::Forms::DockStyle::Top;
+			this->welcomeLabel->Location = System::Drawing::Point(0, 0);
+			this->welcomeLabel->Name = L"welcomeLabel";
+			this->welcomeLabel->Padding = System::Windows::Forms::Padding(20);
+			this->welcomeLabel->Size = System::Drawing::Size(226, 53);
+			this->welcomeLabel->TabIndex = 0;
+			this->welcomeLabel->Text = L"Open a Humongous file to get started!";
+			// 
+			// pictureBox1
+			// 
+			this->pictureBox1->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"pictureBox1.BackgroundImage")));
+			this->pictureBox1->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Zoom;
+			this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->pictureBox1->Location = System::Drawing::Point(0, 53);
+			this->pictureBox1->Name = L"pictureBox1";
+			this->pictureBox1->Size = System::Drawing::Size(356, 303);
+			this->pictureBox1->TabIndex = 1;
+			this->pictureBox1->TabStop = false;
+			// 
 			// HumongousEditorForm
 			// 
-			this->ClientSize = System::Drawing::Size(855, 720);
+			this->ClientSize = System::Drawing::Size(900, 497);
 			this->Controls->Add(this->panel1);
 			this->Controls->Add(this->statusStrip2);
 			this->Controls->Add(this->splitContainer);
@@ -444,11 +493,15 @@ namespace HumongousFileEditor
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->splitContainer))->EndInit();
 			this->splitContainer->ResumeLayout(false);
 			this->treeActionPanel->ResumeLayout(false);
+			this->tabControl1->ResumeLayout(false);
+			this->tabWelcome->ResumeLayout(false);
+			this->tabWelcome->PerformLayout();
 			this->topMenu->ResumeLayout(false);
 			this->topMenu->PerformLayout();
 			this->statusStrip2->ResumeLayout(false);
 			this->statusStrip2->PerformLayout();
 			this->panel1->ResumeLayout(false);
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -575,30 +628,31 @@ namespace HumongousFileEditor
 		}
 		System::Void optionAbout_Click(System::Object^ sender, System::EventArgs^ e)
 		{
-			MessageBox::Show("Humongous File Editor by Kylian Dekker\nVersion: 0.0.1", "About", MessageBoxButtons::OK, MessageBoxIcon::Information);
+			MessageBox::Show("Humongous File Editor by Kylian Dekker\nVersion: 0.0.1\n\nMany thanks to rzil for helping me with reading the resource files.", "About", MessageBoxButtons::OK, MessageBoxIcon::Information);
 		}
-		System::Void splitContainer_Panel1_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e)
+		System::Void fileView_DoubleClick(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
 		{
-
-		}
-		System::Void splitContainer_Panel2_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e)
-		{
-
-		}
-		System::Void filenameContainer_Click(System::Object^ sender, System::EventArgs^ e) {
-		}
-		System::Void fileView_DoubleClick(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
 			if (e->Button != System::Windows::Forms::MouseButtons::Left)
 				return;
 
 			System::Windows::Forms::TreeView^ view = static_cast<System::Windows::Forms::TreeView^>(sender);
 			HumongousNode^ node = static_cast<HumongousNode^>(view->SelectedNode);
 
+			if (!view->SelectedNode)
+				return;
+
 			if (!tabControl1->Controls->ContainsKey(node->Text))
 				Add(node->Text, fileContainer.files[node->num], node->num);
 			tabControl1->SelectedIndex = tabControl1->Controls->IndexOfKey(node->Text);
 		}
-		System::Void fileView_Click(System::Object^ sender, System::Windows::Forms::TreeNodeMouseClickEventArgs^ e) {
+		System::Void fileView_Drop(System::Object^ sender, System::Windows::Forms::DragEventArgs^ e)
+		{
+			array<System::String^>^ lst = (array<System::String^>^) e->Data->GetData(System::Windows::Forms::DataFormats::FileDrop, false);
+
+			printf("Test\n");
+		}
+		System::Void fileView_Click(System::Object^ sender, System::Windows::Forms::TreeNodeMouseClickEventArgs^ e)
+		{
 
 			if (e->Button == System::Windows::Forms::MouseButtons::Right)
 			{
@@ -664,48 +718,40 @@ namespace HumongousFileEditor
 			tab->Controls->Add(stopButton);
 		}
 
-		void AddInfoRow(System::String^ key, System::String^ value, System::Windows::Forms::TableLayoutPanel^ table)
+		void AddInfoRow(System::String^ key, System::String^ value, System::Windows::Forms::TabPage^ tab, float& posX, float& posY)
 		{
-			int row = table->RowCount;
-			table->RowCount++;
-			table->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 1)));
-
 			System::Windows::Forms::Label^ keyLabel;
 			keyLabel = (gcnew System::Windows::Forms::Label());
 			keyLabel->SuspendLayout();
-
-			keyLabel->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((
-				System::Windows::Forms::AnchorStyles::Top
-				| System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			keyLabel->Location = System::Drawing::Point(3, 0);
-			keyLabel->Name = key;
-			keyLabel->Size = System::Drawing::Size(223, 50);
-			keyLabel->TabIndex = 0;
-			keyLabel->Text = key;
-			keyLabel->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-			keyLabel->Padding = System::Windows::Forms::Padding(10);
 
 			System::Windows::Forms::Label^ valueLabel;
 			valueLabel = (gcnew System::Windows::Forms::Label());
 			valueLabel->SuspendLayout();
 
-			valueLabel->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
+			keyLabel->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Left)
 				| System::Windows::Forms::AnchorStyles::Right));
-			valueLabel->Location = System::Drawing::Point(232, 0);
+			keyLabel->AutoSize = true;
+			keyLabel->Location = System::Drawing::Point(posX, posY);
+			keyLabel->Name = key;
+			keyLabel->Size = System::Drawing::Size(35, 13);
+			keyLabel->TabIndex = 0;
+			keyLabel->Text = key;
+			keyLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+
+			valueLabel->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Left)
+				| System::Windows::Forms::AnchorStyles::Right));
+			valueLabel->AutoSize = true;
+			valueLabel->Location = System::Drawing::Point(posX + 100, posY);
 			valueLabel->Name = value;
-			valueLabel->Size = System::Drawing::Size(418, 50);
+			valueLabel->Size = System::Drawing::Size(35, 13);
 			valueLabel->TabIndex = 1;
 			valueLabel->Text = value;
-			valueLabel->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-			valueLabel->Padding = System::Windows::Forms::Padding(10);
+			valueLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
 
-			keyLabel->ResumeLayout(false);
-			valueLabel->ResumeLayout(false);
-			table->Controls->Add(keyLabel, 0, row);
-			table->Controls->Add(valueLabel, 1, row);
+			tab->Controls->Add(keyLabel);
+			tab->Controls->Add(valueLabel);
+
+			posY += 40;
 		}
 	public:
 		void Add(System::String^ name, File* file, int num)
@@ -723,24 +769,6 @@ namespace HumongousFileEditor
 			newTab->Text = name;
 			newTab->UseVisualStyleBackColor = true;
 
-			System::Windows::Forms::TableLayoutPanel^ table;
-			table = (gcnew System::Windows::Forms::TableLayoutPanel());
-			table->SuspendLayout();
-
-			table->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			table->ColumnCount = 2;
-			table->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent,
-				100)));
-			table->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent,
-				100)));
-			table->Location = System::Drawing::Point(0, 0);
-			table->Name = L"tableLayoutPanel1";
-			table->RowCount = 0;
-			table->Size = System::Drawing::Size(418, 300);
-			table->TabIndex = 0;
-
 			System::Windows::Forms::Panel^ actionPanel;
 			actionPanel = (gcnew System::Windows::Forms::TableLayoutPanel());
 
@@ -752,24 +780,25 @@ namespace HumongousFileEditor
 
 			std::string type = FileTypeToString(file->fileType);
 
-			AddInfoRow(name, name, table);
-			AddInfoRow("Type", gcnew System::String(type.c_str()), table);
+			float posX = 35, posY = 35;
+			AddInfoRow("Name", name, newTab, posX, posY);
+			AddInfoRow("Type", gcnew System::String(type.c_str()), newTab, posX, posY);
 			switch (file->fileType)
 			{
 				case FileType::FileType_Song:
 				{
 					SongFile* songFile = static_cast<SongFile*>(file);
-					AddInfoRow("Sample Rate", gcnew System::String(std::to_string(songFile->sample_rate).c_str()), table);
-					AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(songFile->size).c_str()), table);
+					AddInfoRow("Sample Rate", gcnew System::String(std::to_string(songFile->sample_rate).c_str()), newTab, posX, posY);
+					AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(songFile->size).c_str()), newTab, posX, posY);
 					AddButtons(actionPanel, songFile, num);
 					break;
 				}
 				case FileType::FileType_Talkie:
 				{
 					TalkieFile* talkieFile = static_cast<TalkieFile*>(file);
-					AddInfoRow("Sample Rate", gcnew System::String(std::to_string(talkieFile->sample_rate).c_str()), table);
-					AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(talkieFile->size).c_str()), table);
-					AddInfoRow("SBNG", gcnew System::String(talkieFile->hasSbng ? "true" : "false"), table);
+					AddInfoRow("Sample Rate", gcnew System::String(std::to_string(talkieFile->sample_rate).c_str()), newTab, posX, posY);
+					AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(talkieFile->size).c_str()), newTab, posX, posY);
+					AddInfoRow("SBNG", gcnew System::String(talkieFile->hasSbng ? "true" : "false"), newTab, posX, posY);
 					AddButtons(actionPanel, talkieFile, num);
 					type = "Sound";
 					break;
@@ -792,9 +821,7 @@ namespace HumongousFileEditor
 			actionPanel->Controls->Add(exportButton);
 
 			newTab->ResumeLayout(false);
-			table->ResumeLayout(false);
 
-			newTab->Controls->Add(table);
 			newTab->Controls->Add(actionPanel);
 			tabControl1->Controls->Add(newTab);
 		}
@@ -897,7 +924,5 @@ namespace HumongousFileEditor
 				files[i]->Save(path);
 			}
 		}
-private: System::Void panel1_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e) {
-}
-};
+	};
 }
