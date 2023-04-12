@@ -138,8 +138,8 @@
     <ClCompile Include="ExTabsControl.cpp" />
     <ClCompile Include="HumongousEditorForm.cpp" />
     <ClCompile Include="src\Humongous\Decompiler.cpp" />
-    <ClCompile Include="src\Humongous\File.cpp" />
-    <ClCompile Include="src\Humongous\FileContainer.cpp" />
+    <ClCompile Include="src\Humongous\Entry.cpp" />
+    <ClCompile Include="src\Humongous\EntryContainer.cpp" />
     <ClCompile Include="src\Systems\AudioSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -152,9 +152,11 @@
     <ClInclude Include="include\CFILE.h" />
     <ClInclude Include="include\delegate.h" />
     <ClInclude Include="include\DesignerExtras.h" />
+    <ClInclude Include="include\Humongous\Compiler.h" />
     <ClInclude Include="include\Humongous\Decompiler.h" />
-    <ClInclude Include="include\Humongous\File.h" />
-    <ClInclude Include="include\Humongous\FileContainer.h" />
+    <ClInclude Include="include\Humongous\Entry.h" />
+    <ClInclude Include="include\Humongous\EntryContainer.h" />
+    <ClInclude Include="include\Humongous\EntryType.h" />
     <ClInclude Include="include\Humongous\FileType.h" />
     <ClInclude Include="include\Humongous\HumongousChunks.h" />
     <ClInclude Include="include\Systems\AudioSystem.h" />

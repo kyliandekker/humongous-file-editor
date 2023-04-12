@@ -21,7 +21,7 @@
     <ClCompile Include="src\Humongous\Decompiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Humongous\FileContainer.cpp">
+    <ClCompile Include="src\Humongous\EntryContainer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Systems\AudioSystem.cpp">
@@ -33,7 +33,7 @@
     <ClCompile Include="ExTabsControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Humongous\File.cpp">
+    <ClCompile Include="src\Humongous\Entry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,13 +41,13 @@
     <ClInclude Include="include\Humongous\Decompiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Humongous\File.h">
+    <ClInclude Include="include\Humongous\Entry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Humongous\FileContainer.h">
+    <ClInclude Include="include\Humongous\EntryContainer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Humongous\FileType.h">
+    <ClInclude Include="include\Humongous\EntryType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Humongous\HumongousChunks.h">
@@ -75,6 +75,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CFILE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Humongous\FileType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Humongous\Compiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

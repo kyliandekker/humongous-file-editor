@@ -6,8 +6,8 @@
 
 #include "utils/utils.h"
 #include "Humongous/HumongousChunks.h"
-#include "Humongous/File.h"
-#include "Humongous/FileContainer.h"
+#include "Humongous/Entry.h"
+#include "Humongous/EntryContainer.h"
 #include "HumongousEditorForm.h"
 #include "CFILE.h"
 
@@ -111,11 +111,6 @@ namespace HumongousFileEditor
 		{
 			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 
-			fileContainer.Clear();
-			form->fileView->Nodes->Clear();
-			for (size_t i = form->tabControl1->TabPages->Count - 1; i > 0; i--)
-				form->tabControl1->TabPages->RemoveAt(i);
-
 			CFILE cfile;
 			cfile.cfopen_s(path.c_str(), "rb");
 
@@ -127,9 +122,15 @@ namespace HumongousFileEditor
 				cfile.crewind();
 				cfile.start = utils::xorShift(cfile.start, cfile.size, 0x69);
 				getChunk(rootChunk, cfile);
+
+				FILE* saveFile = nullptr;
+				fopen_s(&saveFile, "D:/ekkes/test.(a)", "wb");
+
+				fwrite(cfile.start, cfile.size, 1, saveFile);
+				fclose(saveFile);
 			}
 
-			while (cfile.cftell() < rootChunk.chunkSize)
+			while (cfile.cftell() < cfile.size)
 			{
 				uaudio::wave_reader::ChunkHeader chunk;
 				getChunk(chunk, cfile);
@@ -150,22 +151,13 @@ namespace HumongousFileEditor
 					DIGI_Chunk digi = getDIGIChunk(cfile);
 					HSHD_Chunk hshd = getHSHDChunk(cfile);
 					SDAT_Chunk sdat = getSDATChunk(cfile);
-					SongFile* songFile = new SongFile();
-					songFile->num = fileContainer.files.size();
-					songFile->size = sdat.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader);
-					songFile->sample_rate = hshd.sample_rate;
-					songFile->data = reinterpret_cast<unsigned char*>(malloc(songFile->size));
-					memcpy(songFile->data, sdat.data, songFile->size);
 
-					std::string num = std::to_string(songFile->num) + ".wav";
-					fileContainer.files.push_back(songFile);
-					System::String^ text = gcnew System::String(num.c_str());
-					HumongousNode^ node;
-					node = (gcnew HumongousNode);
-					node->Text = text;
-					node->Name = text;
-					node->num = fileContainer.files.size() - 1;
-					form->fileView->Nodes->Add(node);
+					SongEntry* songEntry = new SongEntry();
+					songEntry->size = sdat.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader);
+					songEntry->sample_rate = hshd.sample_rate;
+					songEntry->data = reinterpret_cast<unsigned char*>(malloc(songEntry->size));
+					memcpy(songEntry->data, sdat.data, songEntry->size);
+					entryContainer.AddEntry(songEntry);
 				}
 				// Talk is always a talkie file (voice usually, but can also be sfx).
 				else if (utils::chunkcmp(reinterpret_cast<char*>(chunk.chunk_id), TALK_CHUNK_ID))
@@ -192,23 +184,13 @@ namespace HumongousFileEditor
 
 					SDAT_Chunk sdat = getSDATChunk(cfile);
 
-					TalkieFile* talkieFile = new TalkieFile();
-					talkieFile->num = fileContainer.files.size();
-					talkieFile->size = sdat.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader);
-					talkieFile->sample_rate = hshd.sample_rate;
-					talkieFile->data = reinterpret_cast<unsigned char*>(malloc(talkieFile->size));
-					talkieFile->hasSbng = hasSbng;
-					memcpy(talkieFile->data, sdat.data, talkieFile->size);
-
-					std::string num = std::to_string(talkieFile->num) + ".wav";
-					fileContainer.files.push_back(talkieFile);
-					System::String^ text = gcnew System::String(num.c_str());
-					HumongousNode^ node;
-					node = (gcnew HumongousNode);
-					node->Text = text;
-					node->Name = text;
-					node->num = fileContainer.files.size() - 1;
-					form->fileView->Nodes->Add(node);
+					TalkieEntry* talkieEntry = new TalkieEntry();
+					talkieEntry->size = sdat.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader);
+					talkieEntry->sample_rate = hshd.sample_rate;
+					talkieEntry->data = reinterpret_cast<unsigned char*>(malloc(talkieEntry->size));
+					talkieEntry->hasSbng = hasSbng;
+					memcpy(talkieEntry->data, sdat.data, talkieEntry->size);
+					entryContainer.AddEntry(talkieEntry);
 				}
 				else
 				{
@@ -216,7 +198,7 @@ namespace HumongousFileEditor
 				}
 
 				int tell = cfile.cftell();
-				float progress = 100.0f / rootChunk.chunkSize * tell;
+				float progress = 100.0f / cfile.size * tell;
 				form->toolProgressBar->Value = progress;
 				if (progress > 0)
 					form->toolProgressBar->Value = progress - 1;
@@ -224,8 +206,21 @@ namespace HumongousFileEditor
 					form->toolProgressBar->Value = progress;
 			}
 
-			System::String^ text = "Successfully decompiled resource file (" + fileContainer.files.size().ToString() + " resources)";
+			System::String^ text = "Successfully decompiled resource file (" + entryContainer.size().ToString() + " resources)";
 			MessageBox::Show(text, "Decompilation successful", MessageBoxButtons::OK, MessageBoxIcon::Information);
+
+			// Add all loaded entries to the node container.
+			for (size_t i = 0; i < entryContainer.size(); i++)
+			{
+				std::string num = std::to_string(entryContainer[i]->num) + entryContainer[i]->GetCommonExtension();
+				System::String^ text = gcnew System::String(num.c_str());
+				HumongousNode^ node;
+				node = (gcnew HumongousNode);
+				node->Text = text;
+				node->Name = text;
+				node->num = entryContainer.size() - 1;
+				form->fileView->Nodes->Add(node);
+			}
 			return 0;
 		}
 	}

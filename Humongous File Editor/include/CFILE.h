@@ -50,10 +50,6 @@ namespace HumongousFileEditor
 		}
 		void cfseek(int32_t a_Offset, int a_Origin)
 		{
-			if (a_Offset < 0)
-			{
-				printf("Test\n");
-			}
 			switch (a_Origin)
 			{
 				case SEEK_CUR:

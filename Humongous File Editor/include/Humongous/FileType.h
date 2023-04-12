@@ -4,27 +4,26 @@
 
 namespace HumongousFileEditor
 {
-	public enum class FileType
+	public enum FileType
 	{
-		FileType_Song,
-		FileType_Talkie,
+		FileType_None,
+		FileType_All,
+		FileType_A,
+		FileType_HE2,
+		FileType_HE4,
 	};
 
-	inline std::string FileTypeToString(FileType fileType)
+	inline FileType getFileTypeByExtension(std::string path)
 	{
-		switch (fileType)
-		{
-			case FileType::FileType_Song:
-			{
-				return "Song";
-				break;
-			}
-			case FileType::FileType_Talkie:
-			{
-				return "Sound/Talkie";
-				break;
-			}
-		}
-		return "Unknown";
+		std::string extension = path.substr(path.find_last_of(".") + 1);
+
+		FileType i = FileType_All;
+		if (extension == "HE4" || extension == "he4")
+			i = FileType_HE4;
+		else if (extension == "HE2" || extension == "he2")
+			i = FileType_HE2;
+		else if (extension == "(A)" || extension == "(a)")
+			i = FileType_A;
+		return i;
 	}
 }

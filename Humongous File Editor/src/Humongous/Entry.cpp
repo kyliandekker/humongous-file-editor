@@ -1,31 +1,36 @@
-#include "Humongous/File.h"
+#include "Humongous/Entry.h"
 
 #include <cstdint>
 #include <windows.h>
 #include <iostream>
 #include <uaudio_wave_reader/WaveChunks.h>
+#include <uaudio_wave_reader/WaveReader.h>
 #include <cstdint>
 #include <cstdio>
 #include <string>
 
 namespace HumongousFileEditor
 {
-	void File::OpenSave()
+	void Entry::OpenSave()
 	{
 		OPENFILENAME ofn;
-		TCHAR sz_file[260] = { 0 };
 
 		ZeroMemory(&ofn, sizeof(ofn));
-		ofn.lStructSize = sizeof(ofn);
 
-		std::string name = GetCommonExtension();
+		std::string name = std::to_string(num) + GetCommonExtension();
 		wchar_t wtext[260];
 		ZeroMemory(wtext, 260);
 		mbstowcs(wtext, name.c_str(), name.length());
 		ofn.lpstrFile = wtext;
 		ofn.lStructSize = sizeof(ofn);
 		ofn.nMaxFile = MAX_PATH;
-		ofn.lpstrFilter = L"Microsoft wave file (*.wav)\0*.wav\0";
+
+		std::string filter = GetFilter();
+		wchar_t wfilter[260];
+		ZeroMemory(wfilter, 260);
+		mbstowcs(wfilter, filter.c_str(), filter.length());
+		ofn.lpstrFilter = wfilter;
+
 		ofn.nFilterIndex = 1;
 		ofn.lpstrInitialDir = NULL;
 		ofn.lpstrFileTitle = NULL;
@@ -44,7 +49,45 @@ namespace HumongousFileEditor
 		}
 	}
 
-	void SongFile::Save(std::string path)
+	void Entry::OpenReplace()
+	{
+		OPENFILENAME ofn;
+
+		ZeroMemory(&ofn, sizeof(ofn));
+
+		std::string name = std::to_string(num) + GetCommonExtension();
+		wchar_t wname[260];
+		ZeroMemory(wname, 260);
+		mbstowcs(wname, name.c_str(), name.length());
+		ofn.lpstrFile = wname;
+		ofn.lStructSize = sizeof(ofn);
+		ofn.nMaxFile = MAX_PATH;
+
+		std::string filter = GetFilter();
+		wchar_t wfilter[260];
+		ZeroMemory(wfilter, 260);
+		mbstowcs(wfilter, filter.c_str(), filter.length());
+		ofn.lpstrFilter = wfilter;
+
+		ofn.nFilterIndex = 1;
+		ofn.lpstrInitialDir = NULL;
+		ofn.lpstrFileTitle = NULL;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+
+		if (GetOpenFileNameW(&ofn))
+		{
+			const auto path = new char[wcslen(ofn.lpstrFile) + 1];
+			wsprintfA(path, "%S", ofn.lpstrFile);
+
+			std::string pathString = std::string(path);
+
+			Replace(pathString);
+
+			delete[] path;
+		}
+	}
+
+	void SongEntry::Save(std::string path)
 	{
 		FILE* newFile = nullptr;
 		errno_t t = fopen_s(&newFile, path.c_str(), "wb");
@@ -85,7 +128,62 @@ namespace HumongousFileEditor
 		fclose(newFile);
 	}
 
-    void TalkieFile::Save(std::string path)
+	void SongEntry::Replace(std::string path)
+	{
+		size_t size = 0;
+		uaudio::wave_reader::WaveReader::FTell(path.c_str(), size);
+
+		void* allocated_space = malloc(size);
+		uaudio::wave_reader::ChunkCollection chunkCollection = uaudio::wave_reader::ChunkCollection(allocated_space, size);
+
+		// Use the allocated memory and also pass the size.
+		uaudio::wave_reader::WaveReader::LoadWave(path.c_str(), chunkCollection);
+
+		bool hasChunk = false;
+		chunkCollection.HasChunk(hasChunk, uaudio::wave_reader::FMT_CHUNK_ID);
+		if (!hasChunk)
+		{
+			System::Windows::Forms::MessageBox::Show("Sound file has no format data", "Cannot replace file", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+			return;
+		}
+
+		chunkCollection.HasChunk(hasChunk, uaudio::wave_reader::DATA_CHUNK_ID);
+		if (!hasChunk)
+		{
+			System::Windows::Forms::MessageBox::Show("Sound file has no pcm data", "Cannot replace file", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+			return;
+		}
+
+		uaudio::wave_reader::FMT_Chunk fmt_chunk;
+		chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID);
+
+		if (fmt_chunk.sampleRate != 11025)
+		{
+			System::Windows::Forms::MessageBox::Show("Sound file's sample rate is too high", "Cannot replace file", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+			return;
+		}
+
+		if (fmt_chunk.bitsPerSample != uaudio::wave_reader::WAVE_BITS_PER_SAMPLE_8)
+		{
+			System::Windows::Forms::MessageBox::Show("Sound file's bits per sample is too high", "Cannot replace file", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+			return;
+		}
+
+		uaudio::wave_reader::DATA_Chunk data_chunk;
+		chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID);
+
+		// Free old data.
+		free(data);
+
+		size = data_chunk.chunkSize;
+		data = reinterpret_cast<unsigned char*>(malloc(size));
+		memcpy(data, data_chunk.data, size);
+		sample_rate = fmt_chunk.sampleRate;
+
+		free(allocated_space);
+	}
+
+    void TalkieEntry::Save(std::string path)
     {
 		FILE* newFile = nullptr;
 		errno_t t = fopen_s(&newFile, path.c_str(), "wb");
