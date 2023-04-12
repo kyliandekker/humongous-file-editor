@@ -1,8 +1,6 @@
 #pragma once
 
 #include <uaudio_wave_reader/ChunkHeader.h>
-#include <uaudio_wave_reader/Utils.h>
-#include <corecrt_malloc.h>
 
 namespace HumongousFileEditor
 {
@@ -23,22 +21,7 @@ namespace HumongousFileEditor
 	struct SBNG_Chunk : uaudio::wave_reader::ChunkHeader
 	{
 		SBNG_Chunk() = default;
-		SBNG_Chunk(const SBNG_Chunk& rhs) : ChunkHeader(rhs)
-		{
-			if (&rhs != this && rhs.data != nullptr)
-			{
-				data = reinterpret_cast<unsigned char*>(malloc(rhs.chunkSize - sizeof(ChunkHeader)));
-				if (data != nullptr)
-				{
-					memcpy(data, rhs.data, rhs.chunkSize - sizeof(ChunkHeader));
-				}
-			}
-		}
-		~SBNG_Chunk()
-		{
-			if (data != nullptr)
-				free(data);
-		}
+		~SBNG_Chunk();
 		unsigned char* data = nullptr;
 	};
 
@@ -52,14 +35,6 @@ namespace HumongousFileEditor
 	struct SGHD_Chunk : uaudio::wave_reader::ChunkHeader
 	{
 		SGHD_Chunk() = default;
-		SGHD_Chunk(const SGHD_Chunk& rhs) : ChunkHeader(rhs)
-		{
-			if (&rhs != this)
-			{
-				num_of_songs = rhs.num_of_songs;
-				memcpy(&unknown1, &rhs.unknown1, sizeof(unknown1));
-			}
-		}
 
 		uint32_t num_of_songs = 0;
 		unsigned char unknown1[28];
@@ -75,16 +50,6 @@ namespace HumongousFileEditor
 		uint32_t song_pos = 0;
 		uint32_t song_size = 0;
 		uint8_t unknown2 = 0;
-		SGEN_Chunk(const SGEN_Chunk& rhs) : ChunkHeader(rhs)
-		{
-			if (&rhs != this)
-			{
-				id = rhs.id;
-				song_pos = rhs.song_pos;
-				song_size = rhs.song_size;
-				unknown2 = rhs.unknown2;
-			}
-		}
 	};
 
 	constexpr auto DIGI_CHUNK_ID = "DIGI";
@@ -97,20 +62,6 @@ namespace HumongousFileEditor
 	struct HSHD_Chunk : uaudio::wave_reader::ChunkHeader
 	{
 		HSHD_Chunk() = default;
-		HSHD_Chunk(const HSHD_Chunk& rhs) : ChunkHeader(rhs)
-		{
-			if (&rhs != this)
-			{
-				memcpy(&unknown1, &rhs.unknown1, sizeof(unknown1));
-				unknown2 = rhs.unknown2;
-				unknown3 = rhs.unknown3;
-				sample_rate = rhs.sample_rate;
-				memcpy(&unknown4, &rhs.unknown4, sizeof(unknown4));
-				memcpy(&unknown5, &rhs.unknown5, sizeof(unknown5));
-				memcpy(&unknown6, &rhs.unknown6, sizeof(unknown6));
-				memcpy(&unknown7, &rhs.unknown7, sizeof(unknown7));
-			}
-		}
 
 		unsigned char unknown1[2] = {
 			0,
@@ -141,24 +92,12 @@ namespace HumongousFileEditor
 	struct SDAT_Chunk : uaudio::wave_reader::ChunkHeader
 	{
 		SDAT_Chunk() = default;
-		SDAT_Chunk(const SDAT_Chunk& rhs) : ChunkHeader(rhs)
-		{
-			if (&rhs != this && rhs.data != nullptr)
-			{
-				data = reinterpret_cast<unsigned char*>(malloc(rhs.chunkSize - sizeof(ChunkHeader)));
-				if (data != nullptr)
-				{
-					memcpy(data, rhs.data, rhs.chunkSize - sizeof(ChunkHeader));
-				}
-			}
-		}
-		~SDAT_Chunk()
-		{
-			if (data != nullptr)
-				free(data);
-		}
+		SDAT_Chunk(const SDAT_Chunk& rhs);
+		~SDAT_Chunk();
 
 		unsigned char* data = nullptr;
 	};
+
+	constexpr auto LECF_CHUNK_ID = "LECF";
 #pragma pack(pop)
 }

@@ -43,26 +43,27 @@ namespace HumongousFileEditor
 		System::Windows::Forms::StatusStrip^ statusStrip2;
 	public:
 		System::Windows::Forms::ToolStripProgressBar^ toolProgressBar;
-		System::Windows::Forms::TreeView^ fileView;
+		System::Windows::Forms::TreeView^ entryView;
 	private:
 		System::Windows::Forms::Panel^ treeActionPanel;
 
 		System::Windows::Forms::Button^ exportSelected;
 		System::Windows::Forms::Button^ unselectAll;
 		System::Windows::Forms::Button^ selectAllButton;
-	private: System::Windows::Forms::Button^ openButton;
-	public:
-	private: System::Windows::Forms::Panel^ panel1;
-	private: System::Windows::Forms::Button^ saveButton;
-	private: System::Windows::Forms::Button^ helpButton;
-	private: System::Windows::Forms::Panel^ panel2;
-	private: System::Windows::Forms::Button^ saveAsButton;
-	private: System::Windows::Forms::Panel^ panel3;
-	private: System::Windows::Forms::ToolStripMenuItem^ optionSave;
-	private: System::Windows::Forms::ToolStripSeparator^ toolStripSeparator1;
-	private: System::Windows::Forms::TabPage^ tabWelcome;
-	private: System::Windows::Forms::Label^ welcomeLabel;
-	private: System::Windows::Forms::PictureBox^ pictureBox1;
+		System::Windows::Forms::Button^ openButton;
+		System::Windows::Forms::Panel^ panel1;
+		System::Windows::Forms::Button^ saveButton;
+		System::Windows::Forms::Button^ helpButton;
+		System::Windows::Forms::Panel^ panel2;
+		System::Windows::Forms::Button^ saveAsButton;
+		System::Windows::Forms::Panel^ panel3;
+		System::Windows::Forms::ToolStripMenuItem^ optionSave;
+		System::Windows::Forms::ToolStripSeparator^ toolStripSeparator1;
+		System::Windows::Forms::TabPage^ tabWelcome;
+		System::Windows::Forms::Label^ welcomeLabel;
+
+
+		System::String^ windowTitle = gcnew System::String("Humongous File Editor");
 	public:
 		System::Windows::Forms::TabControl^ tabControl1;
 	protected:
@@ -96,10 +97,9 @@ namespace HumongousFileEditor
 			this->exportSelected = (gcnew System::Windows::Forms::Button());
 			this->unselectAll = (gcnew System::Windows::Forms::Button());
 			this->selectAllButton = (gcnew System::Windows::Forms::Button());
-			this->fileView = (gcnew System::Windows::Forms::TreeView());
+			this->entryView = (gcnew System::Windows::Forms::TreeView());
 			this->tabControl1 = (gcnew System::Windows::Forms::TabControl());
 			this->tabWelcome = (gcnew System::Windows::Forms::TabPage());
-			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
 			this->welcomeLabel = (gcnew System::Windows::Forms::Label());
 			this->optionSeperator1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->optionOpen = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -127,7 +127,6 @@ namespace HumongousFileEditor
 			this->treeActionPanel->SuspendLayout();
 			this->tabControl1->SuspendLayout();
 			this->tabWelcome->SuspendLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
 			this->topMenu->SuspendLayout();
 			this->statusStrip2->SuspendLayout();
 			this->panel1->SuspendLayout();
@@ -146,7 +145,7 @@ namespace HumongousFileEditor
 			// 
 			this->splitContainer->Panel1->BackColor = System::Drawing::SystemColors::Window;
 			this->splitContainer->Panel1->Controls->Add(this->treeActionPanel);
-			this->splitContainer->Panel1->Controls->Add(this->fileView);
+			this->splitContainer->Panel1->Controls->Add(this->entryView);
 			this->splitContainer->Panel1->Padding = System::Windows::Forms::Padding(10);
 			// 
 			// splitContainer.Panel2
@@ -201,24 +200,23 @@ namespace HumongousFileEditor
 			this->selectAllButton->UseVisualStyleBackColor = true;
 			this->selectAllButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::selectAllButton_Click);
 			// 
-			// fileView
+			// entryView
 			// 
-			this->fileView->AllowDrop = true;
-			this->fileView->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
+			this->entryView->AllowDrop = true;
+			this->entryView->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
 				| System::Windows::Forms::AnchorStyles::Left)
 				| System::Windows::Forms::AnchorStyles::Right));
-			this->fileView->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(249)), static_cast<System::Int32>(static_cast<System::Byte>(249)),
+			this->entryView->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(249)), static_cast<System::Int32>(static_cast<System::Byte>(249)),
 				static_cast<System::Int32>(static_cast<System::Byte>(249)));
-			this->fileView->CheckBoxes = true;
-			this->fileView->ItemHeight = 20;
-			this->fileView->Location = System::Drawing::Point(10, 45);
-			this->fileView->Name = L"fileView";
-			this->fileView->Size = System::Drawing::Size(519, 345);
-			this->fileView->TabIndex = 0;
-			this->fileView->AfterCheck += gcnew System::Windows::Forms::TreeViewEventHandler(this, &HumongousEditorForm::fileView_Check);
-			this->fileView->NodeMouseClick += gcnew System::Windows::Forms::TreeNodeMouseClickEventHandler(this, &HumongousEditorForm::fileView_Click);
-			this->fileView->DragDrop += gcnew System::Windows::Forms::DragEventHandler(this, &HumongousEditorForm::fileView_Drop);
-			this->fileView->MouseDoubleClick += gcnew System::Windows::Forms::MouseEventHandler(this, &HumongousEditorForm::fileView_DoubleClick);
+			this->entryView->CheckBoxes = true;
+			this->entryView->ItemHeight = 20;
+			this->entryView->Location = System::Drawing::Point(10, 45);
+			this->entryView->Name = L"entryView";
+			this->entryView->Size = System::Drawing::Size(519, 345);
+			this->entryView->TabIndex = 0;
+			this->entryView->AfterCheck += gcnew System::Windows::Forms::TreeViewEventHandler(this, &HumongousEditorForm::entryView_Check);
+			this->entryView->NodeMouseClick += gcnew System::Windows::Forms::TreeNodeMouseClickEventHandler(this, &HumongousEditorForm::entryView_Click);
+			this->entryView->MouseDoubleClick += gcnew System::Windows::Forms::MouseEventHandler(this, &HumongousEditorForm::entryView_DoubleClick);
 			// 
 			// tabControl1
 			// 
@@ -234,7 +232,6 @@ namespace HumongousFileEditor
 			// 
 			// tabWelcome
 			// 
-			this->tabWelcome->Controls->Add(this->pictureBox1);
 			this->tabWelcome->Controls->Add(this->welcomeLabel);
 			this->tabWelcome->Location = System::Drawing::Point(4, 25);
 			this->tabWelcome->Name = L"tabWelcome";
@@ -242,17 +239,6 @@ namespace HumongousFileEditor
 			this->tabWelcome->TabIndex = 0;
 			this->tabWelcome->Text = L"Welcome!";
 			this->tabWelcome->UseVisualStyleBackColor = true;
-			// 
-			// pictureBox1
-			// 
-			this->pictureBox1->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"pictureBox1.BackgroundImage")));
-			this->pictureBox1->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Zoom;
-			this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->pictureBox1->Location = System::Drawing::Point(0, 56);
-			this->pictureBox1->Name = L"pictureBox1";
-			this->pictureBox1->Size = System::Drawing::Size(356, 297);
-			this->pictureBox1->TabIndex = 1;
-			this->pictureBox1->TabStop = false;
 			// 
 			// welcomeLabel
 			// 
@@ -340,7 +326,7 @@ namespace HumongousFileEditor
 			this->topMenu->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) { this->optionSeperator1, this->helpMenu });
 			this->topMenu->Location = System::Drawing::Point(0, 0);
 			this->topMenu->Name = L"topMenu";
-			this->topMenu->Size = System::Drawing::Size(900, 34);
+			this->topMenu->Size = System::Drawing::Size(900, 31);
 			this->topMenu->TabIndex = 0;
 			this->topMenu->Text = L"menuStrip2";
 			// 
@@ -386,7 +372,7 @@ namespace HumongousFileEditor
 			this->panel1->Controls->Add(this->saveButton);
 			this->panel1->Controls->Add(this->openButton);
 			this->panel1->Dock = System::Windows::Forms::DockStyle::Top;
-			this->panel1->Location = System::Drawing::Point(0, 34);
+			this->panel1->Location = System::Drawing::Point(0, 31);
 			this->panel1->Name = L"panel1";
 			this->panel1->Padding = System::Windows::Forms::Padding(10);
 			this->panel1->Size = System::Drawing::Size(900, 44);
@@ -476,7 +462,6 @@ namespace HumongousFileEditor
 			this->tabControl1->ResumeLayout(false);
 			this->tabWelcome->ResumeLayout(false);
 			this->tabWelcome->PerformLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->EndInit();
 			this->topMenu->ResumeLayout(false);
 			this->topMenu->PerformLayout();
 			this->statusStrip2->ResumeLayout(false);
@@ -490,8 +475,12 @@ namespace HumongousFileEditor
 	private:
 		System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e)
 		{
-			this->Text = "Humongous File Editor";
+			this->Text = windowTitle;
 		}
+		/// <summary>
+		/// Returns all the filters for FILE dialogs.
+		/// </summary>
+		/// <returns></returns>
 		LPCWSTR getFilter()
 		{
 			return L"\
@@ -504,6 +493,7 @@ namespace HumongousFileEditor
 						Humongous Song Files (*.HE4)\
 						\0*.HE4;*.he4\0";
 		}
+		// Opens a file (via the top menu or the load button).
 		System::Void optionOpen_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			OPENFILENAME ofn;
@@ -529,37 +519,21 @@ namespace HumongousFileEditor
 				std::string pathString = std::string(path);
 				std::string extension = pathString.substr(pathString.find_last_of(".") + 1);
 
-				System::String^ title = gcnew System::String("Humongous File Editor - [") + gcnew System::String(pathString.c_str()) + gcnew System::String("]");
+				// Set the title of the window.
+				System::String^ title = windowTitle + gcnew System::String(" - [") + gcnew System::String(pathString.c_str()) + gcnew System::String("]");
 				this->Text = title;
 
-				if (extension != "HE4" && extension != "he4" && extension != "HE2" && extension != "he2")
-				{
-					if (extension == "(a)" || extension == "(A)")
-					{
-						this->fileView->Nodes->Clear();
-						for (size_t i = this->tabControl1->TabPages->Count - 1; i > 0; i--)
-							this->tabControl1->TabPages->RemoveAt(i);
+				// Clear all previously loaded nodes.
+				this->entryView->Nodes->Clear();
+				for (size_t i = this->tabControl1->TabPages->Count - 1; i > 0; i--)
+					this->tabControl1->TabPages->RemoveAt(i);
 
-						entryContainer.Decompile(path);
-					}
-					else
-					{
-						MessageBox::Show("This file is unsupported as of right now.", "Cannot open file", MessageBoxButtons::OK, MessageBoxIcon::Error);
-						return;
-					}
-				}
-				else
-				{
-					this->fileView->Nodes->Clear();
-					for (size_t i = this->tabControl1->TabPages->Count - 1; i > 0; i--)
-						this->tabControl1->TabPages->RemoveAt(i);
-
-					entryContainer.Decompile(path);
-				}
+				entryContainer.Decompile(path);
 
 				delete[] path;
 			}
 		}
+		// Saves a file (via the top menu or the save button).
 		System::Void optionSave_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			OPENFILENAME ofn;
@@ -593,11 +567,18 @@ namespace HumongousFileEditor
 				delete[] path;
 			}
 		}
+		// Opens a window with info about the application (via the top menu or info button).
 		System::Void optionAbout_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			MessageBox::Show("Humongous File Editor by Kylian Dekker\nVersion: 0.0.1\n\nMany thanks to rzil for helping me with reading the resource files.", "About", MessageBoxButtons::OK, MessageBoxIcon::Information);
 		}
-		System::Void fileView_DoubleClick(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
+
+		/*
+			* EntryView Node Callbacks.
+		*/
+
+		// Double click on a node.
+		System::Void entryView_DoubleClick(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
 		{
 			if (e->Button != System::Windows::Forms::MouseButtons::Left)
 				return;
@@ -609,16 +590,12 @@ namespace HumongousFileEditor
 				return;
 
 			if (!tabControl1->Controls->ContainsKey(node->Text))
-				Add(node->Text, entryContainer[node->num], node->num);
+				AddTab(node, entryContainer[node->num]);
 			tabControl1->SelectedIndex = tabControl1->Controls->IndexOfKey(node->Text);
 		}
-		System::Void fileView_Drop(System::Object^ sender, System::Windows::Forms::DragEventArgs^ e)
+		// Right click on a node.
+		System::Void entryView_Click(System::Object^ sender, System::Windows::Forms::TreeNodeMouseClickEventArgs^ e)
 		{
-			array<System::String^>^ lst = (array<System::String^>^) e->Data->GetData(System::Windows::Forms::DataFormats::FileDrop, false);
-		}
-		System::Void fileView_Click(System::Object^ sender, System::Windows::Forms::TreeNodeMouseClickEventArgs^ e)
-		{
-
 			if (e->Button == System::Windows::Forms::MouseButtons::Right)
 			{
 				System::Windows::Forms::TreeView^ view = static_cast<System::Windows::Forms::TreeView^>(sender);
@@ -661,50 +638,25 @@ namespace HumongousFileEditor
 				menu->Show(System::Windows::Forms::Cursor::Position);
 			}
 		}
+		// Right click menu for the nodes.
 		System::Void menuClick(System::Object^ sender, System::EventArgs^ e)
 		{
 			HumongousToolStripMenuItem^ item = static_cast<HumongousToolStripMenuItem^>(sender);
 			if (item->Name == "Export")
 			{
-				SaveFile(item->node->num);
+				SaveEntry(item->node->num);
 			}
 			else if (item->Name == "Replace")
 			{
-				Replace(item->node->num);
+				ReplaceEntry(item->node->num);
 			}
 		}
-		void AddButtons(System::Windows::Forms::Panel^ tab, SongEntry* songFile, int i)
-		{
-			HumongousButton^ playButton;
-			playButton = (gcnew HumongousButton());
 
-			playButton->Location = System::Drawing::Point(232, 53);
-			playButton->Name = gcnew System::String(std::to_string(i).c_str());
-			playButton->Size = System::Drawing::Size(75, 23);
-			playButton->TabIndex = 2;
-			playButton->Text = L"Play";
-			playButton->num = i;
-			playButton->UseVisualStyleBackColor = true;
-			playButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::playButton_Click);
+		/*
+			* Info tab methods.
+		*/
 
-			HumongousButton^ stopButton;
-			stopButton = (gcnew HumongousButton());
-
-			stopButton->Location = System::Drawing::Point(232, 53);
-			stopButton->Name = gcnew System::String(std::to_string(i).c_str());
-			stopButton->Size = System::Drawing::Size(75, 23);
-			stopButton->TabIndex = 2;
-			stopButton->Text = L"Stop";
-			stopButton->num = i;
-			stopButton->UseVisualStyleBackColor = true;
-			stopButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::stopButton_Click);
-
-			playButton->ResumeLayout(false);
-			stopButton->ResumeLayout(false);
-			tab->Controls->Add(playButton);
-			tab->Controls->Add(stopButton);
-		}
-
+		// Adds a row of info to the info tab.
 		void AddInfoRow(System::String^ key, System::String^ value, System::Windows::Forms::TabPage^ tab, float& posX, float& posY)
 		{
 			System::Windows::Forms::Label^ keyLabel;
@@ -740,8 +692,58 @@ namespace HumongousFileEditor
 
 			posY += 40;
 		}
+
+		// Adds buttons to the info tab.
+		void AddSoundButtons(System::Windows::Forms::Panel^ tab, SongEntry* songEntry, int i)
+		{
+			HumongousButton^ playButton;
+			playButton = (gcnew HumongousButton());
+
+			playButton->Location = System::Drawing::Point(232, 53);
+			playButton->Name = gcnew System::String(std::to_string(i).c_str());
+			playButton->Size = System::Drawing::Size(75, 23);
+			playButton->TabIndex = 2;
+			playButton->Text = L"Play";
+			playButton->num = i;
+			playButton->UseVisualStyleBackColor = true;
+			playButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::playButton_Click);
+
+			HumongousButton^ stopButton;
+			stopButton = (gcnew HumongousButton());
+
+			stopButton->Location = System::Drawing::Point(232, 53);
+			stopButton->Name = gcnew System::String(std::to_string(i).c_str());
+			stopButton->Size = System::Drawing::Size(75, 23);
+			stopButton->TabIndex = 2;
+			stopButton->Text = L"Stop";
+			stopButton->num = i;
+			stopButton->UseVisualStyleBackColor = true;
+			stopButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::stopButton_Click);
+
+			playButton->ResumeLayout(false);
+			stopButton->ResumeLayout(false);
+			tab->Controls->Add(playButton);
+			tab->Controls->Add(stopButton);
+		}
+		// Callback for the play button.
+		System::Void playButton_Click(System::Object^ sender, System::EventArgs^ e)
+		{
+			HumongousButton^ btn = (HumongousButton^)sender;
+			SongEntry* soundEntry = static_cast<SongEntry*>(entryContainer[btn->num]);
+			audioSystem.Play(soundEntry->data, soundEntry->size);
+		}
+		// Callback for the stop button.
+		System::Void stopButton_Click(System::Object^ sender, System::EventArgs^ e)
+		{
+			audioSystem.Stop();
+		}
 	public:
-		void Add(System::String^ name, Entry* file, int num)
+		/// <summary>
+		/// Adds a new tab to the tab control.
+		/// </summary>
+		/// <param name="node">The original node that was clicked on.</param>
+		/// <param name="entry">The entry.</param>
+		void AddTab(HumongousNode^ node, Entry* entry)
 		{
 			System::Windows::Forms::TabPage^ newTab;
 			newTab = (gcnew System::Windows::Forms::TabPage());
@@ -749,11 +751,11 @@ namespace HumongousFileEditor
 
 			newTab = (gcnew System::Windows::Forms::TabPage());
 			newTab->Location = System::Drawing::Point(4, 25);
-			newTab->Name = name;
+			newTab->Name = node->Text;
 			newTab->Padding = System::Windows::Forms::Padding(10, 3, 3, 3);
 			newTab->Size = System::Drawing::Size(659, 396);
 			newTab->TabIndex = 0;
-			newTab->Text = name;
+			newTab->Text = node->Text;
 			newTab->UseVisualStyleBackColor = true;
 
 			System::Windows::Forms::Panel^ actionPanel;
@@ -765,28 +767,28 @@ namespace HumongousFileEditor
 			actionPanel->Size = System::Drawing::Size(418, 87);
 			actionPanel->TabIndex = 1;
 
-			std::string type = EntryTypeToString(file->fileType);
+			std::string type = EntryTypeToString(entry->fileType);
 
 			float posX = 35, posY = 35;
-			AddInfoRow("Name", name, newTab, posX, posY);
+			AddInfoRow("Name", node->Text, newTab, posX, posY);
 			AddInfoRow("Type", gcnew System::String(type.c_str()), newTab, posX, posY);
-			switch (file->fileType)
+			switch (entry->fileType)
 			{
 				case EntryType::EntryType_Song:
 				{
-					SongEntry* songFile = static_cast<SongEntry*>(file);
-					AddInfoRow("Sample Rate", gcnew System::String(std::to_string(songFile->sample_rate).c_str()), newTab, posX, posY);
-					AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(songFile->size).c_str()), newTab, posX, posY);
-					AddButtons(actionPanel, songFile, num);
+					SongEntry* songEntry = static_cast<SongEntry*>(entry);
+					AddInfoRow("Sample Rate", gcnew System::String(std::to_string(songEntry->sample_rate).c_str()), newTab, posX, posY);
+					AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(songEntry->size).c_str()), newTab, posX, posY);
+					AddSoundButtons(actionPanel, songEntry, entry->num);
 					break;
 				}
 				case EntryType::EntryType_Talkie:
 				{
-					TalkieEntry* talkieFile = static_cast<TalkieEntry*>(file);
-					AddInfoRow("Sample Rate", gcnew System::String(std::to_string(talkieFile->sample_rate).c_str()), newTab, posX, posY);
-					AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(talkieFile->size).c_str()), newTab, posX, posY);
-					AddInfoRow("SBNG", gcnew System::String(talkieFile->hasSbng ? "true" : "false"), newTab, posX, posY);
-					AddButtons(actionPanel, talkieFile, num);
+					TalkieEntry* talkieEntry = static_cast<TalkieEntry*>(entry);
+					AddInfoRow("Sample Rate", gcnew System::String(std::to_string(talkieEntry->sample_rate).c_str()), newTab, posX, posY);
+					AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(talkieEntry->size).c_str()), newTab, posX, posY);
+					AddInfoRow("SBNG", gcnew System::String(talkieEntry->sbng_size == 0 ? "true" : "false"), newTab, posX, posY);
+					AddSoundButtons(actionPanel, talkieEntry, entry->num);
 					type = "Sound";
 					break;
 				}
@@ -796,11 +798,11 @@ namespace HumongousFileEditor
 			exportButton = (gcnew HumongousButton());
 
 			exportButton->Location = System::Drawing::Point(232, 53);
-			exportButton->Name = gcnew System::String(std::to_string(num).c_str());
+			exportButton->Name = gcnew System::String(std::to_string(entry->num).c_str());
 			exportButton->Size = System::Drawing::Size(75, 23);
 			exportButton->TabIndex = 2;
 			exportButton->Text = L"Export";
-			exportButton->num = num;
+			exportButton->num = entry->num;
 			exportButton->UseVisualStyleBackColor = true;
 			exportButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::exportButton_Click);
 
@@ -813,21 +815,17 @@ namespace HumongousFileEditor
 			tabControl1->Controls->Add(newTab);
 		}
 	private:
-		System::Void playButton_Click(System::Object^ sender, System::EventArgs^ e)
-		{
-			HumongousButton^ btn = (HumongousButton^)sender;
-			SongEntry* soundFile = static_cast<SongEntry*>(entryContainer[btn->num]);
-			audioSystem.Play(soundFile->data, soundFile->size);
-		}
+		// Callback for the export button.
 		System::Void exportButton_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			HumongousButton^ btn = (HumongousButton^)sender;
-			SaveFile(btn->num);
+			SaveEntry(btn->num);
 		}
-		System::Void fileView_Check(System::Object^ sender, System::Windows::Forms::TreeViewEventArgs^ e)
+		// Enables or disables the export button when checking or unchecking a node in the EntryView.
+		System::Void entryView_Check(System::Object^ sender, System::Windows::Forms::TreeViewEventArgs^ e)
 		{
-			for (size_t i = 0; i < fileView->Nodes->Count; i++)
-				if (fileView->Nodes[i]->Checked)
+			for (size_t i = 0; i < entryView->Nodes->Count; i++)
+				if (entryView->Nodes[i]->Checked)
 				{
 					exportSelected->Enabled = true;
 					return;
@@ -835,47 +833,50 @@ namespace HumongousFileEditor
 
 			exportSelected->Enabled = false;
 		}
-		void SaveFile(int num)
+		// Saves an entry.
+		void SaveEntry(int num)
 		{
-			Entry* file = entryContainer[num];
-			file->OpenSave();
+			Entry* entry = entryContainer[num];
+			entry->OpenSave();
 		}
-		void Replace(int num)
+		// Replaces an entry.
+		void ReplaceEntry(int num)
 		{
-			Entry* file = entryContainer[num];
-			file->OpenReplace();
+			Entry* entry = entryContainer[num];
+			entry->OpenReplace();
 		}
-		System::Void stopButton_Click(System::Object^ sender, System::EventArgs^ e)
-		{
-			audioSystem.Stop();
-		}
+		// Hover animations for buttons.
 		System::Void buttonHover(System::Object^ sender, System::EventArgs^ e)
 		{
 			Button^ button = static_cast<Button^>(sender);
 			button->BackColor = System::Drawing::SystemColors::GradientActiveCaption;
 			button->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
 		}
+		// Hover animations for buttons.
 		System::Void buttonExit(System::Object^ sender, System::EventArgs^ e)
 		{
 			Button^ button = static_cast<Button^>(sender);
 			button->BackColor = System::Drawing::Color::Transparent;
 			button->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
 		}
+		// Checks all entry nodes in the EntryView.
 		System::Void selectAllButton_Click(System::Object^ sender, System::EventArgs^ e)
 		{
-			for (size_t i = 0; i < fileView->Nodes->Count; i++)
+			for (size_t i = 0; i < entryView->Nodes->Count; i++)
 			{
-				fileView->Nodes[i]->Checked = true;
+				entryView->Nodes[i]->Checked = true;
 				exportSelected->Enabled = true;
 			}
 		}
+		// Unchecks all entry nodes in the EntryView.
 		System::Void unselectAll_Click(System::Object^ sender, System::EventArgs^ e)
 		{
-			for (size_t i = 0; i < fileView->Nodes->Count; i++)
-				fileView->Nodes[i]->Checked = false;
+			for (size_t i = 0; i < entryView->Nodes->Count; i++)
+				entryView->Nodes[i]->Checked = false;
 
 			exportSelected->Enabled = false;
 		}
+		// Callback for exporting all checked entry nodes in the EntryView to a directory.
 		System::Void exportSelected_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			std::string strDirectory;
@@ -883,7 +884,7 @@ namespace HumongousFileEditor
 			BROWSEINFO bInfo;
 			bInfo.pidlRoot = NULL;
 			bInfo.pszDisplayName = szDir; // Address of a buffer to receive the display name of the folder selected by the user
-			bInfo.lpszTitle = L"Please, select a folder"; // Title of the dialog
+			bInfo.lpszTitle = L"Please, select a directory"; // Title of the dialog
 			bInfo.ulFlags = BIF_USENEWUI;
 			bInfo.lpfn = NULL;
 			bInfo.lParam = 0;
@@ -896,24 +897,25 @@ namespace HumongousFileEditor
 				std::wstring wStr = szDir;
 				strDirectory = std::string(wStr.begin(), wStr.end());
 
-				std::vector<Entry*> files;
-				for (size_t i = 0; i < fileView->Nodes->Count; i++)
+				std::vector<Entry*> entries;
+				for (size_t i = 0; i < entryView->Nodes->Count; i++)
 				{
-					if (fileView->Nodes[i]->Checked)
+					if (entryView->Nodes[i]->Checked)
 					{
-						HumongousNode^ node = static_cast<HumongousNode^>(fileView->Nodes[i]);
-						files.push_back(entryContainer[node->num]);
+						HumongousNode^ node = static_cast<HumongousNode^>(entryView->Nodes[i]);
+						entries.push_back(entryContainer[node->num]);
 					}
 				}
-				ExportSelected(strDirectory, files);
+				ExportSelected(strDirectory, entries);
 			}
 		}
-		void ExportSelected(std::string directory, std::vector<Entry*> files)
+		// Exports a list of entries to a directory.
+		void ExportSelected(std::string directory, std::vector<Entry*> entries)
 		{
-			for (size_t i = 0; i < files.size(); i++)
+			for (size_t i = 0; i < entries.size(); i++)
 			{
-				std::string path = directory + "\\" + files[i]->GetCommonExtension();
-				files[i]->Save(path);
+				std::string path = directory + "\\" + entries[i]->GetCommonExtension();
+				entries[i]->Save(path);
 			}
 		}
 	};

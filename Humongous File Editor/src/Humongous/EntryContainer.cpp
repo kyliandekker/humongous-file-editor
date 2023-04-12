@@ -37,7 +37,7 @@ namespace HumongousFileEditor
 		Clear();
 
 		SetFile(path);
-		decompiler::decompile(path);
+		decompiler::decompile();
 	}
 
 	void EntryContainer::Compile(std::string path)

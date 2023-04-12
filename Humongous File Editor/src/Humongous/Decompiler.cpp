@@ -17,77 +17,57 @@ namespace HumongousFileEditor
 	{
 		void getChunk(uaudio::wave_reader::ChunkHeader& chunk, CFILE& file)
 		{
+			// Store the chunk size so that it can be reversed (from little to big endian).
 			unsigned char chunk_size[sizeof(uint32_t)];
+			// Read the chunk id first.
 			file.cfread(&chunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
 			file.cfread(&chunk_size, sizeof(uint32_t), 1);
-			chunk.chunkSize = utils::big_to_little_endian(chunk_size);
+			chunk.chunkSize = utils::little_to_big_endian<uint32_t>(chunk_size);
 		}
 
 		SGEN_Chunk getSGENChunk(CFILE& file)
 		{
 			SGEN_Chunk sgen_chunk = SGEN_Chunk();
-			unsigned char chunk_size[sizeof(uint32_t)];
-			file.cfread(&sgen_chunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
-			file.cfread(&chunk_size, sizeof(uint32_t), 1);
-			sgen_chunk.chunkSize = utils::big_to_little_endian(chunk_size);
-			file.cfread(uaudio::utils::add(&sgen_chunk, sizeof(uaudio::wave_reader::ChunkHeader)), sgen_chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader), 1);
+			getChunk(sgen_chunk, file);
+			// Read the rest of the sgen data.
+			file.cfread(utils::add(&sgen_chunk, sizeof(uaudio::wave_reader::ChunkHeader)), sgen_chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader), 1);
 			return sgen_chunk;
 		}
 
 		DIGI_Chunk getDIGIChunk(CFILE& file)
 		{
 			DIGI_Chunk digi_chunk = DIGI_Chunk();
-			unsigned char chunk_size[sizeof(uint32_t)];
-			file.cfread(&digi_chunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
-			file.cfread(&chunk_size, sizeof(uint32_t), 1);
-			digi_chunk.chunkSize = utils::big_to_little_endian(chunk_size);
+			getChunk(digi_chunk, file);
 			return digi_chunk;
 		}
 
 		SGHD_Chunk getSGHDChunk(CFILE& file)
 		{
 			SGHD_Chunk sghd_chunk = SGHD_Chunk();
-			unsigned char chunk_size[sizeof(uint32_t)];
-			file.cfread(&sghd_chunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
-			file.cfread(&chunk_size, sizeof(uint32_t), 1);
-			sghd_chunk.chunkSize = utils::big_to_little_endian(chunk_size);
-			file.cfread(uaudio::utils::add(&sghd_chunk, sizeof(uaudio::wave_reader::ChunkHeader)), sghd_chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader), 1);
+			getChunk(sghd_chunk, file);
+			// Read the rest of the sghd data.
+			file.cfread(utils::add(&sghd_chunk, sizeof(uaudio::wave_reader::ChunkHeader)), sghd_chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader), 1);
 			return sghd_chunk;
 		}
 
-
-		/// <summary>
-		/// Returns a hshd chunk.
-		/// </summary>
-		/// <param name="file">The file pointer.</param>
-		/// <returns></returns>
 		HSHD_Chunk getHSHDChunk(CFILE& file)
 		{
 			HSHD_Chunk hshd_chunk = HSHD_Chunk();
-			unsigned char chunk_size[sizeof(uint32_t)];
-			file.cfread(&hshd_chunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
-			file.cfread(&chunk_size, sizeof(uint32_t), 1);
-			hshd_chunk.chunkSize = utils::big_to_little_endian(chunk_size);
+			getChunk(hshd_chunk, file);
+			// Read the rest of the hshd data.
 			file.cfread(
-				uaudio::utils::add(&hshd_chunk, sizeof(uaudio::wave_reader::ChunkHeader)),
+				utils::add(&hshd_chunk, sizeof(uaudio::wave_reader::ChunkHeader)),
 				hshd_chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader),
 				1
 			);
 			return hshd_chunk;
 		}
 
-		/// <summary>
-		/// Returns a sdat chunk.
-		/// </summary>
-		/// <param name="file">The file pointer.</param>
-		/// <returns></returns>
 		SDAT_Chunk getSDATChunk(CFILE& file)
 		{
 			SDAT_Chunk sdat_chunk = SDAT_Chunk();
-			unsigned char chunk_size[sizeof(uint32_t)];
-			file.cfread(&sdat_chunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
-			file.cfread(&chunk_size, sizeof(uint32_t), 1);
-			sdat_chunk.chunkSize = utils::big_to_little_endian(chunk_size);
+			getChunk(sdat_chunk, file);
+			// Read the rest of the sdat data.
 			sdat_chunk.data = reinterpret_cast<unsigned char*>(malloc(sdat_chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader)));
 			file.cfread(
 				sdat_chunk.data,
@@ -100,58 +80,77 @@ namespace HumongousFileEditor
         TALK_Chunk getTALKChunk(CFILE& file)
         {
 			TALK_Chunk talk_chunk = TALK_Chunk();
-			unsigned char chunk_size[sizeof(uint32_t)];
-			file.cfread(&talk_chunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
-			file.cfread(&chunk_size, sizeof(uint32_t), 1);
-			talk_chunk.chunkSize = utils::big_to_little_endian(chunk_size);
+			getChunk(talk_chunk, file);
 			return talk_chunk;
         }
 
-		int decompile(std::string path)
+		int decompile()
 		{
 			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 
+			// Create a file (my own wrapper because sometimes data is encrypted).
 			CFILE cfile;
-			cfile.cfopen_s(path.c_str(), "rb");
+			cfile.cfopen_s(entryContainer.filePath.c_str(), "rb");
 
+			// Get the first chunk.
 			uaudio::wave_reader::ChunkHeader rootChunk;
 			getChunk(rootChunk, cfile);
 
+			// If the chunk is unknown, it might be encryped so we will unencrypt.
 			if (!utils::chunkcmp(reinterpret_cast<char*>(rootChunk.chunk_id), TLKB_CHUNK_ID) && !utils::chunkcmp(reinterpret_cast<char*>(rootChunk.chunk_id), SONG_CHUNK_ID))
 			{
 				cfile.crewind();
 				cfile.start = utils::xorShift(cfile.start, cfile.size, 0x69);
 				getChunk(rootChunk, cfile);
 
-				FILE* saveFile = nullptr;
-				fopen_s(&saveFile, "D:/ekkes/test.(a)", "wb");
+				// TODO: DEBUG.
+				//FILE* saveFile = nullptr;
+				//fopen_s(&saveFile, "D:/ekkes/test.(a)", "wb");
 
-				fwrite(cfile.start, cfile.size, 1, saveFile);
-				fclose(saveFile);
+				//fwrite(cfile.start, cfile.size, 1, saveFile);
+				//fclose(saveFile);
+
+				// If the first chunk is still not recognized, just throw an error.
+				if (!utils::chunkcmp(reinterpret_cast<char*>(rootChunk.chunk_id), LECF_CHUNK_ID))
+				{
+					System::Windows::Forms::MessageBox::Show("File cannot be opened because it is not recognized as a Humongous file.", "Cannot open file", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+					return 1;
+				}
 			}
 
+			// As long as the file is not eof it will go on.
 			while (cfile.cftell() < cfile.size)
 			{
+				// Get first chunk.
 				uaudio::wave_reader::ChunkHeader chunk;
 				getChunk(chunk, cfile);
 
+				// Revert to before the chunk was set.
 				cfile.cfseek(-sizeof(uaudio::wave_reader::ChunkHeader), SEEK_CUR);
 
+				// Compare it to known chunk ids.
 				if (utils::chunkcmp(reinterpret_cast<char*>(chunk.chunk_id), SGHD_CHUNK_ID))
 				{
+					// Basically ignore this one.
 					SGHD_Chunk sghd = getSGHDChunk(cfile);
 				}
 				else if (utils::chunkcmp(reinterpret_cast<char*>(chunk.chunk_id), SGEN_CHUNK_ID))
 				{
+					// Basically ignore this one.
+					// TODO: should not be ignored when working with HE4.
 					SGEN_Chunk sgen = getSGENChunk(cfile);
 				}
 				// DIGI is always a song, so we'll hardcode other chunks.
 				else if (utils::chunkcmp(reinterpret_cast<char*>(chunk.chunk_id), DIGI_CHUNK_ID))
 				{
+					// Get the digi, hsdh and sdat chunks.
 					DIGI_Chunk digi = getDIGIChunk(cfile);
 					HSHD_Chunk hshd = getHSHDChunk(cfile);
 					SDAT_Chunk sdat = getSDATChunk(cfile);
 
+					int num = entryContainer.size();
+
+					// Create an entry with the loaded data.
 					SongEntry* songEntry = new SongEntry();
 					songEntry->size = sdat.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader);
 					songEntry->sample_rate = hshd.sample_rate;
@@ -162,23 +161,27 @@ namespace HumongousFileEditor
 				// Talk is always a talkie file (voice usually, but can also be sfx).
 				else if (utils::chunkcmp(reinterpret_cast<char*>(chunk.chunk_id), TALK_CHUNK_ID))
 				{
+					// Get the talk and hshd chunks.
 					TALK_Chunk talk = getTALKChunk(cfile);
 					HSHD_Chunk hshd = getHSHDChunk(cfile);
 
-					bool hasSbng = false;
+					// Set whether it has a sbng chunk to false by default.
+					size_t sbng_size = 0;
 
 					// There can be a sbng chunk before it.
 					unsigned char chunk[uaudio::wave_reader::CHUNK_ID_SIZE];
 					cfile.cfread(chunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
 					if (utils::chunkcmp(reinterpret_cast<char*>(chunk), SBNG_CHUNK_ID))
 					{
-						hasSbng = true;
-
+						// sbng chunk has been found and will be skipped.
 						unsigned char chunk_size[sizeof(uint32_t)];
 						cfile.cfread(&chunk_size, sizeof(uint32_t), 1);
-						uint32_t sbng_size = utils::big_to_little_endian(chunk_size);
+						uint32_t sbng_size = utils::little_to_big_endian<uint32_t>(chunk_size);
 						cfile.cfseek(sbng_size - sizeof(uaudio::wave_reader::ChunkHeader), SEEK_CUR);
+
+						sbng_size = sbng_size - sizeof(uaudio::wave_reader::ChunkHeader);
 					}
+					// Else, revert to before the chunk was loaded.
 					else
 						cfile.cfseek(-uaudio::wave_reader::CHUNK_ID_SIZE, SEEK_CUR);
 
@@ -188,7 +191,7 @@ namespace HumongousFileEditor
 					talkieEntry->size = sdat.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader);
 					talkieEntry->sample_rate = hshd.sample_rate;
 					talkieEntry->data = reinterpret_cast<unsigned char*>(malloc(talkieEntry->size));
-					talkieEntry->hasSbng = hasSbng;
+					talkieEntry->sbng_size = sbng_size;
 					memcpy(talkieEntry->data, sdat.data, talkieEntry->size);
 					entryContainer.AddEntry(talkieEntry);
 				}
@@ -219,7 +222,7 @@ namespace HumongousFileEditor
 				node->Text = text;
 				node->Name = text;
 				node->num = entryContainer.size() - 1;
-				form->fileView->Nodes->Add(node);
+				form->entryView->Nodes->Add(node);
 			}
 			return 0;
 		}

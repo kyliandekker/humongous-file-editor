@@ -14,15 +14,37 @@ namespace HumongousFileEditor
 		virtual ~Entry()
 		{ }
 
+		/// <summary>
+		/// Opens the save dialog window (with dynamic variables).
+		/// </summary>
 		void OpenSave();
+		/// <summary>
+		/// Opens the open dialog window (with dynamic variables).
+		/// </summary>
 		void OpenReplace();
-
+		/// <summary>
+		/// Saves the entry data to a file.
+		/// </summary>
+		/// <param name="path">The path used to save the data to.</param>
 		virtual void Save(std::string path) = 0;
-		virtual void Replace(std::string path) = 0;
+		/// <summary>
+		/// Returns the extension related to the entry.
+		/// </summary>
+		/// <returns></returns>
 		virtual std::string GetCommonExtension()
 		{
 			return "";
 		}
+	protected:
+		/// <summary>
+		/// Replaces the data of the entry.
+		/// </summary>
+		/// <param name="path"></param>
+		virtual void Replace(std::string path) = 0;
+		/// <summary>
+		/// Returns the filters related to the entry.
+		/// </summary>
+		/// <returns></returns>
 		virtual std::string GetFilter()
 		{
 			return "All files (*.*)\
@@ -44,17 +66,35 @@ namespace HumongousFileEditor
 				free(data);
 			}
 		}
+		/// <summary>
+		/// Saves the entry data to a file.
+		/// </summary>
+		/// <param name="path">The path used to save the data to.</param>
 		virtual void Save(std::string path);
-		virtual void Replace(std::string path);
+		/// <summary>
+		/// Returns the extension related to the entry.
+		/// </summary>
+		/// <returns></returns>
 		virtual std::string GetCommonExtension()
 		{
 			return ".wav\0";
 		}
+	protected:
+		/// <summary>
+		/// Replaces the data of the entry.
+		/// </summary>
+		/// <param name="path"></param>
+		virtual void Replace(std::string path);
+		/// <summary>
+		/// Returns the filters related to the entry.
+		/// </summary>
+		/// <returns></returns>
 		virtual std::string GetFilter()
 		{
 			return "Microsoft wave file (*.wav)\0*.wav\0";
 		}
 
+	public:
 		unsigned char* data = nullptr;
 		uint32_t size = 0;
 		uint16_t sample_rate = 0;
@@ -68,8 +108,7 @@ namespace HumongousFileEditor
 		{
 			fileType = EntryType::EntryType_Talkie;
 		}
-		virtual void Save(std::string path);
 
-		bool hasSbng = false;
+		size_t sbng_size = 0;
 	};
 }

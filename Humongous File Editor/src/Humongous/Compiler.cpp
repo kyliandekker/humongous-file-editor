@@ -1,14 +1,9 @@
-#pragma once
+#include "Humongous/Compiler.h"
 
 namespace HumongousFileEditor
 {
-	class CFILE;
-
 	namespace compiler
 	{
-		void compile()
-		{
 
-		}
 	}
 }

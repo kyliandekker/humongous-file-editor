@@ -6,16 +6,56 @@
 
 namespace HumongousFileEditor
 {
+	class CFILE;
+
 	namespace decompiler
 	{
-		void getChunk(uaudio::wave_reader::ChunkHeader& chunk, FILE* file);
-		SGEN_Chunk getSGENChunk(FILE* file);
-		DIGI_Chunk getDIGIChunk(FILE* file);
-		SGHD_Chunk getSGHDChunk(FILE* file);
-		HSHD_Chunk getHSHDChunk(FILE* file);
-		SDAT_Chunk getSDATChunk(FILE* file);
-		TALK_Chunk getTALKChunk(FILE* file);
-		SBNG_Chunk getSBNGChunk(FILE* file);
-		int decompile(std::string path);
+		/// <summary>
+		/// Returns a chunk based on the current seek pos of a file.
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		void getChunk(uaudio::wave_reader::ChunkHeader& chunk, CFILE& file);
+		/// <summary>
+		/// Returns a sgen chunk based on the current seek pos of a file.
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		SGEN_Chunk getSGENChunk(CFILE& file);
+		/// <summary>
+		/// Returns a digi chunk based on the current seek pos of a file.
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		DIGI_Chunk getDIGIChunk(CFILE& file);
+		/// <summary>
+		/// Returns a sghd chunk based on the current seek pos of a file.
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		SGHD_Chunk getSGHDChunk(CFILE& file);
+		/// <summary>
+		/// Returns a hshd chunk based on the current seek pos of a file.
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		HSHD_Chunk getHSHDChunk(CFILE& file);
+		/// <summary>
+		/// Returns a sdat chunk based on the current seek pos of a file.
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		SDAT_Chunk getSDATChunk(CFILE& file);
+		/// <summary>
+		/// Returns a talk chunk based on the current seek pos of a file.
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		TALK_Chunk getTALKChunk(CFILE& file);
+		/// <summary>
+		/// Decompiles a file.
+		/// </summary>
+		/// <returns>0 on success, 1 on failure.</returns>
+		int decompile();
 	}
 }
