@@ -11,7 +11,7 @@ namespace HumongousFileEditor
 		free(start);
 	}
 
-	size_t CFILE::cftell()
+	size_t CFILE::cftell() const
 	{
 		return pos;
 	}

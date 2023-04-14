@@ -13,7 +13,7 @@ namespace HumongousFileEditor
 		/// <param name="chunkID1">Name of chunk 1.</param>
 		/// <param name="chunkID2">Name of chunk 2.</param>
 		/// <returns></returns>
-		bool chunkcmp(const char* chunkID1, const char* chunkID2);
+		int chunkcmp(unsigned char* chunkID1, const char* chunkID2);
 
 		void reverseBytes(unsigned char* start, int size);
 

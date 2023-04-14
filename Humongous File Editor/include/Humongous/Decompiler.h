@@ -7,6 +7,7 @@
 namespace HumongousFileEditor
 {
 	class CFILE;
+	class Entry;
 
 	namespace decompiler
 	{
@@ -52,6 +53,12 @@ namespace HumongousFileEditor
 		/// <param name="file"></param>
 		/// <returns></returns>
 		TALK_Chunk getTALKChunk(CFILE& file);
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		Entry* ReadSongEntry(CFILE& file, size_t& size, bool sgen = false);
 		/// <summary>
 		/// Decompiles a file.
 		/// </summary>

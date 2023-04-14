@@ -15,6 +15,7 @@ public ref class HumongousNode : public TreeNode
 {
 public:
 	int num = 0;
+	System::String^ note;
 };
 
 public ref class HumongousToolStripMenuItem : public ToolStripMenuItem

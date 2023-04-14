@@ -1,6 +1,7 @@
 #include "Humongous/EntryContainer.h"
 
 #include "Humongous/Decompiler.h"
+#include "Humongous/Compiler.h"
 #include "Humongous/Entry.h"
 
 HumongousFileEditor::EntryContainer HumongousFileEditor::entryContainer;
@@ -42,6 +43,7 @@ namespace HumongousFileEditor
 
 	void EntryContainer::Compile(std::string path)
 	{
+		compiler::compile(path);
 	}
 
 	size_t EntryContainer::size() const

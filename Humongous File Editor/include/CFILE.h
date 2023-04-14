@@ -9,7 +9,7 @@ namespace HumongousFileEditor
 	public:
 		~CFILE();
 
-		size_t cftell();
+		size_t cftell() const;
 		void crewind();
 		int cfopen_s(const char* path, const char* mode);
 		void cfseek(int32_t a_Offset, int a_Origin);

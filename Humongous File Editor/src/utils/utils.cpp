@@ -4,9 +4,9 @@ namespace HumongousFileEditor
 {
 	namespace utils
 	{
-		bool chunkcmp(const char* chunkID1, const char* chunkID2)
+		int chunkcmp(unsigned char* chunkID1, const char* chunkID2)
 		{
-			return (strncmp(chunkID1, chunkID2, uaudio::wave_reader::CHUNK_ID_SIZE) == 0);
+			return strncmp(reinterpret_cast<const char*>(chunkID1), chunkID2, uaudio::wave_reader::CHUNK_ID_SIZE);
 		}
 
 		void reverseBytes(unsigned char* start, int size)
