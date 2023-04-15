@@ -22,11 +22,10 @@ namespace HumongousFileEditor
 			}
 		}
 
-		unsigned char* xorShift(unsigned char* data, size_t size, char key)
+		void xorShift(unsigned char*& data, size_t size, char key)
 		{
 			for (int i = 0; i < size; i++)
 				data[i] = data[i] ^ key;
-			return data;
 		}
 
 		void* add(void* a_Ptr, size_t a_Size)

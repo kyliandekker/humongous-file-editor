@@ -15,12 +15,12 @@ namespace HumongousFileEditor
 	{
 		void NoteContainer::LoadNotes(std::string path)
 		{
-				return;
 			FILE* file = nullptr;
 			std::string notes_path = path + ".hfe";
 			fopen_s(&file, notes_path.c_str(), "rb");
 			if (file == nullptr)
 			{
+				return;
 			}
 
 			// Go to eof and store the size.
@@ -53,7 +53,10 @@ namespace HumongousFileEditor
 					return;
 				}
 				fread(&note_chunk.num, sizeof(uint32_t), 1, file);
-				fread(note_chunk.data, note_chunk.chunkSize - sizeof(NOTE_Chunk), 1, file);
+				uint32_t size = note_chunk.chunkSize - (sizeof(NOTE_Chunk) - sizeof(char*));
+				note_chunk.data = reinterpret_cast<char*>(malloc(size + 1));
+				ZeroMemory(note_chunk.data, size + 1);
+				fread(note_chunk.data, size, 1, file);
 
 				m_Notes.push_back(Note(std::string(note_chunk.data), note_chunk.num));
 			}
@@ -75,7 +78,6 @@ namespace HumongousFileEditor
 			memcpy(&hfe_chunk.chunk_id, HFE_CHUNK_ID, uaudio::wave_reader::CHUNK_ID_SIZE);
 			fwrite(hfe_chunk.chunk_id, uaudio::wave_reader::CHUNK_ID_SIZE, 1, file);
 			hfe_chunk.noteCount = m_Notes.size();
-			fwrite(&hfe_chunk.noteCount, sizeof(uint32_t), 1, file);
 			hfe_chunk.chunkSize = sizeof(HFE_Chunk);
 			for (size_t i = 0; i < m_Notes.size(); i++)
 			{
@@ -89,6 +91,7 @@ namespace HumongousFileEditor
 			memcpy(chunk_size, &hfe_chunk.chunkSize, sizeof(uint32_t));
 			utils::reverseBytes(chunk_size, sizeof(uint32_t));
 			fwrite(chunk_size, sizeof(uint32_t), 1, file);
+			fwrite(&hfe_chunk.noteCount, sizeof(uint32_t), 1, file);
 
 			for (size_t i = 0; i < m_Notes.size(); i++)
 			{
@@ -98,8 +101,9 @@ namespace HumongousFileEditor
 				note_chunk.chunkSize = sizeof(NOTE_Chunk) - sizeof(note_chunk.data) + m_Notes[i].text.length();
 				memcpy(&chunk_size, &note_chunk.chunkSize, sizeof(uint32_t));
 				utils::reverseBytes(chunk_size, sizeof(uint32_t));
-				fwrite(&note_chunk.num, sizeof(uint32_t), 1, file);
 				fwrite(&chunk_size, sizeof(uint32_t), 1, file);
+				note_chunk.num = m_Notes[i].index;
+				fwrite(&note_chunk.num, sizeof(uint32_t), 1, file);
 				fwrite(m_Notes[i].text.c_str(), m_Notes[i].text.length(), 1, file);
 			}
 
@@ -112,7 +116,10 @@ namespace HumongousFileEditor
 			for (size_t i = 0; i < m_Notes.size(); i++)
 			{
 				if (m_Notes[i].index == num)
+				{
+					m_Notes[i].text = note;
 					return;
+				}
 			}
 			m_Notes.push_back(Note(note, num));
 		}

@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClCompile Include="ExTabsControl.cpp" />
     <ClCompile Include="HumongousEditorForm.cpp" />
+    <ClCompile Include="InputForm.cpp" />
     <ClCompile Include="src\CFILE.cpp" />
     <ClCompile Include="src\Humongous\Compiler.cpp" />
     <ClCompile Include="src\Humongous\Decompiler.cpp" />
@@ -170,6 +171,9 @@
     <ClInclude Include="include\Humongous\Notes\NoteContainer.h" />
     <ClInclude Include="include\Systems\AudioSystem.h" />
     <ClInclude Include="include\utils\utils.h" />
+    <ClInclude Include="InputForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">
@@ -177,6 +181,9 @@
       <LogicalName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
       <LogicalName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
       <LogicalName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InputForm.resx">
+      <DependentUpon>InputForm.h</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

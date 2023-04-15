@@ -30,8 +30,7 @@ namespace HumongousFileEditor
 		/// <param name="data">The piece of data.</param>
 		/// <param name="size">The size of the piece of data.</param>
 		/// <param name="key">The XOR key.</param>
-		/// <returns>Unencrypted/Encrypted data.</returns>
-		unsigned char* xorShift(unsigned char* data, size_t size, char key);
+		void xorShift(unsigned char*& data, size_t size, char key);
 
 		/// <summary>
 		/// Adds a specified size to a pointer.

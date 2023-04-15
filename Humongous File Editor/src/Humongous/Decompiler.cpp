@@ -15,7 +15,9 @@ namespace HumongousFileEditor
 {
 	namespace decompiler
 	{
-		void getChunk(uaudio::wave_reader::ChunkHeader& chunk, CFILE& file)
+		uaudio::wave_reader::ChunkHeader lastChunk = uaudio::wave_reader::ChunkHeader();
+
+		int getChunk(uaudio::wave_reader::ChunkHeader& chunk, CFILE& file)
 		{
 			// Store the chunk size so that it can be reversed (from little to big endian).
 			unsigned char chunk_size[sizeof(uint32_t)];
@@ -23,108 +25,198 @@ namespace HumongousFileEditor
 			file.cfread(&chunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
 			file.cfread(&chunk_size, sizeof(uint32_t), 1);
 			chunk.chunkSize = utils::little_to_big_endian<uint32_t>(chunk_size);
+			memcpy(&lastChunk, &chunk, sizeof(uaudio::wave_reader::ChunkHeader));
+			if (chunk.chunkSize > file.size)
+				return err_chunk_size_exceeds_file_size;
+			return err_ok;
 		}
 
-		SGEN_Chunk getSGENChunk(CFILE& file)
+		int getSGENChunk(SGEN_Chunk& chunk, CFILE& file)
 		{
-			SGEN_Chunk sgen_chunk = SGEN_Chunk();
-			getChunk(sgen_chunk, file);
+			int err = getChunk(chunk, file);
+			if (err != err_ok)
+				return err;
 			// Read the rest of the sgen data.
-			file.cfread(utils::add(&sgen_chunk, sizeof(uaudio::wave_reader::ChunkHeader)), sgen_chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader), 1);
-			return sgen_chunk;
+			file.cfread(utils::add(&chunk, sizeof(uaudio::wave_reader::ChunkHeader)), chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader), 1);
+			return err_ok;
 		}
 
-		DIGI_Chunk getDIGIChunk(CFILE& file)
+		int getDIGIChunk(DIGI_Chunk& chunk, CFILE& file)
 		{
-			DIGI_Chunk digi_chunk = DIGI_Chunk();
-			getChunk(digi_chunk, file);
-			return digi_chunk;
+			int err = getChunk(chunk, file);
+			if (err != err_ok)
+				return err;
+			return err_ok;
 		}
 
-		SGHD_Chunk getSGHDChunk(CFILE& file)
+		int getSGHDChunk(SGHD_Chunk& chunk, CFILE& file)
 		{
-			SGHD_Chunk sghd_chunk = SGHD_Chunk();
-			getChunk(sghd_chunk, file);
+			int err = getChunk(chunk, file);
+			if (err != err_ok)
+				return err;
+			if (((sizeof(SDAT_Chunk) - sizeof(unsigned char*) + sizeof(DIGI_Chunk) + sizeof(HSHD_Chunk) + sizeof(SGEN_Chunk)) * chunk.num_of_songs > file.size))
+				return err_num_songs_exceeds_file_size;
 			// Read the rest of the sghd data.
-			file.cfread(utils::add(&sghd_chunk, sizeof(uaudio::wave_reader::ChunkHeader)), sghd_chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader), 1);
-			return sghd_chunk;
+			file.cfread(utils::add(&chunk, sizeof(uaudio::wave_reader::ChunkHeader)), chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader), 1);
+			return err_ok;
 		}
 
-		HSHD_Chunk getHSHDChunk(CFILE& file)
+		int getHSHDChunk(HSHD_Chunk& chunk, CFILE& file)
 		{
-			HSHD_Chunk hshd_chunk = HSHD_Chunk();
-			getChunk(hshd_chunk, file);
+			int err = getChunk(chunk, file);
+			if (err != err_ok)
+				return err;
 			// Read the rest of the hshd data.
 			file.cfread(
-				utils::add(&hshd_chunk, sizeof(uaudio::wave_reader::ChunkHeader)),
-				hshd_chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader),
+				utils::add(&chunk, sizeof(uaudio::wave_reader::ChunkHeader)),
+				chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader),
 				1
 			);
-			return hshd_chunk;
+			return err_ok;
 		}
 
-		SDAT_Chunk getSDATChunk(CFILE& file)
+		int getSDATChunk(SDAT_Chunk& chunk, CFILE& file)
 		{
-			SDAT_Chunk sdat_chunk = SDAT_Chunk();
-			getChunk(sdat_chunk, file);
+			int err = getChunk(chunk, file);
+			if (err != err_ok)
+				return err;
 			// Read the rest of the sdat data.
-			sdat_chunk.data = reinterpret_cast<unsigned char*>(malloc(sdat_chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader)));
+			chunk.data = reinterpret_cast<unsigned char*>(malloc(chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader)));
 			file.cfread(
-				sdat_chunk.data,
-				sdat_chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader),
+				chunk.data,
+				chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader),
 				1
 			);
-			return sdat_chunk;
+			return err_ok;
 		}
 
-        TALK_Chunk getTALKChunk(CFILE& file)
-        {
-			TALK_Chunk talk_chunk = TALK_Chunk();
-			getChunk(talk_chunk, file);
-			return talk_chunk;
-        }
+		int getTALKChunk(TALK_Chunk& chunk, CFILE& file)
+		{
+			int err = getChunk(chunk, file);
+			if (err != err_ok)
+				return err;
+			return err_ok;
+		}
 
-		Entry* ReadSongEntry(CFILE& file, size_t& size, bool sgen)
+		int ReadSongEntry(SongEntry* songEntry, CFILE& file, size_t& size, bool sgen)
 		{
 			// Get the digi, hsdh and sdat chunks.
-			DIGI_Chunk digi = getDIGIChunk(file);
+			DIGI_Chunk digi = DIGI_Chunk();
+			int err = getDIGIChunk(digi, file);
+			if (err != err_ok)
+				return err;
+
 			size += sizeof(digi);
-			HSHD_Chunk hshd = getHSHDChunk(file);
+
+			HSHD_Chunk hshd = HSHD_Chunk();
+			err = getHSHDChunk(hshd, file);
+			if (err != err_ok)
+				return err;
+
 			size += sizeof(hshd);
-			SDAT_Chunk sdat = getSDATChunk(file);
+
+			SDAT_Chunk sdat = SDAT_Chunk();
+			err = getSDATChunk(sdat, file);
+			if (err != err_ok)
+				return err;
+
 			size += sdat.chunkSize;
 
-			int num = entryContainer.size();
-
-			// Create an entry with the loaded data.
-			SongEntry* songEntry = new SongEntry();
 			songEntry->size = sdat.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader);
 			songEntry->sample_rate = hshd.sample_rate;
-			songEntry->data = reinterpret_cast<unsigned char*>(malloc(songEntry->size));
 			songEntry->hasSGEN = sgen;
-			memcpy(songEntry->data, sdat.data, songEntry->size);
-			return songEntry;
+			songEntry->data = reinterpret_cast<unsigned char*>(malloc(songEntry->size));
+			if (songEntry->data != nullptr)
+				memcpy(songEntry->data, sdat.data, songEntry->size);
+
+			return err_ok;
+		}
+
+		int throw_error(int error_code, CFILE& file)
+		{
+			switch (error_code)
+			{
+				case err_ok:
+				{
+					System::String^ text = "Successfully decompiled resource file (" + entryContainer.size().ToString() + " resources)";
+					MessageBox::Show(text, "Decompilation successful", MessageBoxButtons::OK, MessageBoxIcon::Information);
+					break;
+				}
+				case err_file_empty:
+				{
+					MessageBox::Show("File is empty.", "Decompilation failed", MessageBoxButtons::OK, MessageBoxIcon::Information);
+					break;
+				}
+				case err_chunk_size_exceeds_file_size:
+				{
+					System::String^ text =
+						"Chunk named \"" +
+						gcnew System::String(reinterpret_cast<char*>(lastChunk.chunk_id)) +
+						"\" has a chunk size that exceeds the total file size (" +
+						gcnew System::String(std::to_string(lastChunk.chunkSize).c_str()) +
+						">" + 
+						gcnew System::String(std::to_string(file.size).c_str()) +
+						").";
+					MessageBox::Show(text, "Decompilation failed", MessageBoxButtons::OK, MessageBoxIcon::Information);
+					break;
+				}
+				case err_num_songs_exceeds_file_size:
+				{
+					MessageBox::Show("Number of songs exceeds possible file size.", "Decompilation failed", MessageBoxButtons::OK, MessageBoxIcon::Information);
+					break;
+				}
+				case err_chunk_unrecognized:
+				{
+					System::String^ text =
+						"Chunk named \"" +
+						gcnew System::String(reinterpret_cast<char*>(lastChunk.chunk_id)) +
+						"\" is not recognized.";
+					MessageBox::Show(text, "Decompilation failed", MessageBoxButtons::OK, MessageBoxIcon::Information);
+					break;
+				}
+				case err_bad_file_start:
+				{
+					System::String^ text =
+						"Bad File Start: \"" +
+						gcnew System::String(reinterpret_cast<char*>(lastChunk.chunk_id)) +
+						"\"";
+					MessageBox::Show(text, "Decompilation failed", MessageBoxButtons::OK, MessageBoxIcon::Information);
+					break;
+				}
+			}
+			return error_code;
 		}
 
 		int decompile()
 		{
+			int err = err_ok;
+
 			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 
 			// Create a file (my own wrapper because sometimes data is encrypted).
 			CFILE cfile;
 			cfile.cfopen_s(entryContainer.filePath.c_str(), "rb");
 
+			if (cfile.size == 0)
+			{
+				err = err_file_empty;
+				return throw_error(err, cfile);
+			}
+
 			// Get the first chunk.
 			uaudio::wave_reader::ChunkHeader rootChunk;
-			getChunk(rootChunk, cfile);
 
-			// If the chunk is unknown, it might be encryped so we will unencrypt.
+			cfile.cfread(&rootChunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
+			memcpy(&lastChunk.chunk_id, &rootChunk.chunk_id, uaudio::wave_reader::CHUNK_ID_SIZE);
+			cfile.crewind();
+
+			// If the chunk is unknown, it might be encryped so we will decrypt.
 			if (utils::chunkcmp(rootChunk.chunk_id, TLKB_CHUNK_ID) != 0 && utils::chunkcmp(rootChunk.chunk_id, SONG_CHUNK_ID) != 0)
 			{
-				cfile.crewind();
-				cfile.start = utils::xorShift(cfile.start, cfile.size, 0x69);
-				getChunk(rootChunk, cfile);
-
+				// Only encrypt first 8 bytes and then compare (instead of whole file).
+				utils::xorShift(cfile.start, uaudio::wave_reader::CHUNK_ID_SIZE, 0x69);
+				cfile.cfread(&rootChunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
+				memcpy(&lastChunk.chunk_id, &rootChunk.chunk_id, uaudio::wave_reader::CHUNK_ID_SIZE);
 				// TODO: DEBUG.
 				//FILE* saveFile = nullptr;
 				//fopen_s(&saveFile, "D:/ekkes/test.(a)", "wb");
@@ -135,10 +227,20 @@ namespace HumongousFileEditor
 				// If the first chunk is still not recognized, just throw an error.
 				if (utils::chunkcmp(rootChunk.chunk_id, LECF_CHUNK_ID) != 0)
 				{
-					System::Windows::Forms::MessageBox::Show("File cannot be opened because it is not recognized as a Humongous file.", "Cannot open file", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
-					return 1;
+					err = err_bad_file_start;
+					return throw_error(err, cfile);
 				}
+
+				cfile.crewind();
+
+				// It was indeed an encrypted file. Decrypt the rest.
+				utils::xorShift(cfile.start, uaudio::wave_reader::CHUNK_ID_SIZE, 0x69);
+				utils::xorShift(cfile.start, cfile.size, 0x69);
 			}
+
+			err = getChunk(rootChunk, cfile);
+			if (err != err_ok)
+				return throw_error(err, cfile);
 
 			size_t read_bytes = sizeof(uaudio::wave_reader::ChunkHeader);
 			// As long as the file is not eof it will go on.
@@ -146,27 +248,42 @@ namespace HumongousFileEditor
 			{
 				// Get first chunk.
 				uaudio::wave_reader::ChunkHeader chunk;
-				getChunk(chunk, cfile);
+				err = getChunk(chunk, cfile);
+				if (err != err_ok)
+					return throw_error(err, cfile);
 
 				// Revert to before the chunk was set.
-				cfile.cfseek(-sizeof(uaudio::wave_reader::ChunkHeader), SEEK_CUR);
+				cfile.cfseek(-sizeof(chunk), SEEK_CUR);
 
 				// Compare it to known chunk ids.
 				if (utils::chunkcmp(chunk.chunk_id, SGHD_CHUNK_ID) == 0)
 				{
 					// Basically ignore this one.
-					SGHD_Chunk sghd = getSGHDChunk(cfile);
+					SGHD_Chunk sghd;
+					err = getSGHDChunk(sghd, cfile);
+					if (err != err_ok)
+						return throw_error(err, cfile);
+
 					read_bytes += sizeof(sghd);
 				}
 				else if (utils::chunkcmp(chunk.chunk_id, SGEN_CHUNK_ID) == 0)
 				{
 					// Basically ignore this one.
-					SGEN_Chunk sgen = getSGENChunk(cfile);
+					SGEN_Chunk sgen;
+					err = getSGENChunk(sgen, cfile);
+					if (err != err_ok)
+						return throw_error(err, cfile);
+
 					read_bytes += sizeof(sgen);
 
 					size_t after_sgen_pos = cfile.cftell();
 					cfile.cfseek(sgen.song_pos, SEEK_SET);
-					Entry* songEntry = ReadSongEntry(cfile, read_bytes, true);
+
+					SongEntry* songEntry = new SongEntry();
+					err = ReadSongEntry(songEntry, cfile, read_bytes, true);
+					if (err != err_ok)
+						return throw_error(err, cfile);
+
 					cfile.cfseek(after_sgen_pos, SEEK_SET);
 
 					entryContainer.AddEntry(songEntry);
@@ -174,30 +291,42 @@ namespace HumongousFileEditor
 				// DIGI is always a song, so we'll hardcode other chunks.
 				else if (utils::chunkcmp(chunk.chunk_id, DIGI_CHUNK_ID) == 0)
 				{
-					Entry* songEntry = ReadSongEntry(cfile, read_bytes);
+					SongEntry* songEntry = new SongEntry();
+					ReadSongEntry(songEntry, cfile, read_bytes);
+					if (err != err_ok)
+						return throw_error(err, cfile);
+
 					entryContainer.AddEntry(songEntry);
 				}
 				// Talk is always a talkie file (voice usually, but can also be sfx).
 				else if (utils::chunkcmp(chunk.chunk_id, TALK_CHUNK_ID) == 0)
 				{
 					// Get the talk and hshd chunks.
-					TALK_Chunk talk = getTALKChunk(cfile);
+					TALK_Chunk talk;
+					err = getTALKChunk(talk, cfile);
+					if (err != err_ok)
+						return throw_error(err, cfile);
+
 					read_bytes += sizeof(talk);
-					HSHD_Chunk hshd = getHSHDChunk(cfile);
+
+					HSHD_Chunk hshd;
+					err = getHSHDChunk(hshd, cfile);
+					if (err != err_ok)
+						return throw_error(err, cfile);
+
 					read_bytes += sizeof(hshd);
 
 					// Set whether it has a sbng chunk to false by default.
 					size_t sbng_size = 0;
 
+					err = getChunk(chunk, cfile);
+					if (err != err_ok)
+						return throw_error(err, cfile);
+
 					// There can be a sbng chunk before it.
-					unsigned char chunk[uaudio::wave_reader::CHUNK_ID_SIZE];
-					cfile.cfread(chunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
-					if (utils::chunkcmp(chunk, SBNG_CHUNK_ID) == 0)
+					if (utils::chunkcmp(chunk.chunk_id, SBNG_CHUNK_ID) == 0)
 					{
 						// sbng chunk has been found and will be skipped.
-						unsigned char chunk_size[sizeof(uint32_t)];
-						cfile.cfread(&chunk_size, sizeof(uint32_t), 1);
-						uint32_t sbng_size = utils::little_to_big_endian<uint32_t>(chunk_size);
 						cfile.cfseek(sbng_size - sizeof(uaudio::wave_reader::ChunkHeader), SEEK_CUR);
 						read_bytes += sbng_size;
 
@@ -205,9 +334,13 @@ namespace HumongousFileEditor
 					}
 					// Else, revert to before the chunk was loaded.
 					else
-						cfile.cfseek(-uaudio::wave_reader::CHUNK_ID_SIZE, SEEK_CUR);
+						cfile.cfseek(-sizeof(uaudio::wave_reader::ChunkHeader), SEEK_CUR);
 
-					SDAT_Chunk sdat = getSDATChunk(cfile);
+					SDAT_Chunk sdat;
+					err = getSDATChunk(sdat, cfile);
+					if (err != err_ok)
+						return throw_error(err, cfile);
+
 					read_bytes += sizeof(sdat) - sizeof(sdat.data);
 					read_bytes += sdat.chunkSize;
 
@@ -234,9 +367,6 @@ namespace HumongousFileEditor
 					form->toolProgressBar->Value = progress;
 			}
 
-			System::String^ text = "Successfully decompiled resource file (" + entryContainer.size().ToString() + " resources)";
-			MessageBox::Show(text, "Decompilation successful", MessageBoxButtons::OK, MessageBoxIcon::Information);
-
 			notes::noteContainer.LoadNotes(entryContainer.filePath);
 
 			// Add all loaded entries to the node container.
@@ -249,10 +379,12 @@ namespace HumongousFileEditor
 				node = (gcnew HumongousNode);
 				node->Name = text;
 				node->num = i;
-				node->Text = node->Name + gcnew System::String(" (") + notes::noteContainer.GetNote(node->num) + gcnew System::String(")");
+				node->Text = node->Name;
+				if (notes::noteContainer.GetNote(node->num) != nullptr)
+					node->Text += gcnew System::String(" (") + notes::noteContainer.GetNote(node->num) + gcnew System::String(")");
 				form->entryView->Nodes->Add(node);
 			}
-			return 0;
+			return throw_error(err, cfile);
 		}
 	}
 }
