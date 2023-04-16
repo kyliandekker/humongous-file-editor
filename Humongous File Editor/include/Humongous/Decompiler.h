@@ -30,6 +30,7 @@ namespace HumongousFileEditor
 		err_num_songs_exceeds_file_size,
 		err_chunk_unrecognized,
 		err_bad_file_start,
+		err_chunk_name_missmatch
 	};
 
 	namespace decompiler

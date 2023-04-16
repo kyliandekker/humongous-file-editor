@@ -44,7 +44,7 @@ namespace HumongousFileEditor
 			std::vector<TalkieEntry*> talkies;
 			for (size_t i = 0; i < entryContainer.size(); i++)
 			{
-				if (entryContainer[i]->fileType == EntryType::EntryType_Talkie)
+				if (entryContainer[i]->entryType == EntryType::EntryType_Talkie)
 				{
 					TalkieEntry* song = static_cast<TalkieEntry*>(entryContainer[i]);
 					talkies.push_back(song);
@@ -145,7 +145,7 @@ namespace HumongousFileEditor
 			std::vector<SongEntry*> songs;
 			for (size_t i = 0; i < entryContainer.size(); i++)
 			{
-				if (entryContainer[i]->fileType == EntryType::EntryType_Song)
+				if (entryContainer[i]->entryType == EntryType::EntryType_Song)
 				{
 					SongEntry* song = static_cast<SongEntry*>(entryContainer[i]);
 					if (song->hasSGEN)

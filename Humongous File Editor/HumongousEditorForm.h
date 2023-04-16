@@ -794,12 +794,13 @@ namespace HumongousFileEditor
 			actionPanel->Size = System::Drawing::Size(418, 87);
 			actionPanel->TabIndex = 1;
 
-			std::string type = EntryTypeToString(entry->fileType);
+			std::string type = EntryTypeToString(entry->entryType);
 
 			float posX = 35, posY = 35;
 			AddInfoRow("Name", node->Text, newTab, posX, posY);
 			AddInfoRow("Type", gcnew System::String(type.c_str()), newTab, posX, posY);
-			switch (entry->fileType)
+			AddInfoRow("Pos", gcnew System::String(std::to_string(entry->pos).c_str()), newTab, posX, posY);
+			switch (entry->entryType)
 			{
 				case EntryType::EntryType_Song:
 				{

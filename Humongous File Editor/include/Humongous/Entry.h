@@ -8,7 +8,8 @@ namespace HumongousFileEditor
 	class Entry
 	{
 	public:
-		EntryType fileType;
+		EntryType entryType;
+		uint32_t pos = 0;
 		uint32_t num = 0;
 
 		virtual ~Entry()
@@ -57,7 +58,7 @@ namespace HumongousFileEditor
 	public:
 		SongEntry() : Entry()
 		{
-			fileType = EntryType::EntryType_Song;
+			entryType = EntryType::EntryType_Song;
 		}
 		virtual ~SongEntry() override
 		{
@@ -106,7 +107,7 @@ namespace HumongousFileEditor
 	public:
 		TalkieEntry() : SongEntry()
 		{
-			fileType = EntryType::EntryType_Talkie;
+			entryType = EntryType::EntryType_Talkie;
 		}
 
 		size_t sbng_size = 0;

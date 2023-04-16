@@ -99,5 +99,27 @@ namespace HumongousFileEditor
 	};
 
 	constexpr auto LECF_CHUNK_ID = "LECF";
+	struct LECF_Chunk : uaudio::wave_reader::ChunkHeader
+	{
+		LECF_Chunk() = default;
+	};
+
+	constexpr auto LFLF_CHUNK_ID = "LFLF";
+	struct LFLF_Chunk : uaudio::wave_reader::ChunkHeader
+	{
+		LFLF_Chunk() = default;
+	};
+
+	constexpr auto RMIM_CHUNK_ID = "RMIM";
+	struct RMIM_Chunk : uaudio::wave_reader::ChunkHeader
+	{
+		RMIM_Chunk() = default;
+	};
+
+	constexpr auto RMIH_CHUNK_ID = "RMIH";
+	struct RMIH_CHUNK : uaudio::wave_reader::ChunkHeader
+	{
+		RMIH_CHUNK() = default;
+	};
 #pragma pack(pop)
 }

@@ -16,6 +16,7 @@ namespace HumongousFileEditor
 	namespace decompiler
 	{
 		uaudio::wave_reader::ChunkHeader lastChunk = uaudio::wave_reader::ChunkHeader();
+		std::string extraData;
 
 		int getChunk(uaudio::wave_reader::ChunkHeader& chunk, CFILE& file)
 		{
@@ -100,11 +101,18 @@ namespace HumongousFileEditor
 
 		int ReadSongEntry(SongEntry* songEntry, CFILE& file, size_t& size, bool sgen)
 		{
+			uint32_t pos = file.cftell();
+
 			// Get the digi, hsdh and sdat chunks.
 			DIGI_Chunk digi = DIGI_Chunk();
 			int err = getDIGIChunk(digi, file);
 			if (err != err_ok)
 				return err;
+			if (utils::chunkcmp(digi.chunk_id, DIGI_CHUNK_ID) != 0)
+			{
+				extraData = std::string(DIGI_CHUNK_ID);
+				return err_chunk_name_missmatch;
+			}
 
 			size += sizeof(digi);
 
@@ -112,6 +120,11 @@ namespace HumongousFileEditor
 			err = getHSHDChunk(hshd, file);
 			if (err != err_ok)
 				return err;
+			if (utils::chunkcmp(hshd.chunk_id, HSHD_CHUNK_ID) != 0)
+			{
+				extraData = std::string(HSHD_CHUNK_ID);
+				return err_chunk_name_missmatch;
+			}
 
 			size += sizeof(hshd);
 
@@ -119,10 +132,16 @@ namespace HumongousFileEditor
 			err = getSDATChunk(sdat, file);
 			if (err != err_ok)
 				return err;
+			if (utils::chunkcmp(sdat.chunk_id, SDAT_CHUNK_ID) != 0)
+			{
+				extraData = std::string(SDAT_CHUNK_ID);
+				return err_chunk_name_missmatch;
+			}
 
 			size += sdat.chunkSize;
 
 			songEntry->size = sdat.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader);
+			songEntry->pos = pos;
 			songEntry->sample_rate = hshd.sample_rate;
 			songEntry->hasSGEN = sgen;
 			songEntry->data = reinterpret_cast<unsigned char*>(malloc(songEntry->size));
@@ -179,6 +198,17 @@ namespace HumongousFileEditor
 					System::String^ text =
 						"Bad File Start: \"" +
 						gcnew System::String(reinterpret_cast<char*>(lastChunk.chunk_id)) +
+						"\"";
+					MessageBox::Show(text, "Decompilation failed", MessageBoxButtons::OK, MessageBoxIcon::Information);
+					break;
+				}
+				case err_chunk_name_missmatch:
+				{
+					System::String^ text =
+						"Chunk missmatch: \"" +
+						gcnew System::String(reinterpret_cast<char*>(lastChunk.chunk_id)) +
+						"\" \"" +
+						gcnew System::String(extraData.c_str()) + 
 						"\"";
 					MessageBox::Show(text, "Decompilation failed", MessageBoxButtons::OK, MessageBoxIcon::Information);
 					break;
@@ -301,11 +331,21 @@ namespace HumongousFileEditor
 				// Talk is always a talkie file (voice usually, but can also be sfx).
 				else if (utils::chunkcmp(chunk.chunk_id, TALK_CHUNK_ID) == 0)
 				{
+					uint32_t pos = cfile.cftell();
+					if (pos == 39650130)
+					{
+						printf("test\n");
+					}
 					// Get the talk and hshd chunks.
 					TALK_Chunk talk;
 					err = getTALKChunk(talk, cfile);
 					if (err != err_ok)
 						return throw_error(err, cfile);
+					if (utils::chunkcmp(talk.chunk_id, TALK_CHUNK_ID) != 0)
+					{
+						extraData = std::string(TALK_CHUNK_ID);
+						return throw_error(err_chunk_name_missmatch, cfile);
+					}
 
 					read_bytes += sizeof(talk);
 
@@ -313,6 +353,11 @@ namespace HumongousFileEditor
 					err = getHSHDChunk(hshd, cfile);
 					if (err != err_ok)
 						return throw_error(err, cfile);
+					if (utils::chunkcmp(hshd.chunk_id, HSHD_CHUNK_ID) != 0)
+					{
+						extraData = std::string(HSHD_CHUNK_ID);
+						return throw_error(err_chunk_name_missmatch, cfile);
+					}
 
 					read_bytes += sizeof(hshd);
 
@@ -326,6 +371,8 @@ namespace HumongousFileEditor
 					// There can be a sbng chunk before it.
 					if (utils::chunkcmp(chunk.chunk_id, SBNG_CHUNK_ID) == 0)
 					{
+						sbng_size = chunk.chunkSize;
+
 						// sbng chunk has been found and will be skipped.
 						cfile.cfseek(sbng_size - sizeof(uaudio::wave_reader::ChunkHeader), SEEK_CUR);
 						read_bytes += sbng_size;
@@ -340,11 +387,17 @@ namespace HumongousFileEditor
 					err = getSDATChunk(sdat, cfile);
 					if (err != err_ok)
 						return throw_error(err, cfile);
+					if (utils::chunkcmp(sdat.chunk_id, SDAT_CHUNK_ID) != 0)
+					{
+						extraData = std::string(SDAT_CHUNK_ID);
+						return throw_error(err_chunk_name_missmatch, cfile);
+					}
 
 					read_bytes += sizeof(sdat) - sizeof(sdat.data);
 					read_bytes += sdat.chunkSize;
 
 					TalkieEntry* talkieEntry = new TalkieEntry();
+					talkieEntry->pos = pos;
 					talkieEntry->size = sdat.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader);
 					talkieEntry->sample_rate = hshd.sample_rate;
 					talkieEntry->data = reinterpret_cast<unsigned char*>(malloc(talkieEntry->size));
