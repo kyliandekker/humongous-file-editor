@@ -23,7 +23,7 @@ namespace HumongousFileEditor
 			// Store the chunk size so that it can be reversed (from little to big endian).
 			unsigned char chunk_size[sizeof(uint32_t)];
 			// Read the chunk id first.
-			file.cfread(&chunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
+			file.cfread(&chunk.chunk_id, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
 			file.cfread(&chunk_size, sizeof(uint32_t), 1);
 			chunk.chunkSize = utils::little_to_big_endian<uint32_t>(chunk_size);
 			memcpy(&lastChunk, &chunk, sizeof(uaudio::wave_reader::ChunkHeader));
@@ -55,10 +55,10 @@ namespace HumongousFileEditor
 			int err = getChunk(chunk, file);
 			if (err != err_ok)
 				return err;
-			if (((sizeof(SDAT_Chunk) - sizeof(unsigned char*) + sizeof(DIGI_Chunk) + sizeof(HSHD_Chunk) + sizeof(SGEN_Chunk)) * chunk.num_of_songs > file.size))
-				return err_num_songs_exceeds_file_size;
 			// Read the rest of the sghd data.
 			file.cfread(utils::add(&chunk, sizeof(uaudio::wave_reader::ChunkHeader)), chunk.chunkSize - sizeof(uaudio::wave_reader::ChunkHeader), 1);
+			if (((sizeof(SDAT_Chunk) - sizeof(unsigned char*) + sizeof(DIGI_Chunk) + sizeof(HSHD_Chunk) + sizeof(SGEN_Chunk)) * chunk.num_of_songs > file.size))
+				return err_num_songs_exceeds_file_size;
 			return err_ok;
 		}
 
@@ -236,7 +236,7 @@ namespace HumongousFileEditor
 			// Get the first chunk.
 			uaudio::wave_reader::ChunkHeader rootChunk;
 
-			cfile.cfread(&rootChunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
+			cfile.cfread(&rootChunk.chunk_id, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
 			memcpy(&lastChunk.chunk_id, &rootChunk.chunk_id, uaudio::wave_reader::CHUNK_ID_SIZE);
 			cfile.crewind();
 
@@ -332,10 +332,6 @@ namespace HumongousFileEditor
 				else if (utils::chunkcmp(chunk.chunk_id, TALK_CHUNK_ID) == 0)
 				{
 					uint32_t pos = cfile.cftell();
-					if (pos == 39650130)
-					{
-						printf("test\n");
-					}
 					// Get the talk and hshd chunks.
 					TALK_Chunk talk;
 					err = getTALKChunk(talk, cfile);

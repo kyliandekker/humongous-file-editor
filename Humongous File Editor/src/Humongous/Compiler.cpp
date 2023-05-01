@@ -14,6 +14,12 @@ namespace HumongousFileEditor
 {
 	namespace compiler
 	{
+		uint32_t getChunksize(uint32_t data)
+		{
+			utils::reverseBytes(reinterpret_cast<unsigned char*>(data), sizeof(uint32_t));
+			return data;
+		}
+
 		// TODO: This works, but the (a) and HE0 file still reference positions from the old file.
 		/*
 			* So there is a special order here that matters for the TALKIE file.
@@ -242,9 +248,11 @@ namespace HumongousFileEditor
 					sizeof(HSHD_Chunk) +
 					(sizeof(SDAT_Chunk) - sizeof(unsigned char*)) + 
 					songs[i]->size;
-				memcpy(&chunk_size, &digi_chunk.chunkSize, sizeof(uint32_t));
-				utils::reverseBytes(chunk_size, sizeof(uint32_t));
-				fwrite(chunk_size, sizeof(uint32_t), 1, file);
+				//memcpy(&chunk_size, &digi_chunk.chunkSize, sizeof(uint32_t));
+				//utils::reverseBytes(chunk_size, sizeof(uint32_t));
+				//fwrite(chunk_size, sizeof(uint32_t), 1, file);
+				digi_chunk.chunkSize = getChunksize(digi_chunk.chunkSize);
+				fwrite(&digi_chunk.chunkSize, sizeof(uint32_t), 1, file);
 
 				HSHD_Chunk hshd_chunk;
 				memcpy(&hshd_chunk.chunk_id, HSHD_CHUNK_ID, uaudio::wave_reader::CHUNK_ID_SIZE);
