@@ -20,6 +20,44 @@ namespace HumongousFileEditor
 			return data;
 		}
 
+
+		int crypt(std::string path)
+		{
+			FILE* rfile = nullptr;
+
+			// Open the file.
+			fopen_s(&rfile, path.c_str(), "rb");
+			if (rfile == nullptr)
+			{
+				System::Windows::Forms::MessageBox::Show("Cannot open file.", "Opening file failed", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+				return 1;
+			}
+
+			fseek(rfile, 0, SEEK_END);
+			int size = ftell(rfile);
+			rewind(rfile);
+
+			unsigned char* data = reinterpret_cast<unsigned char*>(malloc(size));
+			fread(data, size, 1, rfile);
+
+			fclose(rfile);
+
+			utils::xorShift(data, size, 0x69);
+
+			FILE* file = nullptr;
+
+			// Open the file.
+			fopen_s(&file, path.c_str(), "wb");
+			if (file == nullptr)
+			{
+				System::Windows::Forms::MessageBox::Show("Cannot open file.", "Saving Decryption failed", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+				return 1;
+			}
+
+			fwrite(data, size, 1, file);
+			fclose(file);
+		}
+
 		// TODO: This works, but the (a) and HE0 file still reference positions from the old file.
 		/*
 			* So there is a special order here that matters for the TALKIE file.
@@ -103,7 +141,7 @@ namespace HumongousFileEditor
 					SBNG_Chunk sbng_chunk;
 					memcpy(sbng_chunk.chunk_id, SBNG_CHUNK_ID, uaudio::wave_reader::CHUNK_ID_SIZE);
 					fwrite(&sbng_chunk.chunk_id, uaudio::wave_reader::CHUNK_ID_SIZE, 1, file);
-					sbng_chunk.chunkSize = talkies[i]->sbng_size;
+					sbng_chunk.chunkSize = talkies[i]->sbng_size + sizeof(uaudio::wave_reader::ChunkHeader);
 					memcpy(&chunk_size, &sbng_chunk.chunkSize, sizeof(uint32_t));
 					utils::reverseBytes(chunk_size, sizeof(uint32_t));
 					fwrite(chunk_size, sizeof(uint32_t), 1, file);

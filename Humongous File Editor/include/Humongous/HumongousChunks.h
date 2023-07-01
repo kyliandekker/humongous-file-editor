@@ -78,14 +78,7 @@ namespace HumongousFileEditor
 			0,
 			0
 		};
-		unsigned char unknown6[2] = {
-			0,
-			0
-		};
-		unsigned char unknown7[2] = {
-			0,
-			0
-		};
+		uint32_t unknown6 = 6747836;
 	};
 
 	constexpr auto SDAT_CHUNK_ID = "SDAT";

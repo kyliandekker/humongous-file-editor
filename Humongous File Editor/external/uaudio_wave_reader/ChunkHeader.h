@@ -28,11 +28,6 @@ namespace uaudio
 				memcpy(chunk_id, a_DataBuffer->chunk_id, CHUNK_ID_SIZE);
 				chunkSize = a_DataBuffer->chunkSize;
 			}
-			ChunkHeader(const ChunkHeader& rhs)
-			{
-				memcpy(&chunk_id, &rhs.chunk_id, uaudio::wave_reader::CHUNK_ID_SIZE);
-				chunkSize = rhs.chunkSize;
-			}
 
 			unsigned char chunk_id[wave_reader::CHUNK_ID_SIZE] = {};
 			uint32_t chunkSize = 0;

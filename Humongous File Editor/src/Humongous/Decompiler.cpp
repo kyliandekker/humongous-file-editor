@@ -247,25 +247,26 @@ namespace HumongousFileEditor
 				utils::xorShift(cfile.start, uaudio::wave_reader::CHUNK_ID_SIZE, 0x69);
 				cfile.cfread(&rootChunk, uaudio::wave_reader::CHUNK_ID_SIZE, 1);
 				memcpy(&lastChunk.chunk_id, &rootChunk.chunk_id, uaudio::wave_reader::CHUNK_ID_SIZE);
-				// TODO: DEBUG.
-				//FILE* saveFile = nullptr;
-				//fopen_s(&saveFile, "D:/ekkes/test.(a)", "wb");
-
-				//fwrite(cfile.start, cfile.size, 1, saveFile);
-				//fclose(saveFile);
 
 				// If the first chunk is still not recognized, just throw an error.
-				if (utils::chunkcmp(rootChunk.chunk_id, LECF_CHUNK_ID) != 0)
-				{
-					err = err_bad_file_start;
-					return throw_error(err, cfile);
-				}
+				//if (utils::chunkcmp(rootChunk.chunk_id, LECF_CHUNK_ID) != 0)
+				//{
+				//	err = err_bad_file_start;
+				//	return throw_error(err, cfile);
+				//}
 
 				cfile.crewind();
 
 				// It was indeed an encrypted file. Decrypt the rest.
 				utils::xorShift(cfile.start, uaudio::wave_reader::CHUNK_ID_SIZE, 0x69);
 				utils::xorShift(cfile.start, cfile.size, 0x69);
+
+				// TODO: DEBUG.
+				FILE* saveFile = nullptr;
+				fopen_s(&saveFile, "D:/ekkes/test.(a)", "wb");
+
+				fwrite(cfile.start, cfile.size, 1, saveFile);
+				fclose(saveFile);
 			}
 
 			err = getChunk(rootChunk, cfile);

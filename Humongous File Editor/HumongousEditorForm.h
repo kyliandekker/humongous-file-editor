@@ -13,6 +13,7 @@
 #include "Humongous/FileType.h"
 #include "DesignerExtras.h"
 #include <InputForm.h>
+#include <CFILE.h>
 
 namespace HumongousFileEditor
 {
@@ -67,6 +68,10 @@ namespace HumongousFileEditor
 
 
 		System::String^ windowTitle = gcnew System::String("Humongous File Editor");
+    private: System::Windows::Forms::Button^ button1;
+	private: System::Windows::Forms::Button^ button2;
+
+
 	public:
 		System::Windows::Forms::TabControl^ tabControl1;
 	protected:
@@ -97,6 +102,7 @@ namespace HumongousFileEditor
 			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(HumongousEditorForm::typeid));
 			this->splitContainer = (gcnew System::Windows::Forms::SplitContainer());
 			this->treeActionPanel = (gcnew System::Windows::Forms::Panel());
+			this->button1 = (gcnew System::Windows::Forms::Button());
 			this->exportSelected = (gcnew System::Windows::Forms::Button());
 			this->unselectAll = (gcnew System::Windows::Forms::Button());
 			this->selectAllButton = (gcnew System::Windows::Forms::Button());
@@ -118,6 +124,7 @@ namespace HumongousFileEditor
 			this->toolProgressBar = (gcnew System::Windows::Forms::ToolStripProgressBar());
 			this->openButton = (gcnew System::Windows::Forms::Button());
 			this->panel1 = (gcnew System::Windows::Forms::Panel());
+			this->button2 = (gcnew System::Windows::Forms::Button());
 			this->panel3 = (gcnew System::Windows::Forms::Panel());
 			this->saveAsButton = (gcnew System::Windows::Forms::Button());
 			this->panel2 = (gcnew System::Windows::Forms::Panel());
@@ -163,6 +170,7 @@ namespace HumongousFileEditor
 			// 
 			// treeActionPanel
 			// 
+			this->treeActionPanel->Controls->Add(this->button1);
 			this->treeActionPanel->Controls->Add(this->exportSelected);
 			this->treeActionPanel->Controls->Add(this->unselectAll);
 			this->treeActionPanel->Controls->Add(this->selectAllButton);
@@ -171,6 +179,16 @@ namespace HumongousFileEditor
 			this->treeActionPanel->Name = L"treeActionPanel";
 			this->treeActionPanel->Size = System::Drawing::Size(516, 29);
 			this->treeActionPanel->TabIndex = 1;
+			// 
+			// button1
+			// 
+			this->button1->Location = System::Drawing::Point(273, 3);
+			this->button1->Name = L"button1";
+			this->button1->Size = System::Drawing::Size(115, 23);
+			this->button1->TabIndex = 3;
+			this->button1->Text = L"Find Position";
+			this->button1->UseVisualStyleBackColor = true;
+			this->button1->Click += gcnew System::EventHandler(this, &HumongousEditorForm::button1_Click);
 			// 
 			// exportSelected
 			// 
@@ -368,6 +386,7 @@ namespace HumongousFileEditor
 			// panel1
 			// 
 			this->panel1->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
+			this->panel1->Controls->Add(this->button2);
 			this->panel1->Controls->Add(this->panel3);
 			this->panel1->Controls->Add(this->saveAsButton);
 			this->panel1->Controls->Add(this->panel2);
@@ -380,6 +399,20 @@ namespace HumongousFileEditor
 			this->panel1->Padding = System::Windows::Forms::Padding(10);
 			this->panel1->Size = System::Drawing::Size(943, 44);
 			this->panel1->TabIndex = 4;
+			// 
+			// button2
+			// 
+			this->button2->BackColor = System::Drawing::Color::Transparent;
+			this->button2->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"button2.BackgroundImage")));
+			this->button2->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+			this->button2->FlatAppearance->BorderSize = 0;
+			this->button2->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->button2->Location = System::Drawing::Point(203, 2);
+			this->button2->Name = L"button2";
+			this->button2->Size = System::Drawing::Size(40, 40);
+			this->button2->TabIndex = 10;
+			this->button2->UseVisualStyleBackColor = false;
+			this->button2->Click += gcnew System::EventHandler(this, &HumongousEditorForm::button2_Click);
 			// 
 			// panel3
 			// 
@@ -946,5 +979,75 @@ namespace HumongousFileEditor
 				entries[i]->Save(path);
 			}
 		}
-	};
+		private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e)
+		{
+			InputForm^ form = gcnew InputForm();
+			System::Windows::Forms::DialogResult dialogResult = form->ShowDialog();
+			if (dialogResult == System::Windows::Forms::DialogResult::OK)
+			{
+				System::String^ value = form->textBox1->Text;
+
+				size_t pos = System::Int64::Parse(value);
+
+				Entry* entry = entryContainer.FindByPos(pos);
+
+				if (entry == nullptr)
+					return;
+
+				HumongousNode^ node = nullptr;
+				for (size_t i = 0; i < this->entryView->Nodes->Count; i++)
+				{
+					HumongousNode^ n = static_cast<HumongousNode^>(this->entryView->Nodes[i]);
+					if (n->num == entry->num)
+						node = n;
+				}
+
+				if (node == nullptr)
+					return;
+
+				if (!tabControl1->Controls->ContainsKey(node->Name))
+					AddTab(node, entryContainer[node->num]);
+				tabControl1->SelectedIndex = tabControl1->Controls->IndexOfKey(node->Name);
+			}
+		}
+		private: System::Void button2_Click(System::Object^ sender, System::EventArgs^ e)
+		{
+			OPENFILENAME ofn;
+			TCHAR sz_file[260] = { 0 };
+
+			ZeroMemory(&ofn, sizeof(ofn));
+			ofn.lStructSize = sizeof(ofn);
+			ofn.lpstrFile = sz_file;
+			ofn.nMaxFile = sizeof(sz_file);
+
+			ofn.lpstrFilter = getFilter();
+			ofn.nFilterIndex = 1;
+			ofn.lpstrFileTitle = nullptr;
+			ofn.nMaxFileTitle = 0;
+			ofn.lpstrInitialDir = nullptr;
+			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+			if (GetOpenFileNameW(&ofn))
+			{
+				const auto path = new char[wcslen(ofn.lpstrFile) + 1];
+				wsprintfA(path, "%S", ofn.lpstrFile);
+
+				std::string pathString = std::string(path);
+				std::string extension = pathString.substr(pathString.find_last_of(".") + 1);
+
+				// Set the title of the window.
+				System::String^ title = windowTitle + gcnew System::String(" - [") + gcnew System::String(pathString.c_str()) + gcnew System::String("]");
+				this->Text = title;
+
+				// Clear all previously loaded nodes.
+				this->entryView->Nodes->Clear();
+				for (size_t i = this->tabControl1->TabPages->Count - 1; i > 0; i--)
+					this->tabControl1->TabPages->RemoveAt(i);
+
+				entryContainer.Crypt(path);
+
+				delete[] path;
+			}
+		}
+};
 }

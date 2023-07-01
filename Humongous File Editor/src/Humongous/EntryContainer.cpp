@@ -33,6 +33,15 @@ namespace HumongousFileEditor
 		fileType = getFileTypeByExtension(path);
 	}
 
+    Entry* EntryContainer::FindByPos(size_t pos)
+    {
+		for (size_t i = 0; i < entries.size(); i++)
+			if (entries[i]->pos == pos)
+				return entries[i];
+
+		return nullptr;
+    }
+
 	void EntryContainer::Decompile(std::string path)
 	{
 		Clear();
@@ -44,6 +53,11 @@ namespace HumongousFileEditor
 	void EntryContainer::Compile(std::string path)
 	{
 		compiler::compile(path);
+	}
+
+	void EntryContainer::Crypt(std::string path)
+	{
+		compiler::crypt(path);
 	}
 
 	size_t EntryContainer::size() const
