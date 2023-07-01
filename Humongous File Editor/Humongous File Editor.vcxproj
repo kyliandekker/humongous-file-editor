@@ -45,7 +45,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -135,45 +135,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ExTabsControl.cpp" />
-    <ClCompile Include="HumongousEditorForm.cpp" />
-    <ClCompile Include="InputForm.cpp" />
-    <ClCompile Include="src\CFILE.cpp" />
-    <ClCompile Include="src\Humongous\Compiler.cpp" />
-    <ClCompile Include="src\Humongous\Decompiler.cpp" />
-    <ClCompile Include="src\Humongous\Entry.cpp" />
-    <ClCompile Include="src\Humongous\EntryContainer.cpp" />
-    <ClCompile Include="src\Humongous\HumongousChunks.cpp" />
-    <ClCompile Include="src\Humongous\Notes\NoteChunks.cpp" />
-    <ClCompile Include="src\Humongous\Notes\NoteContainer.cpp" />
-    <ClCompile Include="src\Systems\AudioSystem.cpp" />
-    <ClCompile Include="src\utils\utils.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ExTabsControl.h">
-      <FileType>CppControl</FileType>
-    </ClInclude>
     <ClInclude Include="HumongousEditorForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="include\CFILE.h" />
-    <ClInclude Include="include\delegate.h" />
-    <ClInclude Include="include\DesignerExtras.h" />
-    <ClInclude Include="include\Humongous\Compiler.h" />
-    <ClInclude Include="include\Humongous\Decompiler.h" />
-    <ClInclude Include="include\Humongous\Entry.h" />
-    <ClInclude Include="include\Humongous\EntryContainer.h" />
-    <ClInclude Include="include\Humongous\EntryType.h" />
-    <ClInclude Include="include\Humongous\FileType.h" />
-    <ClInclude Include="include\Humongous\HumongousChunks.h" />
-    <ClInclude Include="include\Humongous\Notes\Note.h" />
-    <ClInclude Include="include\Humongous\Notes\NoteChunks.h" />
-    <ClInclude Include="include\Humongous\Notes\NoteContainer.h" />
-    <ClInclude Include="include\Systems\AudioSystem.h" />
-    <ClInclude Include="include\utils\utils.h" />
-    <ClInclude Include="InputForm.h">
-      <FileType>CppForm</FileType>
-    </ClInclude>
+    <ClInclude Include="include\lowlevel\Defines.h" />
+    <ClInclude Include="include\lowlevel\HumongousChunkCollection.h" />
+    <ClInclude Include="include\lowlevel\HumongousChunks.h" />
+    <ClInclude Include="include\lowlevel\HumongousHeader.h" />
+    <ClInclude Include="include\lowlevel\utils.h" />
+    <ClInclude Include="include\Temp.h" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">
@@ -182,9 +152,14 @@
       <LogicalName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
       <LogicalName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="InputForm.resx">
-      <DependentUpon>InputForm.h</DependentUpon>
-    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="include\Temp.cpp" />
+    <ClCompile Include="src\lowlevel\HumongousChunks.cpp" />
+    <ClCompile Include="src\lowlevel\HumongousHeader.cpp" />
+    <ClCompile Include="src\HumongousEditorForm.cpp" />
+    <ClCompile Include="src\lowlevel\HumongousChunkCollection.cpp" />
+    <ClCompile Include="src\lowlevel\utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

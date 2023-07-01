@@ -69,7 +69,7 @@ namespace uaudio
 			{
 				if (a_DataBuffer != nullptr)
 				{
-					memmove(format, a_DataBuffer->format, sizeof(format));
+					memcpy(format, a_DataBuffer->format, sizeof(format));
 				}
 			}
 			unsigned char format[CHUNK_ID_SIZE] = {};
@@ -354,21 +354,21 @@ namespace uaudio
 			{
 				if (a_DataBuffer != nullptr)
 				{
-					memmove(description, a_DataBuffer->description, sizeof(description));
-					memmove(originator, a_DataBuffer->originator, sizeof(originator));
-					memmove(originator_reference, a_DataBuffer->originator_reference, sizeof(originator_reference));
-					memmove(origination_date, a_DataBuffer->origination_date, sizeof(origination_date));
-					memmove(origination_time, a_DataBuffer->origination_time, sizeof(origination_time));
+					memcpy(description, a_DataBuffer->description, sizeof(description));
+					memcpy(originator, a_DataBuffer->originator, sizeof(originator));
+					memcpy(originator_reference, a_DataBuffer->originator_reference, sizeof(originator_reference));
+					memcpy(origination_date, a_DataBuffer->origination_date, sizeof(origination_date));
+					memcpy(origination_time, a_DataBuffer->origination_time, sizeof(origination_time));
 					time_reference_low = a_DataBuffer->time_reference_low;
 					time_reference_high = a_DataBuffer->time_reference_high;
 					version = a_DataBuffer->version;
-					memmove(umid, a_DataBuffer->umid, sizeof(umid));
+					memcpy(umid, a_DataBuffer->umid, sizeof(umid));
 					loudness_value = a_DataBuffer->loudness_value;
 					loudness_range = a_DataBuffer->loudness_range;
 					max_true_peak_level = a_DataBuffer->max_true_peak_level;
 					max_momentary_loudness = a_DataBuffer->max_momentary_loudness;
 					max_short_term_loudness = a_DataBuffer->max_short_term_loudness;
-					memmove(reserved, a_DataBuffer->reserved, sizeof(reserved));
+					memcpy(reserved, a_DataBuffer->reserved, sizeof(reserved));
 				}
 			}
 			char description[256] = {};
