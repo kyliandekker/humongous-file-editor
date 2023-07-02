@@ -7,13 +7,13 @@ namespace HumongousFileEditor
 {
 	namespace chunk_reader
 	{
-        HumongousHeader::HumongousHeader(const HumongousHeader& rhs)
-        {
+		HumongousHeader::HumongousHeader(const HumongousHeader& rhs)
+		{
 			memcpy(chunk_id, rhs.chunk_id, CHUNK_ID_SIZE);
 			memcpy(chunkSize, rhs.chunkSize, sizeof(uint32_t));
-        }
+		}
 
-        HumongousHeader::HumongousHeader(HumongousHeader* a_DataBuffer)
+		HumongousHeader::HumongousHeader(HumongousHeader* a_DataBuffer)
 		{
 			memcpy(chunk_id, a_DataBuffer->chunk_id, CHUNK_ID_SIZE);
 			memcpy(chunkSize, a_DataBuffer->chunkSize, sizeof(uint32_t));

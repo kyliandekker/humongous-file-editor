@@ -21,22 +21,22 @@
     <ClInclude Include="HumongousEditorForm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\lowlevel\HumongousHeader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\lowlevel\utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\lowlevel\Defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\lowlevel\HumongousChunkCollection.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\lowlevel\HumongousChunks.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\Temp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\lowlevel\Node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\lowlevel\FileContainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\lowlevel\HumongousHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -52,16 +52,16 @@
     <ClCompile Include="src\lowlevel\utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\lowlevel\HumongousChunkCollection.cpp">
+    <ClCompile Include="include\Temp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="INCLUDE\LOWLEVEL\Node.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lowlevel\FileContainer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\lowlevel\HumongousHeader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\lowlevel\HumongousChunks.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="include\Temp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

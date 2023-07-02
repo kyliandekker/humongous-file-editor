@@ -139,9 +139,9 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="include\lowlevel\Defines.h" />
-    <ClInclude Include="include\lowlevel\HumongousChunkCollection.h" />
-    <ClInclude Include="include\lowlevel\HumongousChunks.h" />
+    <ClInclude Include="include\lowlevel\FileContainer.h" />
     <ClInclude Include="include\lowlevel\HumongousHeader.h" />
+    <ClInclude Include="include\lowlevel\Node.h" />
     <ClInclude Include="include\lowlevel\utils.h" />
     <ClInclude Include="include\Temp.h" />
   </ItemGroup>
@@ -154,11 +154,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\Temp.cpp" />
-    <ClCompile Include="src\lowlevel\HumongousChunks.cpp" />
     <ClCompile Include="src\lowlevel\HumongousHeader.cpp" />
+    <ClCompile Include="src\lowlevel\FileContainer.cpp" />
+    <ClCompile Include="INCLUDE\LOWLEVEL\Node.cpp" />
+    <ClCompile Include="include\Temp.cpp" />
     <ClCompile Include="src\HumongousEditorForm.cpp" />
-    <ClCompile Include="src\lowlevel\HumongousChunkCollection.cpp" />
     <ClCompile Include="src\lowlevel\utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
