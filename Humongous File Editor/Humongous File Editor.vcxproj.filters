@@ -21,22 +21,34 @@
     <ClInclude Include="HumongousEditorForm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\lowlevel\utils.h">
+    <ClInclude Include="include\Temp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\forms\HumongousButton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\forms\HumongousNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\forms\HumongousToolStripMenuItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\lowlevel\Defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Temp.h">
+    <ClInclude Include="include\lowlevel\FileContainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\lowlevel\HumongousChunks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\lowlevel\HumongousHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\lowlevel\Node.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\lowlevel\FileContainer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\lowlevel\HumongousHeader.h">
+    <ClInclude Include="include\lowlevel\utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -49,9 +61,6 @@
     <ClCompile Include="src\HumongousEditorForm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\lowlevel\utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="include\Temp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -61,7 +70,13 @@
     <ClCompile Include="src\lowlevel\FileContainer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\lowlevel\HumongousChunks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\lowlevel\HumongousHeader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lowlevel\utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

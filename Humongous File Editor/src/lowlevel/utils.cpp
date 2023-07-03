@@ -15,7 +15,8 @@ namespace HumongousFileEditor
 
 		int chunkcmp(unsigned char* chunkID1, const char* chunkID2)
 		{
-			return strncmp(reinterpret_cast<const char*>(chunkID1), chunkID2, CHUNK_ID_SIZE);
+			int b = strncmp(reinterpret_cast<const char*>(chunkID1), chunkID2, CHUNK_ID_SIZE);
+			return b;
 		}
 
 		void reverseBytes(unsigned char* start, int size)

@@ -138,8 +138,12 @@
     <ClInclude Include="HumongousEditorForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="include\forms\HumongousButton.h" />
+    <ClInclude Include="include\forms\HumongousNode.h" />
+    <ClInclude Include="include\forms\HumongousToolStripMenuItem.h" />
     <ClInclude Include="include\lowlevel\Defines.h" />
     <ClInclude Include="include\lowlevel\FileContainer.h" />
+    <ClInclude Include="include\lowlevel\HumongousChunks.h" />
     <ClInclude Include="include\lowlevel\HumongousHeader.h" />
     <ClInclude Include="include\lowlevel\Node.h" />
     <ClInclude Include="include\lowlevel\utils.h" />
@@ -154,11 +158,12 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\lowlevel\HumongousHeader.cpp" />
-    <ClCompile Include="src\lowlevel\FileContainer.cpp" />
     <ClCompile Include="INCLUDE\LOWLEVEL\Node.cpp" />
     <ClCompile Include="include\Temp.cpp" />
     <ClCompile Include="src\HumongousEditorForm.cpp" />
+    <ClCompile Include="src\lowlevel\FileContainer.cpp" />
+    <ClCompile Include="src\lowlevel\HumongousChunks.cpp" />
+    <ClCompile Include="src\lowlevel\HumongousHeader.cpp" />
     <ClCompile Include="src\lowlevel\utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

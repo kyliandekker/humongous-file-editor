@@ -13,20 +13,11 @@ namespace HumongousFileEditor
 	{
 		Node::Node(FileContainer& fileContainer, size_t offset, size_t prevOffset)
 		{
-			null = false;
 			this->fileContainer = &fileContainer;
 			this->offset = offset;
 			this->prev_offset = prevOffset;
 			memcpy(chunk_id, reinterpret_cast<unsigned char*>(utils::add(this->fileContainer->data, offset)), CHUNK_ID_SIZE);
 			memcpy(chunk_size, reinterpret_cast<unsigned char*>(utils::add(this->fileContainer->data, offset + CHUNK_ID_SIZE)), sizeof(uint32_t));
-		}
-
-		Node Node::Child() const
-		{
-			if (utils::add(fileContainer->data, offset + ChunkSize()) == utils::add(fileContainer->data, offset + sizeof(HumongousHeader)))
-				return Node();
-
-			return fileContainer->NodeFromOffset(offset + sizeof(HumongousHeader));
 		}
 
 		Node Node::Previous() const
@@ -37,10 +28,11 @@ namespace HumongousFileEditor
 		Node Node::Next() const
 		{
 			size_t new_offset = offset + ChunkSize();
-			if (new_offset >= fileContainer->size)
-				return Node();
 
-			return fileContainer->NodeFromOffset(offset + ChunkSize());
+			uint32_t prev_pos = fileContainer->ReadPos(0, 0, offset);
+			uint32_t pos = fileContainer->GetNext(offset, prev_pos, new_offset);
+			Node n = fileContainer->NodeFromOffset(pos);
+			return n;
 		}
 
 		unsigned char* Node::data() const

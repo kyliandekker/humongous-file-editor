@@ -3,7 +3,6 @@
 #include <ShlObj_core.h>
 #include <string>
 #include <windows.h>
-#include <msclr\marshal_cppstd.h>
 #include <Temp.h>
 
 using namespace  System::Windows::Forms;
@@ -44,19 +43,30 @@ namespace HumongousFileEditor
 		System::Windows::Forms::Button^ exportSelected;
 		System::Windows::Forms::Button^ unselectAll;
 		System::Windows::Forms::Button^ selectAllButton;
-		System::Windows::Forms::Button^ openButton;
-		System::Windows::Forms::Panel^ panel1;
-		System::Windows::Forms::Button^ saveButton;
-		System::Windows::Forms::Button^ helpButton;
-		System::Windows::Forms::Panel^ panel2;
-		System::Windows::Forms::Button^ saveAsButton;
-		System::Windows::Forms::Panel^ panel3;
+
+
+
+
+
+
+
 		System::Windows::Forms::ToolStripMenuItem^ optionSave;
 		System::Windows::Forms::ToolStripSeparator^ toolStripSeparator1;
 		System::Windows::Forms::TabPage^ tabWelcome;
 		System::Windows::Forms::Label^ welcomeLabel;
 		System::String^ windowTitle = gcnew System::String("Humongous File Editor");
-	public: System::Windows::Forms::Button^ encryptButton;
+    public: System::Windows::Forms::Button^ openButton;
+    public: System::Windows::Forms::Button^ saveButton;
+    public: System::Windows::Forms::Button^ helpButton;
+    public: System::Windows::Forms::Panel^ panel2;
+    public: System::Windows::Forms::Button^ saveAsButton;
+    public: System::Windows::Forms::Panel^ panel3;
+    public: System::Windows::Forms::Panel^ panel4;
+    public: System::Windows::Forms::Button^ encryptButton;
+	public: System::Windows::Forms::Panel^ actionPanel;
+	public: System::Windows::Forms::Button^ indexButton;
+
+
 
 		  System::Windows::Forms::TabControl^ tabControl1;
 	protected:
@@ -107,13 +117,15 @@ namespace HumongousFileEditor
 			this->statusStrip2 = (gcnew System::Windows::Forms::StatusStrip());
 			this->toolProgressBar = (gcnew System::Windows::Forms::ToolStripProgressBar());
 			this->openButton = (gcnew System::Windows::Forms::Button());
-			this->panel1 = (gcnew System::Windows::Forms::Panel());
-			this->encryptButton = (gcnew System::Windows::Forms::Button());
-			this->panel3 = (gcnew System::Windows::Forms::Panel());
-			this->saveAsButton = (gcnew System::Windows::Forms::Button());
-			this->panel2 = (gcnew System::Windows::Forms::Panel());
-			this->helpButton = (gcnew System::Windows::Forms::Button());
 			this->saveButton = (gcnew System::Windows::Forms::Button());
+			this->helpButton = (gcnew System::Windows::Forms::Button());
+			this->panel2 = (gcnew System::Windows::Forms::Panel());
+			this->saveAsButton = (gcnew System::Windows::Forms::Button());
+			this->panel3 = (gcnew System::Windows::Forms::Panel());
+			this->panel4 = (gcnew System::Windows::Forms::Panel());
+			this->encryptButton = (gcnew System::Windows::Forms::Button());
+			this->actionPanel = (gcnew System::Windows::Forms::Panel());
+			this->indexButton = (gcnew System::Windows::Forms::Button());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->splitContainer))->BeginInit();
 			this->splitContainer->Panel1->SuspendLayout();
 			this->splitContainer->Panel2->SuspendLayout();
@@ -123,7 +135,7 @@ namespace HumongousFileEditor
 			this->tabWelcome->SuspendLayout();
 			this->topMenu->SuspendLayout();
 			this->statusStrip2->SuspendLayout();
-			this->panel1->SuspendLayout();
+			this->actionPanel->SuspendLayout();
 			this->SuspendLayout();
 			// 
 			// splitContainer
@@ -190,6 +202,7 @@ namespace HumongousFileEditor
 			this->selectAllButton->TabIndex = 0;
 			this->selectAllButton->Text = L"Select All";
 			this->selectAllButton->UseVisualStyleBackColor = true;
+			this->selectAllButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::selectAllButton_Click);
 			// 
 			// entryView
 			// 
@@ -345,91 +358,9 @@ namespace HumongousFileEditor
 			this->openButton->Size = System::Drawing::Size(40, 40);
 			this->openButton->TabIndex = 4;
 			this->openButton->UseVisualStyleBackColor = false;
+			this->openButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionOpen_Click);
 			this->openButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
 			this->openButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
-			this->openButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionOpen_Click);
-			// 
-			// panel1
-			// 
-			this->panel1->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
-			this->panel1->Controls->Add(this->encryptButton);
-			this->panel1->Controls->Add(this->panel3);
-			this->panel1->Controls->Add(this->saveAsButton);
-			this->panel1->Controls->Add(this->panel2);
-			this->panel1->Controls->Add(this->helpButton);
-			this->panel1->Controls->Add(this->saveButton);
-			this->panel1->Controls->Add(this->openButton);
-			this->panel1->Dock = System::Windows::Forms::DockStyle::Top;
-			this->panel1->Location = System::Drawing::Point(0, 31);
-			this->panel1->Name = L"panel1";
-			this->panel1->Padding = System::Windows::Forms::Padding(10);
-			this->panel1->Size = System::Drawing::Size(943, 44);
-			this->panel1->TabIndex = 4;
-			// 
-			// encryptButton
-			// 
-			this->encryptButton->BackColor = System::Drawing::Color::Transparent;
-			this->encryptButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"encryptButton.BackgroundImage")));
-			this->encryptButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
-			this->encryptButton->FlatAppearance->BorderSize = 0;
-			this->encryptButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
-			this->encryptButton->ForeColor = System::Drawing::Color::Transparent;
-			this->encryptButton->Location = System::Drawing::Point(149, 2);
-			this->encryptButton->Name = L"encryptButton";
-			this->encryptButton->Size = System::Drawing::Size(40, 40);
-			this->encryptButton->TabIndex = 10;
-			this->encryptButton->UseVisualStyleBackColor = false;
-			this->encryptButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
-			this->encryptButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
-			// 
-			// panel3
-			// 
-			this->panel3->BackColor = System::Drawing::SystemColors::ButtonShadow;
-			this->panel3->Location = System::Drawing::Point(150, 4);
-			this->panel3->Name = L"panel3";
-			this->panel3->Size = System::Drawing::Size(1, 36);
-			this->panel3->TabIndex = 9;
-			// 
-			// saveAsButton
-			// 
-			this->saveAsButton->BackColor = System::Drawing::Color::Transparent;
-			this->saveAsButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"saveAsButton.BackgroundImage")));
-			this->saveAsButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
-			this->saveAsButton->Enabled = false;
-			this->saveAsButton->FlatAppearance->BorderSize = 0;
-			this->saveAsButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
-			this->saveAsButton->Location = System::Drawing::Point(104, 2);
-			this->saveAsButton->Name = L"saveAsButton";
-			this->saveAsButton->Size = System::Drawing::Size(40, 40);
-			this->saveAsButton->TabIndex = 8;
-			this->saveAsButton->UseVisualStyleBackColor = false;
-			this->saveAsButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
-			this->saveAsButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
-			// 
-			// panel2
-			// 
-			this->panel2->BackColor = System::Drawing::SystemColors::ButtonShadow;
-			this->panel2->Location = System::Drawing::Point(52, 4);
-			this->panel2->Name = L"panel2";
-			this->panel2->Size = System::Drawing::Size(1, 36);
-			this->panel2->TabIndex = 7;
-			// 
-			// helpButton
-			// 
-			this->helpButton->BackColor = System::Drawing::Color::Transparent;
-			this->helpButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"helpButton.BackgroundImage")));
-			this->helpButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
-			this->helpButton->FlatAppearance->BorderSize = 0;
-			this->helpButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
-			this->helpButton->ForeColor = System::Drawing::Color::Transparent;
-			this->helpButton->Location = System::Drawing::Point(194, 3);
-			this->helpButton->Name = L"helpButton";
-			this->helpButton->Size = System::Drawing::Size(40, 40);
-			this->helpButton->TabIndex = 6;
-			this->helpButton->UseVisualStyleBackColor = false;
-			this->helpButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionAbout_Click);
-			this->helpButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
-			this->helpButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
 			// 
 			// saveButton
 			// 
@@ -447,10 +378,121 @@ namespace HumongousFileEditor
 			this->saveButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
 			this->saveButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
 			// 
+			// helpButton
+			// 
+			this->helpButton->BackColor = System::Drawing::Color::Transparent;
+			this->helpButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"helpButton.BackgroundImage")));
+			this->helpButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+			this->helpButton->FlatAppearance->BorderSize = 0;
+			this->helpButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->helpButton->ForeColor = System::Drawing::Color::Transparent;
+			this->helpButton->Location = System::Drawing::Point(255, 3);
+			this->helpButton->Name = L"helpButton";
+			this->helpButton->Size = System::Drawing::Size(40, 40);
+			this->helpButton->TabIndex = 6;
+			this->helpButton->UseVisualStyleBackColor = false;
+			this->helpButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionAbout_Click);
+			this->helpButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
+			this->helpButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
+			// 
+			// panel2
+			// 
+			this->panel2->BackColor = System::Drawing::SystemColors::ButtonShadow;
+			this->panel2->Location = System::Drawing::Point(52, 4);
+			this->panel2->Name = L"panel2";
+			this->panel2->Size = System::Drawing::Size(1, 36);
+			this->panel2->TabIndex = 7;
+			// 
+			// saveAsButton
+			// 
+			this->saveAsButton->BackColor = System::Drawing::Color::Transparent;
+			this->saveAsButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"saveAsButton.BackgroundImage")));
+			this->saveAsButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+			this->saveAsButton->Enabled = false;
+			this->saveAsButton->FlatAppearance->BorderSize = 0;
+			this->saveAsButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->saveAsButton->Location = System::Drawing::Point(104, 2);
+			this->saveAsButton->Name = L"saveAsButton";
+			this->saveAsButton->Size = System::Drawing::Size(40, 40);
+			this->saveAsButton->TabIndex = 8;
+			this->saveAsButton->UseVisualStyleBackColor = false;
+			this->saveAsButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
+			this->saveAsButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
+			// 
+			// panel3
+			// 
+			this->panel3->BackColor = System::Drawing::SystemColors::ButtonShadow;
+			this->panel3->Location = System::Drawing::Point(195, 4);
+			this->panel3->Name = L"panel3";
+			this->panel3->Size = System::Drawing::Size(1, 36);
+			this->panel3->TabIndex = 9;
+			// 
+			// panel4
+			// 
+			this->panel4->BackColor = System::Drawing::SystemColors::ButtonShadow;
+			this->panel4->Location = System::Drawing::Point(248, 4);
+			this->panel4->Name = L"panel4";
+			this->panel4->Size = System::Drawing::Size(1, 36);
+			this->panel4->TabIndex = 9;
+			// 
+			// encryptButton
+			// 
+			this->encryptButton->BackColor = System::Drawing::Color::Transparent;
+			this->encryptButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"encryptButton.BackgroundImage")));
+			this->encryptButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+			this->encryptButton->FlatAppearance->BorderSize = 0;
+			this->encryptButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->encryptButton->ForeColor = System::Drawing::Color::Transparent;
+			this->encryptButton->Location = System::Drawing::Point(202, 2);
+			this->encryptButton->Name = L"encryptButton";
+			this->encryptButton->Size = System::Drawing::Size(40, 40);
+			this->encryptButton->TabIndex = 10;
+			this->encryptButton->TabStop = false;
+			this->encryptButton->UseVisualStyleBackColor = false;
+			this->encryptButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
+			this->encryptButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
+			// 
+			// actionPanel
+			// 
+			this->actionPanel->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
+			this->actionPanel->Controls->Add(this->indexButton);
+			this->actionPanel->Controls->Add(this->encryptButton);
+			this->actionPanel->Controls->Add(this->panel3);
+			this->actionPanel->Controls->Add(this->panel4);
+			this->actionPanel->Controls->Add(this->saveAsButton);
+			this->actionPanel->Controls->Add(this->panel2);
+			this->actionPanel->Controls->Add(this->helpButton);
+			this->actionPanel->Controls->Add(this->saveButton);
+			this->actionPanel->Controls->Add(this->openButton);
+			this->actionPanel->Dock = System::Windows::Forms::DockStyle::Top;
+			this->actionPanel->Location = System::Drawing::Point(0, 31);
+			this->actionPanel->Name = L"actionPanel";
+			this->actionPanel->Padding = System::Windows::Forms::Padding(10);
+			this->actionPanel->Size = System::Drawing::Size(943, 44);
+			this->actionPanel->TabIndex = 4;
+			// 
+			// indexButton
+			// 
+			this->indexButton->BackColor = System::Drawing::Color::Transparent;
+			this->indexButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"indexButton.BackgroundImage")));
+			this->indexButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+			this->indexButton->Enabled = false;
+			this->indexButton->FlatAppearance->BorderSize = 0;
+			this->indexButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->indexButton->ForeColor = System::Drawing::Color::Transparent;
+			this->indexButton->Location = System::Drawing::Point(149, 2);
+			this->indexButton->Name = L"indexButton";
+			this->indexButton->Size = System::Drawing::Size(40, 40);
+			this->indexButton->TabIndex = 11;
+			this->indexButton->TabStop = false;
+			this->indexButton->UseVisualStyleBackColor = false;
+			this->indexButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
+			this->indexButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
+			// 
 			// HumongousEditorForm
 			// 
 			this->ClientSize = System::Drawing::Size(943, 504);
-			this->Controls->Add(this->panel1);
+			this->Controls->Add(this->actionPanel);
 			this->Controls->Add(this->statusStrip2);
 			this->Controls->Add(this->splitContainer);
 			this->Controls->Add(this->topMenu);
@@ -468,7 +510,7 @@ namespace HumongousFileEditor
 			this->topMenu->PerformLayout();
 			this->statusStrip2->ResumeLayout(false);
 			this->statusStrip2->PerformLayout();
-			this->panel1->ResumeLayout(false);
+			this->actionPanel->ResumeLayout(false);
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -509,6 +551,30 @@ namespace HumongousFileEditor
 						Humongous Song Files (*.HE4)\
 						\0*.HE4;*.he4\0";
 		}
+
+#pragma region entryview
+		/*
+			* Entry view functions.
+		*/
+		// Checks all entry nodes in the EntryView.
+		System::Void selectAllButton_Click(System::Object^ sender, System::EventArgs^ e)
+		{
+			for (size_t i = 0; i < entryView->Nodes->Count; i++)
+			{
+				entryView->Nodes[i]->Checked = true;
+				exportSelected->Enabled = true;
+			}
+		}
+		// Unchecks all entry nodes in the EntryView.
+		System::Void unselectAllButton_Click(System::Object^ sender, System::EventArgs^ e)
+		{
+			for (size_t i = 0; i < entryView->Nodes->Count; i++)
+				entryView->Nodes[i]->Checked = false;
+
+			exportSelected->Enabled = false;
+		}
+#pragma endregion
+
 		// Opens a file (via the top menu or the load button).
 		System::Void optionOpen_Click(System::Object^ sender, System::EventArgs^ e)
 		{

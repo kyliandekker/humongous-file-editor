@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace HumongousFileEditor
 {
 	namespace chunk_reader
@@ -7,7 +9,8 @@ namespace HumongousFileEditor
 		class Temp
 		{
 		public:
-			void Read(const char* path);
+            void AddEntry(uint32_t offset, std::string name);
+            void Read(const char* path);
 		};
 	}
 }

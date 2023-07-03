@@ -8,6 +8,7 @@ namespace HumongousFileEditor
 {
 	namespace chunk_reader
 	{
+		class HumongousHeader;
 		class FileContainer;
 
 		class Node
@@ -20,18 +21,13 @@ namespace HumongousFileEditor
 			size_t prev_offset = 0;
 			size_t offset = 0;
 			FileContainer* fileContainer = nullptr;
-			bool null = true;
 
-			/// <summary>
-			/// Returns the node right after the chunk header. Will return Next() if not present.
-			/// </summary>
-			/// <returns></returns>
-			Node Child() const;
 			/// <summary>
 			/// Returns the previous node.
 			/// </summary>
 			/// <returns></returns>
 			Node Previous() const;
+
 			/// <summary>
 			/// Returns the node right after this node by adding the size.
 			/// </summary>
@@ -40,6 +36,21 @@ namespace HumongousFileEditor
 
 			unsigned char* data() const;
 			uint32_t ChunkSize(bool isBigEndian = true) const;
+
+			/// <summary>
+			/// Returns a chunk by index.
+			/// </summary>
+			/// <param name="a_Type">Reference to the type that needs to get the values of the chunk.</param>
+			/// <param name="a_Index">Index of the desired chunk.</param>
+			template <class T>
+			void GetChunkFromData(T& a_Type, uint32_t a_Index) const
+			{
+				HumongousHeader* dat = reinterpret_cast<HumongousHeader*>(data());
+				if (dat != nullptr)
+				{
+					a_Type = T(reinterpret_cast<T*>(utils::add(dat, 0)));
+				}
+			}
 		};
 	}
 }

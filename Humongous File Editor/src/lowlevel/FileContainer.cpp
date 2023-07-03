@@ -46,25 +46,47 @@ namespace HumongousFileEditor
 
 		Node FileContainer::NodeFromOffset(size_t offset)
 		{
-			size_t pos = 0, prevOffset = pos;
-			while (pos < offset)
-			{
-				prevOffset = pos;
-				unsigned char chunk_size[sizeof(uint32_t)] = {};
-				memcpy(chunk_size, reinterpret_cast<unsigned char*>(utils::add(data, pos + CHUNK_ID_SIZE)), sizeof(uint32_t));
-				pos += utils::reverseBytesC<uint32_t>(chunk_size);
+			uint32_t prev_offset = ReadPos(0, 0, offset);
+			return Node(*this, offset, prev_offset);
+		}
 
-				if (pos > offset)
+		uint32_t FileContainer::ReadPos(size_t pos, size_t prev_pos, size_t desiredOffset)
+		{
+			HumongousHeader header;
+			memcpy(&header, utils::add(data, pos), sizeof(header));
+
+			bool b = false;
+			for (size_t j = 0; j < sizeof(known_chunks) / sizeof(std::string); j++)
+				if (utils::chunkcmp(header.chunk_id, known_chunks[j].c_str()) == 0)
 				{
-					pos = prevOffset + sizeof(HumongousHeader);
-					if (pos == offset)
-					{
-						prevOffset = 0;
-						break;
-					}
+					b = true;
+					break;
 				}
-			}
-			return Node(*this, offset, prevOffset);
+			if (!b)
+				return prev_pos;
+
+			if (pos != desiredOffset && desiredOffset < pos + header.ChunkSize())
+				pos = ReadPos(pos + sizeof(HumongousHeader), pos, desiredOffset);
+
+			return prev_pos;
+		}
+
+		uint32_t FileContainer::GetNext(size_t pos, size_t prev_pos, size_t desiredOffset)
+		{
+			HumongousHeader header;
+			memcpy(&header, utils::add(data, pos + sizeof(HumongousHeader)), sizeof(header));
+
+			bool b = false;
+			for (size_t j = 0; j < sizeof(known_chunks) / sizeof(std::string); j++)
+				if (utils::chunkcmp(header.chunk_id, known_chunks[j].c_str()) == 0)
+				{
+					b = true;
+					break;
+				}
+			if (!b)
+				return desiredOffset;
+
+			return pos + sizeof(header);
 		}
 	}
 }
