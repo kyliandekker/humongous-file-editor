@@ -135,6 +135,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FileIndexer.h" />
     <ClInclude Include="HumongousEditorForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -158,6 +159,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FileIndexer.cpp" />
     <ClCompile Include="INCLUDE\LOWLEVEL\Node.cpp" />
     <ClCompile Include="include\Temp.cpp" />
     <ClCompile Include="src\HumongousEditorForm.cpp" />

@@ -15,24 +15,21 @@ namespace HumongousFileEditor
 		{
 		public:
 			Node() = default;
-			Node(FileContainer& fileContainer, size_t offset, size_t prevOffset);
+			Node(size_t offset);
+			Node(FileContainer& fileContainer, size_t offset);
 			unsigned char chunk_id[CHUNK_ID_SIZE] = {};
 			unsigned char chunk_size[sizeof(uint32_t)] = {};
-			size_t prev_offset = 0;
 			size_t offset = 0;
 			FileContainer* fileContainer = nullptr;
-
-			/// <summary>
-			/// Returns the previous node.
-			/// </summary>
-			/// <returns></returns>
-			Node Previous() const;
+			bool null = true;
 
 			/// <summary>
 			/// Returns the node right after this node by adding the size.
 			/// </summary>
 			/// <returns></returns>
 			Node Next() const;
+
+			Node Child() const;
 
 			unsigned char* data() const;
 			uint32_t ChunkSize(bool isBigEndian = true) const;

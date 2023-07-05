@@ -11,28 +11,29 @@ namespace HumongousFileEditor
 {
 	namespace chunk_reader
 	{
-		Node::Node(FileContainer& fileContainer, size_t offset, size_t prevOffset)
+		Node::Node(size_t offset)
+		{
+			null = true;
+			this->offset = offset;
+		}
+
+		Node::Node(FileContainer& fileContainer, size_t offset)
 		{
 			this->fileContainer = &fileContainer;
 			this->offset = offset;
-			this->prev_offset = prevOffset;
+			null = false;
 			memcpy(chunk_id, reinterpret_cast<unsigned char*>(utils::add(this->fileContainer->data, offset)), CHUNK_ID_SIZE);
 			memcpy(chunk_size, reinterpret_cast<unsigned char*>(utils::add(this->fileContainer->data, offset + CHUNK_ID_SIZE)), sizeof(uint32_t));
 		}
 
-		Node Node::Previous() const
-		{
-			return fileContainer->NodeFromOffset(prev_offset);
-		}
-
 		Node Node::Next() const
 		{
-			size_t new_offset = offset + ChunkSize();
+			return fileContainer->GetNext(*this);
+		}
 
-			uint32_t prev_pos = fileContainer->ReadPos(0, 0, offset);
-			uint32_t pos = fileContainer->GetNext(offset, prev_pos, new_offset);
-			Node n = fileContainer->NodeFromOffset(pos);
-			return n;
+		Node Node::Child() const
+		{
+			return fileContainer->GetChild(*this);
 		}
 
 		unsigned char* Node::data() const

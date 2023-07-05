@@ -16,11 +16,12 @@ namespace HumongousFileEditor
 
 			Node Start();
 			Node NodeFromOffset(size_t offset);
+
+			Node GetNext(const Node& node);
+			Node GetChild(const Node& node);
+
 			size_t size = 0;
 			unsigned char* data = nullptr;
-
-			uint32_t ReadPos(size_t pos, size_t prev_pos, size_t desiredOffset);
-			uint32_t GetNext(size_t pos, size_t prev_pos, size_t desiredOffset);
 
 			std::string known_chunks[125]
 			{

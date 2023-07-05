@@ -26,11 +26,11 @@ namespace HumongousFileEditor
 			return isBigEndian ? utils::reverseBytesC<uint32_t>(size) : reinterpret_cast<uint32_t>(&size);
 		}
 
-		void HumongousHeader::SetChunkSize(uint32_t chunkSize, bool toBigEndian)
+		void HumongousHeader::SetChunkSize(uint32_t chunk_size, bool toBigEndian)
 		{
-			memcpy(this->chunkSize, reinterpret_cast<unsigned char*>(chunkSize), sizeof(uint32_t));
+			memcpy(chunkSize, reinterpret_cast<unsigned char*>(chunk_size), sizeof(uint32_t));
 			if (toBigEndian)
-				utils::reverseBytes(this->chunkSize, sizeof(uint32_t));
+				utils::reverseBytes(chunkSize, sizeof(uint32_t));
 		}
 	}
 }

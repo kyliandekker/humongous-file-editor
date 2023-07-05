@@ -46,47 +46,44 @@ namespace HumongousFileEditor
 
 		Node FileContainer::NodeFromOffset(size_t offset)
 		{
-			uint32_t prev_offset = ReadPos(0, 0, offset);
-			return Node(*this, offset, prev_offset);
+			return Node(*this, offset);
 		}
 
-		uint32_t FileContainer::ReadPos(size_t pos, size_t prev_pos, size_t desiredOffset)
+		Node FileContainer::GetNext(const Node& node)
 		{
+			size_t pos = node.offset + node.ChunkSize();
+			if (pos == size)
+				return Node(pos);
+
 			HumongousHeader header;
 			memcpy(&header, utils::add(data, pos), sizeof(header));
 
-			bool b = false;
 			for (size_t j = 0; j < sizeof(known_chunks) / sizeof(std::string); j++)
 				if (utils::chunkcmp(header.chunk_id, known_chunks[j].c_str()) == 0)
 				{
-					b = true;
+					return NodeFromOffset(pos);
 					break;
 				}
-			if (!b)
-				return prev_pos;
 
-			if (pos != desiredOffset && desiredOffset < pos + header.ChunkSize())
-				pos = ReadPos(pos + sizeof(HumongousHeader), pos, desiredOffset);
+			uint32_t extra_offset = sizeof(HumongousHeader);
+			while (reinterpret_cast<uint8_t>(utils::add(data, node.offset + extra_offset)) == 128)
+				extra_offset++;
 
-			return prev_pos;
+			return NodeFromOffset(node.offset + extra_offset);
 		}
 
-		uint32_t FileContainer::GetNext(size_t pos, size_t prev_pos, size_t desiredOffset)
+		Node FileContainer::GetChild(const Node& node)
 		{
 			HumongousHeader header;
-			memcpy(&header, utils::add(data, pos + sizeof(HumongousHeader)), sizeof(header));
+			memcpy(&header, utils::add(data, node.offset + sizeof(HumongousHeader)), sizeof(header));
 
-			bool b = false;
 			for (size_t j = 0; j < sizeof(known_chunks) / sizeof(std::string); j++)
 				if (utils::chunkcmp(header.chunk_id, known_chunks[j].c_str()) == 0)
 				{
-					b = true;
+					return NodeFromOffset(node.offset + sizeof(HumongousHeader));
 					break;
 				}
-			if (!b)
-				return desiredOffset;
-
-			return pos + sizeof(header);
+			return Node(node.offset);
 		}
 	}
 }
