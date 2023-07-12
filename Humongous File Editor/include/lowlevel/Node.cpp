@@ -11,6 +11,15 @@ namespace HumongousFileEditor
 {
 	namespace chunk_reader
 	{
+		Node::Node(const Node& rhs)
+		{
+			memcpy(chunk_id, rhs.chunk_id, CHUNK_ID_SIZE);
+			memcpy(chunk_size, rhs.chunk_size, CHUNK_ID_SIZE);
+			offset = rhs.offset;
+			fileContainer = rhs.fileContainer;
+			null = rhs.null;
+		}
+
 		Node::Node(size_t offset)
 		{
 			null = true;

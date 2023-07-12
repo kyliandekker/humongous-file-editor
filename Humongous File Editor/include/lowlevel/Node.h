@@ -15,6 +15,7 @@ namespace HumongousFileEditor
 		{
 		public:
 			Node() = default;
+			Node(const Node& rhs);
 			Node(size_t offset);
 			Node(FileContainer& fileContainer, size_t offset);
 			unsigned char chunk_id[CHUNK_ID_SIZE] = {};
