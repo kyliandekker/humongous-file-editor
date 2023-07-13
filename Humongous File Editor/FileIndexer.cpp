@@ -41,7 +41,7 @@ namespace HumongousFileEditor
 			text += " size=\"";
 			text += std::to_string(total_size - sizeof(HumongousHeader));
 			text += "\"";
-			if (close)
+			if (!close)
 				text += "/";
 			text += ">\n";
 			return text;
@@ -110,15 +110,25 @@ namespace HumongousFileEditor
 
 				FileContainer fc = FileContainer(path);
 
-				ChunkInfo header = fc.GetChunk(0);
-				header.offset = 0;
+				ChunkInfo header = fc.GetChunkInfo(0);
 				std::vector<ChunkInfo> chunks;
 				while (header.offset < fc.size)
 				{
-					std::string text = getOpenChunkText(header.chunk_id, header.offset, header.ChunkSize(), chunks.size(), false);
+					std::string text;
+					for (int i = chunks.size(); i-- > 0; )
+						if (chunks[i].offset + chunks[i].ChunkSize() <= header.offset)
+						{
+							text = getCloseChunkText(chunks[i].chunk_id, chunks.size());
+							fwrite(text.c_str(), text.length(), 1, file);
+							chunks.erase(chunks.begin() + i);
+						}
+					ChunkInfo next = fc.GetNextChunk(header.offset);
+					bool b = header.offset + header.ChunkSize() >= next.offset;
+					if (b)
+						chunks.push_back(header);
+					text = getOpenChunkText(header.chunk_id, header.offset, header.ChunkSize(), chunks.size(), b);
 					fwrite(text.c_str(), text.length(), 1, file);
-					header = fc.GetNextChunk(header.offset);
-
+					header = next;
 				}
 
 				fclose(file);

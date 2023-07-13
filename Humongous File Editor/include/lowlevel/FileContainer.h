@@ -13,7 +13,6 @@ namespace HumongousFileEditor
 			FileContainer(std::string path);
 			~FileContainer();
 
-			HumongousHeader GetChunk(size_t offset) const;
 			ChunkInfo GetChunkInfo(size_t offset) const;
 			ChunkInfo GetNextChunk(size_t offset) const;
 
