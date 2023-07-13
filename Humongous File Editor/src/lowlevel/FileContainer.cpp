@@ -47,6 +47,14 @@ namespace HumongousFileEditor
 			return header;
 		}
 
+		ChunkInfo FileContainer::GetChunkInfo(size_t offset) const
+		{
+			ChunkInfo header;
+			memcpy(&header, utils::add(data, offset), sizeof(HumongousHeader));
+			header.offset = offset;
+			return header;
+		}
+
 		ChunkInfo FileContainer::GetNextChunk(size_t offset) const
 		{
 			size_t extra_offset = 0;
@@ -55,24 +63,18 @@ namespace HumongousFileEditor
 
 			offset += extra_offset;
 
-			ChunkInfo next;
-			ChunkInfo header = GetChunk(offset);
+			ChunkInfo header = GetChunkInfo(offset);
 
 			std::string chunk_id_name = std::string(reinterpret_cast<char*>(header.chunk_id));
 			chunk_id_name.resize(CHUNK_ID_SIZE);
 
 			std::vector<std::string> childs = SCHEMA.at(chunk_id_name);
 			if (childs.size() == 0)
-			{
-				next.offset = offset + header.ChunkSize();
-				memcpy(&next, utils::add(data, next.offset), sizeof(HumongousHeader));
-				return next;
-			}
+				return GetChunkInfo(offset + header.ChunkSize());
 
-			next.offset = offset + sizeof(HumongousHeader);
+			ChunkInfo next = GetChunkInfo(offset + sizeof(HumongousHeader));
 			for (size_t i = 0; i < childs.size(); i++)
 			{
-				memcpy(&next, utils::add(data, next.offset), sizeof(HumongousHeader));
 				if (utils::chunkcmp(next.chunk_id, childs[i].c_str()) == 0)
 					return next;
 			}
