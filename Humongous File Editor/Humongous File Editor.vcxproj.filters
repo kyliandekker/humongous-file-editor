@@ -45,13 +45,16 @@
     <ClInclude Include="include\lowlevel\HumongousHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\lowlevel\Node.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\lowlevel\utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FileIndexer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\lowlevel\HumongousChunkDefinitions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\lowlevel\ChunkInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -67,9 +70,6 @@
     <ClCompile Include="include\Temp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="INCLUDE\LOWLEVEL\Node.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\lowlevel\FileContainer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -83,6 +83,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileIndexer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lowlevel\HumongousChunkDefinitions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

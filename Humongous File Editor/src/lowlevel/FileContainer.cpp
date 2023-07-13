@@ -3,7 +3,8 @@
 #include <cstdio>
 
 #include "lowlevel/utils.h"
-#include "lowlevel/HumongousHeader.h"
+#include "lowlevel/HumongousChunkDefinitions.h"
+#include <cassert>
 
 namespace HumongousFileEditor
 {
@@ -39,57 +40,45 @@ namespace HumongousFileEditor
 			data = nullptr;
 		}
 
-		Node FileContainer::Start()
+		HumongousHeader FileContainer::GetChunk(size_t offset) const
 		{
-			return NodeFromOffset(0);
+			ChunkInfo header;
+			memcpy(&header, utils::add(data, offset), sizeof(HumongousHeader));
+			return header;
 		}
 
-		Node FileContainer::NodeFromOffset(size_t offset)
+		ChunkInfo FileContainer::GetNextChunk(size_t offset) const
 		{
-			return Node(*this, offset);
-		}
-
-		Node FileContainer::GetNext(const Node& node)
-		{
-			size_t pos = node.offset + node.ChunkSize();
-
-			// If this is the last node, return a node with just an offset but set to null.
-			if (pos == size)
-				return Node(pos);
-
-			// Read header.
-			HumongousHeader header;
-			memcpy(&header, utils::add(data, pos), sizeof(header));
-
-			// Check if the header contains a known chunk id (just checking for letters does not work because of pieces of data containing letters).
-			for (size_t j = 0; j < sizeof(known_chunks) / sizeof(std::string); j++)
-				if (utils::chunkcmp(header.chunk_id, known_chunks[j].c_str()) == 0)
-				{
-					return NodeFromOffset(pos);
-					break;
-				}
-
-			// Sometimes there may be a faulty chunk that contains 0x80 data for some reason. Skip it if we come across it.
 			size_t extra_offset = 0;
-			while (reinterpret_cast<unsigned char*>(utils::add(data, pos + extra_offset))[0] == 128)
+			while (reinterpret_cast<unsigned char*>(utils::add(data, offset + extra_offset))[0] == 128)
 				extra_offset++;
 
-			Node e2 = NodeFromOffset(pos + extra_offset);
-			return e2;
-		}
+			offset += extra_offset;
 
-		Node FileContainer::GetChild(const Node& node)
-		{
-			HumongousHeader header;
-			memcpy(&header, utils::add(data, node.offset + sizeof(HumongousHeader)), sizeof(header));
+			ChunkInfo next;
+			ChunkInfo header = GetChunk(offset);
 
-			for (size_t j = 0; j < sizeof(known_chunks) / sizeof(std::string); j++)
-				if (utils::chunkcmp(header.chunk_id, known_chunks[j].c_str()) == 0)
-				{
-					return NodeFromOffset(node.offset + sizeof(HumongousHeader));
-					break;
-				}
-			return Node(node.offset);
+			std::string chunk_id_name = std::string(reinterpret_cast<char*>(header.chunk_id));
+			chunk_id_name.resize(CHUNK_ID_SIZE);
+
+			std::vector<std::string> childs = SCHEMA.at(chunk_id_name);
+			if (childs.size() == 0)
+			{
+				next.offset = offset + header.ChunkSize();
+				memcpy(&next, utils::add(data, next.offset), sizeof(HumongousHeader));
+				return next;
+			}
+
+			next.offset = offset + sizeof(HumongousHeader);
+			for (size_t i = 0; i < childs.size(); i++)
+			{
+				memcpy(&next, utils::add(data, next.offset), sizeof(HumongousHeader));
+				if (utils::chunkcmp(next.chunk_id, childs[i].c_str()) == 0)
+					return next;
+			}
+
+			assert(false);
+			return next;
 		}
 	}
 }

@@ -10,6 +10,7 @@
 #include "lowlevel/utils.h"
 #include "lowlevel/HumongousChunks.h"
 #include "forms/HumongousNode.h"
+#include "lowlevel/HumongousChunkDefinitions.h"
 
 namespace HumongousFileEditor
 {
@@ -60,43 +61,16 @@ namespace HumongousFileEditor
 			return text;
 		};
 
-		std::string text;
-
-		void recurse(Node& parent, int recursion, uint32_t s = -1)
-		{
-			if (!parent.null)
-			{
-				if (s != -1 && parent.offset == s)
-					return;
-
-				Node child = parent.Child();
-				text += getOpenChunkText(parent.chunk_id, parent.offset, parent.ChunkSize(), recursion, child.null);
-
-				recurse(child, recursion + 1, parent.offset + parent.ChunkSize());
-
-				if (!child.null)
-					text += getCloseChunkText(parent.chunk_id, recursion);
-
-				Node next = parent.Next();
-				recurse(next, recursion, s);
-			}
-		}
-
-		void t()
-		{
-		}
-
 		void FileIndexer::Read(const char* path)
 		{
 			FileContainer fc = FileContainer(path);
-			Node root = fc.Start();
 
 			std::string root_chunks[4]
 			{
 				TLKB_CHUNK_ID,
 				SONG_CHUNK_ID,
 				MAXS_CHUNK_ID,
-				MAXS_CHUNK_ID,
+				LECF_CHUNK_ID,
 			};
 
 			OPENFILENAME ofn;
@@ -136,29 +110,16 @@ namespace HumongousFileEditor
 
 				FileContainer fc = FileContainer(path);
 
-				std::string text;
-
-				Node n = fc.Start();
-				int i = 0;
-				while (!n.null)
+				ChunkInfo header = fc.GetChunk(0);
+				header.offset = 0;
+				std::vector<ChunkInfo> chunks;
+				while (header.offset < fc.size)
 				{
-					i++;
-					Node child = n.Child();
-					text += getOpenChunkText(n.chunk_id, n.offset, n.ChunkSize(), 0, child.null);
+					std::string text = getOpenChunkText(header.chunk_id, header.offset, header.ChunkSize(), chunks.size(), false);
+					fwrite(text.c_str(), text.length(), 1, file);
+					header = fc.GetNextChunk(header.offset);
 
-					Node newNode;
-					if (!child.null)
-						newNode = child;
-					else
-					{
-						Node next = n.Next();
-						if (!next.null)
-							newNode = next;
-					}
-					n = newNode;
-				};
-
-				fwrite(text.c_str(), text.length(), 1, file);
+				}
 
 				fclose(file);
 			}

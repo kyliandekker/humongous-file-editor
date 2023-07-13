@@ -142,11 +142,12 @@
     <ClInclude Include="include\forms\HumongousButton.h" />
     <ClInclude Include="include\forms\HumongousNode.h" />
     <ClInclude Include="include\forms\HumongousToolStripMenuItem.h" />
+    <ClInclude Include="include\lowlevel\ChunkInfo.h" />
     <ClInclude Include="include\lowlevel\Defines.h" />
     <ClInclude Include="include\lowlevel\FileContainer.h" />
+    <ClInclude Include="include\lowlevel\HumongousChunkDefinitions.h" />
     <ClInclude Include="include\lowlevel\HumongousChunks.h" />
     <ClInclude Include="include\lowlevel\HumongousHeader.h" />
-    <ClInclude Include="include\lowlevel\Node.h" />
     <ClInclude Include="include\lowlevel\utils.h" />
     <ClInclude Include="include\Temp.h" />
   </ItemGroup>
@@ -160,10 +161,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileIndexer.cpp" />
-    <ClCompile Include="INCLUDE\LOWLEVEL\Node.cpp" />
     <ClCompile Include="include\Temp.cpp" />
     <ClCompile Include="src\HumongousEditorForm.cpp" />
     <ClCompile Include="src\lowlevel\FileContainer.cpp" />
+    <ClCompile Include="src\lowlevel\HumongousChunkDefinitions.cpp" />
     <ClCompile Include="src\lowlevel\HumongousChunks.cpp" />
     <ClCompile Include="src\lowlevel\HumongousHeader.cpp" />
     <ClCompile Include="src\lowlevel\utils.cpp" />
