@@ -34,6 +34,14 @@ namespace HumongousFileEditor
 			fclose(file);
 		}
 
+        FileContainer::FileContainer(const FileContainer& rhs)
+        {
+			size = rhs.size;
+			data = reinterpret_cast<unsigned char*>(malloc(size));
+			if (data != nullptr)
+				memcpy(data, rhs.data, size);
+        }
+
 		FileContainer::~FileContainer()
 		{
 			free(data);

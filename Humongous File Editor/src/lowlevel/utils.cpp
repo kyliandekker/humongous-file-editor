@@ -31,5 +31,11 @@ namespace HumongousFileEditor
 				*hi-- = swap;
 			}
 		}
+
+        void xorShift(unsigned char*& data, size_t size, char key)
+		{
+			for (int i = 0; i < size; i++)
+				data[i] = data[i] ^ key;
+		}
 	}
 }
