@@ -32,12 +32,6 @@ namespace HumongousFileEditor
 			}
 		}
 
-		SBNG_Chunk::~SBNG_Chunk()
-		{
-			free(data);
-			data = nullptr;
-		}
-
 		SGEN_Chunk::SGEN_Chunk(SGEN_Chunk* a_DataBuffer)
 		{
 			if (a_DataBuffer != nullptr)
@@ -79,12 +73,6 @@ namespace HumongousFileEditor
 			}
 		}
 
-		SDAT_Chunk::~SDAT_Chunk()
-		{
-			free(data);
-			data = nullptr;
-		}
-
 		SCRP_Chunk::SCRP_Chunk(const SCRP_Chunk& rhs) : HumongousHeader(rhs)
 		{
 			data = reinterpret_cast<unsigned char*>(malloc(rhs.ChunkSize()));
@@ -101,10 +89,24 @@ namespace HumongousFileEditor
 			}
 		}
 
-		SCRP_Chunk::~SCRP_Chunk()
+		BMAP_Chunk::BMAP_Chunk(const BMAP_Chunk& rhs) : HumongousHeader(rhs)
 		{
-			free(data);
-			data = nullptr;
+			transparency = rhs.transparency;
+			fill_color = rhs.fill_color;
+			data = reinterpret_cast<unsigned char*>(malloc(rhs.ChunkSize()));
+			if (data != nullptr)
+				memcpy(data, rhs.data, rhs.ChunkSize());
+		}
+
+		BMAP_Chunk::BMAP_Chunk(BMAP_Chunk* a_DataBuffer) : HumongousHeader(a_DataBuffer)
+		{
+			transparency = a_DataBuffer->transparency;
+			fill_color = a_DataBuffer->fill_color;
+			if (a_DataBuffer != nullptr)
+			{
+				// data is a pointer to everything after the header.
+				data = reinterpret_cast<unsigned char*>(utils::add(a_DataBuffer, sizeof(BMAP_Chunk) - sizeof(data)));
+			}
 		}
 	}
 }

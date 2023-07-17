@@ -6,7 +6,6 @@
 #include "HumongousEditorForm.h"
 #include "lowlevel/utils.h"
 #include "lowlevel/HumongousChunks.h"
-#include "forms/HumongousNode.h"
 #include <vector>
 #include <map>
 
@@ -16,16 +15,6 @@ namespace HumongousFileEditor
 	{
 		void Temp::AddEntry(uint32_t offset, std::string name)
 		{
-			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
-			name = std::to_string(form->entryView->Nodes->Count) + name;
-
-			System::String^ text = gcnew System::String(name.c_str());
-
-			HumongousNode^ node = (gcnew HumongousNode);
-			node->Name = text;
-			node->offset = offset;
-			node->Text = node->Name;
-			form->entryView->Nodes->Add(node);
 		}
 
 		void Temp::Read(const char* path)

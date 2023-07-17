@@ -39,5 +39,7 @@ namespace HumongousFileEditor
 			reverseBytes(number, sizeof(T));
 			return *reinterpret_cast<T*>(number);
 		}
+
+		void xorShift(unsigned char*& data, size_t size, char key);
 	}
 }

@@ -22,7 +22,6 @@ namespace HumongousFileEditor
 			SBNG_Chunk() = default;
 			SBNG_Chunk(const SBNG_Chunk& rhs);
 			SBNG_Chunk(SBNG_Chunk* a_DataBuffer);
-			~SBNG_Chunk();
 
 			unsigned char* data = nullptr;
 		};
@@ -86,7 +85,6 @@ namespace HumongousFileEditor
 			SDAT_Chunk() = default;
 			SDAT_Chunk(const SDAT_Chunk& rhs);
 			SDAT_Chunk(SDAT_Chunk* a_DataBuffer);
-			~SDAT_Chunk();
 
 			unsigned char* data = nullptr;
 		};
@@ -116,9 +114,35 @@ namespace HumongousFileEditor
 			SCRP_Chunk() = default;
 			SCRP_Chunk(const SCRP_Chunk& rhs);
 			SCRP_Chunk(SCRP_Chunk* a_DataBuffer);
-			~SCRP_Chunk();
 
 			unsigned char* data = nullptr;
+		};
+
+		struct RMHD_Chunk : HumongousHeader
+		{
+			RMHD_Chunk() = default;
+
+			uint16_t width = 0;
+			uint16_t height = 0;
+			uint16_t robjs = 0;
+		};
+
+		struct BMAP_Chunk : HumongousHeader
+		{
+			BMAP_Chunk() = default;
+			BMAP_Chunk(const BMAP_Chunk& rhs);
+			BMAP_Chunk(BMAP_Chunk* a_DataBuffer);
+
+			uint8_t transparency = 0;
+			uint8_t fill_color = 0;
+			unsigned char* data = nullptr;
+		};
+
+		struct TRNS_Chunk : HumongousHeader
+		{
+			TRNS_Chunk() = default;
+
+			uint8_t trns_val = 0;
 		};
 #pragma pack(pop)
 	}

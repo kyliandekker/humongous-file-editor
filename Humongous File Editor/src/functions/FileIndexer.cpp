@@ -1,4 +1,4 @@
-#include "FileIndexer.h"
+#include "functions/FileIndexer.h"
 
 #include <assert.h>
 #include <vector>
@@ -9,7 +9,6 @@
 #include "HumongousEditorForm.h"
 #include "lowlevel/utils.h"
 #include "lowlevel/HumongousChunks.h"
-#include "forms/HumongousNode.h"
 #include "lowlevel/HumongousChunkDefinitions.h"
 
 namespace HumongousFileEditor
@@ -22,7 +21,7 @@ namespace HumongousFileEditor
 			return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 		}
 
-		std::string getOpenChunkText(unsigned char* chunk_id, uint32_t offset, uint32_t total_size, uint32_t recursion, bool close)
+		std::string getOpenChunkText(unsigned char* chunk_id, uint32_t offset, uint32_t total_size, size_t recursion, bool close)
 		{
 			std::string chunk_id_name = std::string(reinterpret_cast<char*>(chunk_id));
 			chunk_id_name.resize(CHUNK_ID_SIZE);
@@ -47,7 +46,7 @@ namespace HumongousFileEditor
 			return text;
 		};
 
-		std::string getCloseChunkText(unsigned char* chunk_id, uint32_t recursion)
+		std::string getCloseChunkText(unsigned char* chunk_id, size_t recursion)
 		{
 			std::string chunk_id_name = std::string(reinterpret_cast<char*>(chunk_id));
 			chunk_id_name.resize(CHUNK_ID_SIZE);
@@ -110,26 +109,39 @@ namespace HumongousFileEditor
 
 				FileContainer fc = FileContainer(path);
 
+				std::map<std::string, uint32_t> chunks;
 				ChunkInfo header = fc.GetChunkInfo(0);
-				std::vector<ChunkInfo> chunks;
+				std::vector<ChunkInfo> top_chunks;
+
+				std::string text;
 				while (header.offset < fc.size)
 				{
-					std::string text;
-					for (int i = chunks.size(); i-- > 0; )
-						if (chunks[i].offset + chunks[i].ChunkSize() <= header.offset)
-						{
-							text = getCloseChunkText(chunks[i].chunk_id, chunks.size());
-							fwrite(text.c_str(), text.length(), 1, file);
-							chunks.erase(chunks.begin() + i);
-						}
+					std::string chunk_id_name = std::string(reinterpret_cast<char*>(header.chunk_id));
+					chunk_id_name.resize(CHUNK_ID_SIZE);
+					chunks[chunk_id_name]++;
+
 					ChunkInfo next = fc.GetNextChunk(header.offset);
-					bool b = header.offset + header.ChunkSize() >= next.offset;
+					bool b = header.offset + header.ChunkSize() > next.offset;
+					text += getOpenChunkText(header.chunk_id, header.offset, header.ChunkSize(), top_chunks.size(), b);
 					if (b)
-						chunks.push_back(header);
-					text = getOpenChunkText(header.chunk_id, header.offset, header.ChunkSize(), chunks.size(), b);
-					fwrite(text.c_str(), text.length(), 1, file);
+						top_chunks.push_back(header);
 					header = next;
+					for (int i = top_chunks.size(); i-- > 0; )
+						if (top_chunks[i].offset + top_chunks[i].ChunkSize() == header.offset)
+						{
+							ChunkInfo closed = top_chunks[i];
+							top_chunks.erase(top_chunks.begin() + i);
+							text += getCloseChunkText(closed.chunk_id, top_chunks.size());
+						}
 				}
+				for (auto i : chunks)
+				{
+					std::string chunk_text = i.first + ": " + std::to_string(i.second) + "\n";
+					fwrite(chunk_text.c_str(), chunk_text.length(), 1, file);
+				}
+				fwrite("\n", 1, 1, file);
+
+				fwrite(text.c_str(), text.length(), 1, file);
 
 				fclose(file);
 			}

@@ -36,6 +36,7 @@ namespace HumongousFileEditor
 
         FileContainer::FileContainer(const FileContainer& rhs)
         {
+			fileType = rhs.fileType;
 			size = rhs.size;
 			data = reinterpret_cast<unsigned char*>(malloc(size));
 			if (data != nullptr)

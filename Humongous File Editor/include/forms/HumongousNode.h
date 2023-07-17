@@ -3,12 +3,17 @@
 #include <windows.h>
 #include <cstdint>
 
+#include "file/FileType.h"
+
 using namespace System::Windows::Forms;
 using namespace System::Drawing;
 
-public ref class HumongousNode : public TreeNode
+namespace HumongousFileEditor
 {
-public:
-	uint32_t offset = 0;
-	System::String^ note;
-};
+	public ref class HumongousNode : public TreeNode
+	{
+	public:
+		uint32_t offset = 0;
+		files::FileType fileType;
+	};
+}

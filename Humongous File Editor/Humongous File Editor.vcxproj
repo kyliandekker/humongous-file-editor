@@ -135,13 +135,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FileIndexer.h" />
+    <ClInclude Include="include\file\Files.h" />
+    <ClInclude Include="include\file\FileType.h" />
+    <ClInclude Include="include\file\Resource.h" />
+    <ClInclude Include="include\file\ResourceType.h" />
+    <ClInclude Include="include\forms\HumongousNode.h" />
+    <ClInclude Include="include\functions\FileIndexer.h" />
     <ClInclude Include="HumongousEditorForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="include\forms\HumongousButton.h" />
-    <ClInclude Include="include\forms\HumongousNode.h" />
     <ClInclude Include="include\forms\HumongousToolStripMenuItem.h" />
+    <ClInclude Include="include\functions\TabFunctions.h" />
     <ClInclude Include="include\lowlevel\ChunkInfo.h" />
     <ClInclude Include="include\lowlevel\Defines.h" />
     <ClInclude Include="include\lowlevel\FileContainer.h" />
@@ -149,7 +154,9 @@
     <ClInclude Include="include\lowlevel\HumongousChunks.h" />
     <ClInclude Include="include\lowlevel\HumongousHeader.h" />
     <ClInclude Include="include\lowlevel\utils.h" />
+    <ClInclude Include="include\systems\AudioSystem.h" />
     <ClInclude Include="include\Temp.h" />
+    <ClInclude Include="include\functions\ResourceGatherer.h" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">
@@ -160,14 +167,18 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FileIndexer.cpp" />
+    <ClCompile Include="src\file\Files.cpp" />
+    <ClCompile Include="src\functions\FileIndexer.cpp" />
     <ClCompile Include="include\Temp.cpp" />
+    <ClCompile Include="src\functions\ResourceGatherer.cpp" />
+    <ClCompile Include="src\functions\TabFunctions.cpp" />
     <ClCompile Include="src\HumongousEditorForm.cpp" />
     <ClCompile Include="src\lowlevel\FileContainer.cpp" />
     <ClCompile Include="src\lowlevel\HumongousChunkDefinitions.cpp" />
     <ClCompile Include="src\lowlevel\HumongousChunks.cpp" />
     <ClCompile Include="src\lowlevel\HumongousHeader.cpp" />
     <ClCompile Include="src\lowlevel\utils.cpp" />
+    <ClCompile Include="src\systems\AudioSystem.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

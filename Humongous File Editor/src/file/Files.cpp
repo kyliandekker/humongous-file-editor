@@ -1,0 +1,80 @@
+#include "file/Files.h"
+#include "lowlevel/HumongousChunkDefinitions.h"
+
+HumongousFileEditor::files::Files HumongousFileEditor::files::FILES;
+
+namespace HumongousFileEditor
+{
+	namespace files
+	{
+		chunk_reader::FileContainer* Files::Read(const char* path)
+		{
+			// Check if we recognize the extension. If not, do not load it at all.
+			files::FileType fileType = files::getFileTypeByExtension(path);
+			if (fileType == files::FileType_Unknown)
+				return nullptr;
+
+			// Load the file.
+			chunk_reader::FileContainer fc = chunk_reader::FileContainer(path);
+
+			// Load the first header.
+			chunk_reader::ChunkInfo header = fc.GetChunkInfo(0);
+
+			switch (fileType)
+			{
+				case files::FileType_A:
+				{
+					if (utils::chunkcmp(header.chunk_id, chunk_reader::LECF_CHUNK_ID) != 0)
+					{
+						// If the first check fails, then decrypt. Maybe we already have a decrypted file, in which case it'd succeed.
+						utils::xorShift(fc.data, fc.size, 0x69);
+
+						// If after decryption it still does not start with a (a) chunk, return and give an error.
+						header = fc.GetChunkInfo(0);
+						if (utils::chunkcmp(header.chunk_id, chunk_reader::LECF_CHUNK_ID) != 0)
+							return nullptr;
+					}
+
+					if (a != nullptr)
+						delete a;
+					a = new chunk_reader::FileContainer(fc);
+					a->fileType = FileType_A;
+					return a;
+					break;
+				}
+				case files::FileType_HE2:
+				{
+					// File does not start with HE2 chunk.
+					if (utils::chunkcmp(header.chunk_id, chunk_reader::TLKB_CHUNK_ID) != 0)
+						return nullptr;
+
+					if (he2 != nullptr)
+						delete he2;
+					he2 = new chunk_reader::FileContainer(fc);
+					he2->fileType = FileType_HE2;
+					return he2;
+					break;
+				}
+				case files::FileType_HE4:
+				{
+					// File does not start with HE4 chunk.
+					if (utils::chunkcmp(header.chunk_id, chunk_reader::SONG_CHUNK_ID) != 0)
+						return nullptr;
+
+					if (he4 != nullptr)
+						delete he4;
+					he4 = new chunk_reader::FileContainer(fc);
+					he4->fileType = FileType_HE4;
+					return he4;
+					break;
+				}
+				default:
+				{
+					return nullptr;
+				}
+			}
+
+			return nullptr;
+		}
+	}
+}
