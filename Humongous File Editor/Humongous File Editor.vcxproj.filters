@@ -78,6 +78,12 @@
     <ClInclude Include="include\file\ResourceType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\file\BMPHeader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\file\BMPTransparency.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">

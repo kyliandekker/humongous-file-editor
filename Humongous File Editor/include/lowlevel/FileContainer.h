@@ -21,6 +21,7 @@ namespace HumongousFileEditor
 
 			files::FileType fileType;
 			size_t size = 0;
+			std::string path;
 			unsigned char* data = nullptr;
 		};
 	}

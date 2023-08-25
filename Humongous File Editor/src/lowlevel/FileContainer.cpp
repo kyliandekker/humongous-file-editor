@@ -38,6 +38,7 @@ namespace HumongousFileEditor
         {
 			fileType = rhs.fileType;
 			size = rhs.size;
+			path = rhs.path;
 			data = reinterpret_cast<unsigned char*>(malloc(size));
 			if (data != nullptr)
 				memcpy(data, rhs.data, size);

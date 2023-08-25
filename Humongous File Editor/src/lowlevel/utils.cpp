@@ -19,6 +19,11 @@ namespace HumongousFileEditor
 			return b;
 		}
 
+		int unsignedCharCmp(unsigned char chunkID1, unsigned char chunkID2)
+		{
+			return chunkID1 == chunkID2;
+		}
+
 		void reverseBytes(unsigned char* start, int size)
 		{
 			unsigned char* lo = start;

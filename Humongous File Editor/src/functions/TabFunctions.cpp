@@ -6,61 +6,44 @@
 #include "forms/HumongousButton.h"
 #include "systems/AudioSystem.h"
 #include "file/BMPHeader.h"
+#include "file/BMPTransparency.h"
 #include <bitset>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iterator>
+#include <algorithm>
 
 namespace HumongousFileEditor
 {
-	size_t getOffsetChunk(chunk_reader::FileContainer*& fc, size_t offset, const char* chunk_name)
+	constexpr int LOOKUP_LIMIT = 15;
+
+	/// <summary>
+	/// Returns the offset of a chunk (looking from offset)
+	/// </summary>
+	/// <param name="fc">The file.</param>
+	/// <param name="offset">The offset from where to look.</param>
+	/// <param name="chunk_name">The chunk ID.</param>
+	/// <returns>Offset if found, -1 if not found.</returns>
+	int32_t getOffsetChunk(chunk_reader::FileContainer*& fc, size_t offset, const char* chunk_name)
 	{
 		chunk_reader::ChunkInfo info = fc->GetChunkInfo(offset);
 
 		int i = 0;
-		while (i < 15 && offset < fc->size)
+		while (i < LOOKUP_LIMIT && offset < fc->size)
 		{
 			if (utils::chunkcmp(info.chunk_id, chunk_name) == 0)
-				break;
+				return info.offset;
 			info = fc->GetNextChunk(info.offset);
 		}
-		if (i >= 15)
-			return -1;
 
-		return info.offset;
+		return -1;
 	}
 	// Adds a row of info to the info tab.
-	void AddInfoRow(System::String^ key, System::String^ value, System::Windows::Forms::TabPage^ tab, float& posX, float& posY)
+	void AddInfoRow(System::String^ key, System::String^ value, System::Windows::Forms::DataGridView^ propertyGrid, float& posX, float& posY)
 	{
-		System::Windows::Forms::Label^ keyLabel;
-		keyLabel = (gcnew System::Windows::Forms::Label());
-		keyLabel->SuspendLayout();
-
-		System::Windows::Forms::Label^ valueLabel;
-		valueLabel = (gcnew System::Windows::Forms::Label());
-		valueLabel->SuspendLayout();
-
-		keyLabel->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Left)
-			| System::Windows::Forms::AnchorStyles::Right));
-		keyLabel->AutoSize = true;
-		keyLabel->Location = System::Drawing::Point(posX, posY);
-		keyLabel->Name = key;
-		keyLabel->Size = System::Drawing::Size(35, 13);
-		keyLabel->TabIndex = 0;
-		keyLabel->Text = key;
-		keyLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
-
-		valueLabel->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Left)
-			| System::Windows::Forms::AnchorStyles::Right));
-		valueLabel->AutoSize = true;
-		valueLabel->Location = System::Drawing::Point(posX + 100, posY);
-		valueLabel->Name = value;
-		valueLabel->Size = System::Drawing::Size(35, 13);
-		valueLabel->TabIndex = 1;
-		valueLabel->Text = value;
-		valueLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
-
-		tab->Controls->Add(keyLabel);
-		tab->Controls->Add(valueLabel);
-
-		posY += 40;
+		int i = propertyGrid->Rows->Add(key, value);
+		propertyGrid->Rows[i]->ReadOnly = true;
 	}
 
 	// Callback for the play button.
@@ -68,66 +51,49 @@ namespace HumongousFileEditor
 	{
 		HumongousButton^ btn = (HumongousButton^)sender;
 
-		chunk_reader::FileContainer* fc = nullptr;
-		switch (btn->fileType)
-		{
-			case files::FileType_A:
-			{
-				fc = files::FILES.a;
-				break;
-			}
-			case files::FileType_HE2:
-			{
-				fc = files::FILES.he2;
-				break;
-			}
-			case files::FileType_HE4:
-			{
-				fc = files::FILES.he4;
-				break;
-			}
-		}
+		chunk_reader::FileContainer* fc = files::FILES.getFile(btn->fileType);
 
 		if (fc == nullptr)
 			return;
 
 		chunk_reader::SDAT_Chunk sdat_chunk;
-		memcpy(&sdat_chunk, utils::add(fc->data, btn->offset), sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data));
-		sdat_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, btn->offset + sizeof(chunk_reader::HumongousHeader)));
+		chunk_reader::HSHD_Chunk hshd_chunk;
+		bool has_sdat = false;
+		chunk_reader::ChunkInfo chunk = fc->GetChunkInfo(btn->offset);
+		if (utils::chunkcmp(chunk.chunk_id, chunk_reader::SGEN_CHUNK_ID) == 0)
+			has_sdat = SongTab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::TALK_CHUNK_ID) == 0)
+			has_sdat = TalkieTab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::DIGI_CHUNK_ID) == 0)
+			has_sdat = DigiTab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+
+		if (!has_sdat)
+		{
+			System::Windows::Forms::MessageBox::Show("Cannot process file type", "Decompilation failed", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+			return;
+		}
 
 		audioSystem.Stop();
-		audioSystem.Play(reinterpret_cast<unsigned char*>(utils::add(fc->data, btn->offset + sizeof(chunk_reader::HumongousHeader))), sdat_chunk.ChunkSize());
+		audioSystem.Play(sdat_chunk.data, sdat_chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader) - sizeof(sdat_chunk.data));
 	}
 	// Callback for the stop button.
 	System::Void TabFunctions::StopButton_Click(System::Object^ sender, System::EventArgs^ e)
 	{
 		audioSystem.Stop();
 	}
+	// Callback for the export button.
+	System::Void TabFunctions::ExportButton_Click(System::Object^ sender, System::EventArgs^ e)
+	{
+		audioSystem.Stop();
+	}
 	void TabFunctions::AddTab(HumongousNode^ node, System::Windows::Forms::TabControl^ tabControl)
 	{
-		chunk_reader::FileContainer* fc = nullptr;
-		switch (node->fileType)
-		{
-			case files::FileType_A:
-			{
-				fc = files::FILES.a;
-				break;
-			}
-			case files::FileType_HE2:
-			{
-				fc = files::FILES.he2;
-				break;
-			}
-			case files::FileType_HE4:
-			{
-				fc = files::FILES.he4;
-				break;
-			}
-		}
+		chunk_reader::FileContainer* fc = files::FILES.getFile(node->fileType);
 
 		if (fc == nullptr)
 			return;
 
+		// Construct tab.
 		System::Windows::Forms::TabPage^ newTab;
 		newTab = (gcnew System::Windows::Forms::TabPage());
 		newTab->SuspendLayout();
@@ -141,28 +107,44 @@ namespace HumongousFileEditor
 		newTab->Text = node->Text;
 		newTab->UseVisualStyleBackColor = true;
 
-		System::Windows::Forms::Panel^ actionPanel;
-		actionPanel = (gcnew System::Windows::Forms::TableLayoutPanel());
+		System::Windows::Forms::DataGridView^ propertyGrid = (gcnew System::Windows::Forms::DataGridView());
+		newTab->Controls->Add(propertyGrid);
+		propertyGrid->Dock = System::Windows::Forms::DockStyle::Fill;
+		propertyGrid->Location = System::Drawing::Point(0, 0);
+		propertyGrid->Name = L"propertyGrid1";
+		propertyGrid->Size = System::Drawing::Size(497, 462);
+		propertyGrid->TabIndex = 2;
+		propertyGrid->Columns->Add(gcnew System::String("Property Name"), gcnew System::String("Property Name"));
+		propertyGrid->Columns->Add(gcnew System::String("Value"), gcnew System::String("Value"));
+		propertyGrid->Columns[0]->AutoSizeMode = System::Windows::Forms::DataGridViewAutoSizeColumnMode::Fill;
+		propertyGrid->Columns[1]->AutoSizeMode = System::Windows::Forms::DataGridViewAutoSizeColumnMode::Fill;
+		propertyGrid->ReadOnly = true;
+		propertyGrid->ColumnHeadersVisible = false;
+		propertyGrid->RowHeadersVisible = false;
 
+		// Construct action panel (button area)
+		System::Windows::Forms::FlowLayoutPanel^ actionPanel = gcnew System::Windows::Forms::FlowLayoutPanel();
+		actionPanel->BackColor = System::Drawing::Color::WhiteSmoke;
 		actionPanel->Dock = System::Windows::Forms::DockStyle::Bottom;
-		actionPanel->Location = System::Drawing::Point(3, 306);
-		actionPanel->Name = L"Action Panel";
-		actionPanel->Size = System::Drawing::Size(418, 87);
-		actionPanel->TabIndex = 1;
+		actionPanel->Location = System::Drawing::Point(0, 334);
+		actionPanel->Name = L"flowLayoutPanel1";
+		actionPanel->Size = System::Drawing::Size(355, 64);
+		actionPanel->TabIndex = 0;
 
+		// Construct info area.
 		float posX = 35, posY = 35;
-		AddInfoRow("Name", node->Text, newTab, posX, posY);
-		AddInfoRow("Pos", gcnew System::String(std::to_string(node->offset).c_str()), newTab, posX, posY);
+		AddInfoRow("Name", node->Text, propertyGrid, posX, posY);
+		AddInfoRow("Pos", gcnew System::String(std::to_string(node->offset).c_str()), propertyGrid, posX, posY);
 
 		chunk_reader::ChunkInfo chunk = fc->GetChunkInfo(node->offset);
 		if (utils::chunkcmp(chunk.chunk_id, chunk_reader::SGEN_CHUNK_ID) == 0)
-			GetSong(fc, node->offset, newTab, actionPanel, posX, posY);
+			GetSong(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
 		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::TALK_CHUNK_ID) == 0)
-			GetTalk(fc, node->offset, newTab, actionPanel, posX, posY);
+			GetTalk(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
 		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::DIGI_CHUNK_ID) == 0)
-			GetDigi(fc, node->offset, newTab, actionPanel, posX, posY);
+			GetDigi(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
 		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::SCRP_CHUNK_ID) == 0)
-			GetScrp(fc, node->offset, newTab, actionPanel, posX, posY);
+			GetScrp(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
 		else if (
 				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM00_CHUNK_ID) == 0 ||
 				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM01_CHUNK_ID) == 0 ||
@@ -188,8 +170,11 @@ namespace HumongousFileEditor
 				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM0D_CHUNK_ID) == 0 ||
 				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM0E_CHUNK_ID) == 0 ||
 				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM0F_CHUNK_ID) == 0)
-			GetImXX(fc, node->offset, newTab, actionPanel, posX, posY);
+			GetImXX(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::DISK_CHUNK_ID) == 0)
+			GetRNAM(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
 
+		// Construct export button.
 		HumongousButton^ exportButton;
 		exportButton = (gcnew HumongousButton());
 
@@ -197,6 +182,7 @@ namespace HumongousFileEditor
 		exportButton->Name = gcnew System::String("Export_") + gcnew System::String(newTab->Name);
 		exportButton->Size = System::Drawing::Size(75, 23);
 		exportButton->TabIndex = 2;
+		exportButton->offset = node->offset;
 		exportButton->Text = L"Export";
 		exportButton->UseVisualStyleBackColor = true;
 
@@ -208,76 +194,51 @@ namespace HumongousFileEditor
 		newTab->Controls->Add(actionPanel);
 		tabControl->Controls->Add(newTab);
 	}
-	void TabFunctions::GetTalk(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetTalk(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
-		AddInfoRow("Type", gcnew System::String("Talk"), tab, posX, posY);
+		AddInfoRow("Type", gcnew System::String("Talk"), propertyGrid, posX, posY);
 
-		// Get HSHD chunk for the sample rate.
-		size_t hshd_offset = getOffsetChunk(fc, offset, chunk_reader::HSHD_CHUNK_ID);
-		chunk_reader::HSHD_Chunk hshd_chunk;
-		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
-
-		// Get SDAT chunk for the raw audio data.
-		size_t sdat_offset = getOffsetChunk(fc, offset, chunk_reader::SDAT_CHUNK_ID);
 		chunk_reader::SDAT_Chunk sdat_chunk;
-		size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
-		memcpy(&sdat_chunk, utils::add(fc->data, sdat_offset), header_size);
-		sdat_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, sdat_offset + header_size));
-
-		AddInfoRow("Sample Rate", gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str()), tab, posX, posY);
-		AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str()), tab, posX, posY);
-
-		AddSoundButtons(tab, sdat_offset, fc->fileType, panel);
-	}
-	void TabFunctions::GetDigi(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
-	{
-		AddInfoRow("Type", gcnew System::String("Sfx"), tab, posX, posY);
-
-		// Get HSHD chunk for the sample rate.
-		size_t hshd_offset = getOffsetChunk(fc, offset, chunk_reader::HSHD_CHUNK_ID);
 		chunk_reader::HSHD_Chunk hshd_chunk;
-		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
+		if (!TalkieTab::GetData(fc, offset, sdat_chunk, hshd_chunk))
+			return;
 
-		// Get SDAT chunk for the raw audio data.
-		size_t sdat_offset = getOffsetChunk(fc, offset, chunk_reader::SDAT_CHUNK_ID);
-		chunk_reader::SDAT_Chunk sdat_chunk;
-		size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
-		memcpy(&sdat_chunk, utils::add(fc->data, sdat_offset), header_size);
-		sdat_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, sdat_offset + header_size));
+		AddInfoRow("Sample Rate", gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str()), propertyGrid, posX, posY);
+		AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str()), propertyGrid, posX, posY);
 
-		AddInfoRow("Sample Rate", gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str()), tab, posX, posY);
-		AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str()), tab, posX, posY);
-
-		AddSoundButtons(tab, sdat_offset, fc->fileType, panel);
+		AddSoundButtons(tab, offset, fc->fileType, panel);
 	}
-	void TabFunctions::GetSong(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetDigi(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
-		AddInfoRow("Type", gcnew System::String("Song"), tab, posX, posY);
+		AddInfoRow("Type", gcnew System::String("Sfx"), propertyGrid, posX, posY);
 
-		// Get SGEN chunk first (tells us the position of the SONG.
-		chunk_reader::SGEN_Chunk sgen_chunk;
-		memcpy(&sgen_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::SGEN_Chunk));
-
-		// Get HSHD chunk for the sample rate.
-		size_t hshd_offset = getOffsetChunk(fc, sgen_chunk.song_pos, chunk_reader::HSHD_CHUNK_ID);
+		chunk_reader::SDAT_Chunk sdat_chunk;
 		chunk_reader::HSHD_Chunk hshd_chunk;
-		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
+		if (!DigiTab::GetData(fc, offset, sdat_chunk, hshd_chunk))
+			return;
 
-		// Get SDAT chunk for the raw audio data.
-		size_t sdat_offset = getOffsetChunk(fc, sgen_chunk.song_pos, chunk_reader::SDAT_CHUNK_ID);
-		chunk_reader::SDAT_Chunk sdat_chunk;
-		size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
-		memcpy(&sdat_chunk, utils::add(fc->data, sdat_offset), header_size);
-		sdat_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, sdat_offset + header_size));
+		AddInfoRow("Sample Rate", gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str()), propertyGrid, posX, posY);
+		AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str()), propertyGrid, posX, posY);
 
-		AddInfoRow("Sample Rate", gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str()), tab, posX, posY);
-		AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str()), tab, posX, posY);
-
-		AddSoundButtons(tab, sdat_offset, fc->fileType, panel);
+		AddSoundButtons(tab, offset, fc->fileType, panel);
 	}
-	void TabFunctions::GetScrp(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetSong(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
-		AddInfoRow("Type", gcnew System::String("Script"), tab, posX, posY);
+		AddInfoRow("Type", gcnew System::String("Song"), propertyGrid, posX, posY);
+
+		chunk_reader::SDAT_Chunk sdat_chunk;
+		chunk_reader::HSHD_Chunk hshd_chunk;
+		if (!SongTab::GetData(fc, offset, sdat_chunk, hshd_chunk))
+			return;
+
+		AddInfoRow("Sample Rate", gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str()), propertyGrid, posX, posY);
+		AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str()), propertyGrid, posX, posY);
+
+		AddSoundButtons(tab, offset, fc->fileType, panel);
+	}
+	void TabFunctions::GetScrp(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	{
+		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
 
 		//System::Windows::Forms::TextBox^ textBox1 = gcnew System::Windows::Forms::TextBox();
 		//textBox1->Location = System::Drawing::Point(panel->Location.X, panel->Location.Y);
@@ -295,140 +256,97 @@ namespace HumongousFileEditor
 
 		//tab->Controls->Add(textBox1);
 	}
-	//void rzil()
-	//{
-	//	std::string bits;
-	//	for (size_t i = 0; i < bmap_size; i++)
-	//		bits += std::bitset<8>(reinterpret_cast<unsigned char>(utils::add(bmap_chunk.data, i))).to_string();
-	//}
-	void TabFunctions::GetImXX(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetImXX(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
-		AddInfoRow("Type", gcnew System::String("Image"), tab, posX, posY);
+		//AddInfoRow("Type", gcnew System::String("Image"), propertyGrid, posX, posY);
 
-		// Get RMHD chunk for width and height of image.
-		size_t rmhd_offset = getOffsetChunk(fc, offset, chunk_reader::RMDA_CHUNK_ID);
-		chunk_reader::RMHD_Chunk rmhd_chunk;
-		memcpy(&rmhd_chunk, utils::add(fc->data, rmhd_offset), sizeof(chunk_reader::RMHD_Chunk));
+		//// Get RMHD chunk for width and height of image.
+		//size_t rmhd_offset = getOffsetChunk(fc, offset, chunk_reader::RMHD_CHUNK_ID);
+		//chunk_reader::RMHD_Chunk rmhd_chunk;
+		//memcpy(&rmhd_chunk, utils::add(fc->data, rmhd_offset), sizeof(chunk_reader::RMHD_Chunk));
 
-		AddInfoRow("Width", gcnew System::String(std::to_string(rmhd_chunk.width).c_str()), tab, posX, posY);
-		AddInfoRow("Height", gcnew System::String(std::to_string(rmhd_chunk.height).c_str()), tab, posX, posY);
+		//AddInfoRow("Width", gcnew System::String(std::to_string(rmhd_chunk.width).c_str()), propertyGrid, posX, posY);
+		//AddInfoRow("Height", gcnew System::String(std::to_string(rmhd_chunk.height).c_str()), propertyGrid, posX, posY);
 
-		// Get BMAP chunk for raw data.
-		size_t bmap_offset = getOffsetChunk(fc, offset, chunk_reader::BMAP_CHUNK_ID);
-		chunk_reader::BMAP_Chunk bmap_chunk;
-		size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
-		memcpy(&bmap_chunk, utils::add(fc->data, bmap_offset), header_size);
-		bmap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, bmap_offset + header_size));
+		//// Get BMAP chunk for raw data.
+		//size_t bmap_offset = getOffsetChunk(fc, offset, chunk_reader::BMAP_CHUNK_ID);
+		//chunk_reader::BMAP_Chunk bmap_chunk;
+		//size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
+		//memcpy(&bmap_chunk, utils::add(fc->data, bmap_offset), header_size);
+		//bmap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, bmap_offset + header_size));
 
-		// Get TRNS chunk for transparency settings.
-		size_t trns_offset = getOffsetChunk(fc, offset, chunk_reader::RMDA_CHUNK_ID);
-		chunk_reader::TRNS_Chunk trns_chunk;
-		memcpy(&trns_chunk, utils::add(fc->data, trns_offset), sizeof(chunk_reader::TRNS_Chunk));
+		//// Get TRNS chunk for transparency settings.
+		//size_t trns_offset = getOffsetChunk(fc, offset, chunk_reader::TRNS_CHUNK_ID);
+		//chunk_reader::TRNS_Chunk trns_chunk;
+		//memcpy(&trns_chunk, utils::add(fc->data, trns_offset), sizeof(chunk_reader::TRNS_Chunk));
 
-		// Actual bmap byte size.
-		size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
+		//// Actual bmap byte size.
+		//size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
 
-		uint8_t encoding = bmap_chunk.transparency;
+		//BMAP::BMPTransparency transparency;
+		//if (bmap_chunk.transparency >= 134 && bmap_chunk.transparency <= 138)
+		//	transparency = BMAP::BMPTransparency::Not_Transparent;
+		//else if (bmap_chunk.transparency >= 144 && bmap_chunk.transparency <= 148)
+		//	transparency = BMAP::BMPTransparency::Transparent;
+		//else if (bmap_chunk.transparency == 1 || bmap_chunk.transparency == 149)
+		//	transparency = BMAP::BMPTransparency::NotCompressed;
+		//else if (bmap_chunk.transparency == 150)
+		//	transparency = BMAP::BMPTransparency::NoIdea;
+		//else
+		//	transparency = BMAP::BMPTransparency::Invalid;
 
-		bool rle = false;			// uses RLE encoding?
-		bool horiz = false;			// draws horizontal or vertical?
-		bool trans = false;			// has transparency?
-		bool exprange = false;		// expanded range for 3-bit relative palette set?
-									// ([-4, -1] and [1, 4] instead of [-4, 3])
-		uint8_t bpabsol = 0;			// bits per absolute palette set
-		uint8_t bprel = 0;				// bits per relative palette set
+		//AddInfoRow("Transparent", gcnew System::String(transparency == BMAP::BMPTransparency::Transparent ? "Yes" : "No"), propertyGrid, posX, posY);
 
-		if (encoding >= 134 && encoding <= 138)
-		{
-			// Not transparent.
-		}
-		else if (encoding >= 144 && encoding <= 148)
-		{
-			// Transparent.
-		}
-		else if (encoding == 1 || encoding == 149)
-		{
-			// Not compressed, not RLE.
-		}
-		else if (encoding == 150)
-		{
-			// No idea.
-		}
-		else
-		{
-			// Invalid.
-		}
+		////std::string bits;
+		////for (size_t i = 0; i < bmap_size; i++)
+		////	bits += std::bitset<8>(reinterpret_cast<unsigned char*>(utils::add(bmap_chunk.data, i))).to_string();
 
-		bpabsol = encoding % 10;
+		////auto gbits = grouper<std::string>(bits, 1);
+		////std::vector<int> bmap;
+		////bmap.reserve(rmhd_chunk.height * rmhd_chunk.width);
+		////for (int i = 0; i < rmhd_chunk.height * rmhd_chunk.width; ++i) {
+		////	std::string bit_str;
+		////	std::copy_n(std::prev(gbits[i / bpp].base()), bpp,
+		////		std::back_inserter(bit_str));
+		////	bmap.push_back(std::stoi(bit_str, 0, 2));
+		////}
 
-		if (encoding <= 48)
-			bprel = 1;
-		else
-			bprel = 3;
+		//FILE* rfile = nullptr;
 
-		size_t total_bmap_pixels_size = rmhd_chunk.width * rmhd_chunk.height;
-		int* pixels = reinterpret_cast<int*>(malloc(total_bmap_pixels_size));
-		for (int i = 0; i < total_bmap_pixels_size; i++)
-			pixels[i] = trns_chunk.trns_val;
-
-		uint64_t remaining_pixels = total_bmap_pixels_size;
-
-		FILE* rfile = nullptr;
-
-		// Open the file.
-		fopen_s(&rfile, "D:/ekkes/download.bmp", "rb");
-		if (rfile == nullptr)
-		{
-			return;
-		}
-
-		BMAP::BMPHead bmpHead;
-		BMAP::BMPHeader header;
-
-		int infohd_size = sizeof(BMAP::BMPHeader);
-		int offbits = sizeof(BMAP::BMPHead) + infohd_size + 1024;
-		int bitcount = 8;
-		int sizeimage = total_bmap_pixels_size;
-		int fsize = offbits + sizeimage;
-		int xpels = 0;
-		int ypels = 0;
-		int clrused = 256;
-		int clrimp = 256;
-
-		header.infohd_width = rmhd_chunk.width;
-		header.infohd_width = rmhd_chunk.height;
-		bmpHead.filehd_size = fsize;
-		bmpHead.filehd_offbits = offbits;
-		header.infohd_size = infohd_size;
-		header.infohd_bitcount = bitcount;
-		header.infohd_sizeimage = sizeimage;
-		header.infohd_xpelsm = xpels;
-		header.infohd_ypelsm = ypels;
-		header.infohd_clrused = clrused;
-		header.infohd_clrimp = clrimp;
-
-		fwrite(&bmpHead, sizeof(bmpHead), 1, rfile);
-		fwrite(&header, sizeof(header), 1, rfile);
-
-		//unsigned char colortable[1024];
-		//// fill colortable with colors from palette
-		//for (int i = 0; i < 1024; i += 4)
+		//// Open the file.
+		//fopen_s(&rfile, "D:/ekkes/download.bmp", "rb");
+		//if (rfile == nullptr)
 		//{
-		//	colortable[i + 3] = 0;
-		//	int color = bmpdat.get_palette()[i / 4];
-		//	colortable[i + 2] = color & 0xFF;
-		//	colortable[i + 1] = (color & 0xFF00) >> 8;
-		//	colortable[i] = (color & 0xFF0000) >> 16;
+		//	return;
 		//}
-		//fwrite(colortable, 256 * 4, 1, rfile);
 
-		//System::Windows::Forms::PictureBox^ pictureBox;
-		//pictureBox = (gcnew System::Windows::Forms::PictureBox());
+		//BMAP::BMPHead bmpHead;
+		//BMAP::BMPHeader header;
 
-		//array<unsigned char>^ ar = gcnew array<unsigned char>(size);
+		//int infohd_size = sizeof(BMAP::BMPHeader);
+		//int offbits = sizeof(BMAP::BMPHead) + infohd_size + 1024;
+		//int bitcount = 8;
+		//int sizeimage = total_bmap_pixels_size;
+		//int fsize = offbits + sizeimage;
+		//int xpels = 0;
+		//int ypels = 0;
+		//int clrused = 256;
+		//int clrimp = 256;
 
-		//for (size_t i = 0; i < size; i++)
-		//	ar[i] = bmap_chunk.data[i];
+		//header.infohd_width = rmhd_chunk.width;
+		//header.infohd_width = rmhd_chunk.height;
+		//bmpHead.filehd_size = fsize;
+		//bmpHead.filehd_offbits = offbits;
+		//header.infohd_size = infohd_size;
+		//header.infohd_bitcount = bitcount;
+		//header.infohd_sizeimage = sizeimage;
+		//header.infohd_xpelsm = xpels;
+		//header.infohd_ypelsm = ypels;
+		//header.infohd_clrused = clrused;
+		//header.infohd_clrimp = clrimp;
+
+		//fwrite(&bmpHead, sizeof(bmpHead), 1, rfile);
+		//fwrite(&header, sizeof(header), 1, rfile);
 
 		//System::IO::MemoryStream^ ms = gcnew System::IO::MemoryStream(ar);
 		//System::Drawing::Image^ pic = Image::FromStream(ms);
@@ -442,6 +360,44 @@ namespace HumongousFileEditor
 		//pictureBox->SizeMode = PictureBoxSizeMode::StretchImage;
 
 		//tab->Controls->Add(pictureBox);
+	}
+	void TabFunctions::GetRNAM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	{
+		AddInfoRow("Type", gcnew System::String("Rooms"), propertyGrid, posX, posY);
+
+		chunk_reader::DISK_Chunk disk_chunk;
+		memcpy(&disk_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::DISK_Chunk) - sizeof(disk_chunk.data));
+
+		AddInfoRow("Number of Rooms", gcnew System::String(std::to_string(disk_chunk.num_rooms).c_str()), propertyGrid, posX, posY);
+
+		// Get HSHD chunk for the sample rate.
+		int32_t rnam_offset = getOffsetChunk(fc, offset, chunk_reader::RNAM_CHUNK_ID);
+		if (rnam_offset == -1)
+			return;
+
+		chunk_reader::RNAM_Chunk* rnam_chunk = reinterpret_cast<chunk_reader::RNAM_Chunk*>(utils::add(fc->data, rnam_offset));
+
+		std::vector<std::string> room_names;
+
+		size_t rnam_end = rnam_offset + rnam_chunk->ChunkSize();
+		size_t pos = rnam_offset + sizeof(chunk_reader::HumongousHeader) + sizeof(uint16_t);
+		std::string room_name;
+
+		while (pos < rnam_end)
+		{
+			unsigned char ch;
+			memcpy(&ch, utils::add(fc->data, pos), sizeof(char));
+			if (utils::unsignedCharCmp(ch, '\0'))
+			{
+				room_names.push_back(room_name);
+				AddInfoRow(gcnew System::String(std::to_string(room_names.size()).c_str()), gcnew System::String(room_name.c_str()), propertyGrid, posX, posY);
+				room_name = "";
+				pos += sizeof(uint16_t);
+			}
+			else
+				room_name += ch;
+			pos++;
+		}
 	}
 	void TabFunctions::AddSoundButtons(System::Windows::Forms::TabPage^ tab, size_t offset, files::FileType fileType, System::Windows::Forms::Panel^ panel)
 	{
@@ -474,5 +430,72 @@ namespace HumongousFileEditor
 
 		panel->Controls->Add(playButton);
 		panel->Controls->Add(stopButton);
+	}
+
+	bool TalkieTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk)
+	{
+		// Get HSHD chunk for the sample rate.
+		int32_t hshd_offset = getOffsetChunk(fc, offset, chunk_reader::HSHD_CHUNK_ID);
+		if (hshd_offset == -1)
+			return false;
+
+		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
+
+		// Get SDAT chunk for the raw audio data.
+		int32_t sdat_offset = getOffsetChunk(fc, offset, chunk_reader::SDAT_CHUNK_ID);
+		if (sdat_offset == -1)
+			return false;
+
+		size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
+		memcpy(&sdat_chunk, utils::add(fc->data, sdat_offset), header_size);
+		sdat_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, sdat_offset + header_size));
+		
+		return true;
+	}
+
+	bool SongTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk)
+	{
+		// Get SGEN chunk first (tells us the position of the SONG.
+		chunk_reader::SGEN_Chunk sgen_chunk;
+		memcpy(&sgen_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::SGEN_Chunk));
+
+		// Get HSHD chunk for the sample rate.
+		int32_t hshd_offset = getOffsetChunk(fc, sgen_chunk.song_pos, chunk_reader::HSHD_CHUNK_ID);
+		if (hshd_offset == -1)
+			return false;
+
+		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
+
+		// Get SDAT chunk for the raw audio data.
+		int32_t sdat_offset = getOffsetChunk(fc, sgen_chunk.song_pos, chunk_reader::SDAT_CHUNK_ID);
+		if (sdat_offset == -1)
+			return false;
+
+		size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
+		memcpy(&sdat_chunk, utils::add(fc->data, sdat_offset), header_size);
+		sdat_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, sdat_offset + header_size));
+
+		return true;
+	}
+
+	bool DigiTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk)
+	{
+		// Get HSHD chunk for the sample rate.
+		int32_t hshd_offset = getOffsetChunk(fc, offset, chunk_reader::HSHD_CHUNK_ID);
+		if (hshd_offset == -1)
+			return false;
+
+		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
+
+		// Get SDAT chunk for the raw audio data.
+		int32_t sdat_offset = getOffsetChunk(fc, offset, chunk_reader::SDAT_CHUNK_ID);
+		if (sdat_offset == -1)
+			return false;
+
+		size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
+		memcpy(&sdat_chunk, utils::add(fc->data, sdat_offset), header_size);
+		sdat_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, sdat_offset + header_size));
+
+		return true;
 	}
 }

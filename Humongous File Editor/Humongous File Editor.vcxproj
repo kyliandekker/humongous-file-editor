@@ -135,6 +135,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\file\BMPHeader.h" />
+    <ClInclude Include="include\file\BMPTransparency.h" />
     <ClInclude Include="include\file\Files.h" />
     <ClInclude Include="include\file\FileType.h" />
     <ClInclude Include="include\file\Resource.h" />

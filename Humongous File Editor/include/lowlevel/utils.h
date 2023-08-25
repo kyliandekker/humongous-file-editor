@@ -21,6 +21,14 @@ namespace HumongousFileEditor
 		int chunkcmp(unsigned char* chunkID1, const char* chunkID2);
 
 		/// <summary>
+		/// Compares two chunks.
+		/// </summary>
+		/// <param name="chunkID1">Name of chunk 1.</param>
+		/// <param name="chunkID2">Name of chunk 2.</param>
+		/// <returns></returns>
+		int unsignedCharCmp(unsigned char chunkID1, unsigned char chunkID2);
+
+		/// <summary>
 		/// Function that reverses bytes.
 		/// </summary>
 		/// <param name="start">Start of the array of characters.</param>

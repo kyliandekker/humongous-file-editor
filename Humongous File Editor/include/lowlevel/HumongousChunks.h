@@ -20,8 +20,6 @@ namespace HumongousFileEditor
 		struct SBNG_Chunk : HumongousHeader
 		{
 			SBNG_Chunk() = default;
-			SBNG_Chunk(const SBNG_Chunk& rhs);
-			SBNG_Chunk(SBNG_Chunk* a_DataBuffer);
 
 			unsigned char* data = nullptr;
 		};
@@ -34,7 +32,6 @@ namespace HumongousFileEditor
 		struct SGHD_Chunk : HumongousHeader
 		{
 			SGHD_Chunk() = default;
-			SGHD_Chunk(SGHD_Chunk* a_DataBuffer);
 
 			uint32_t num_of_songs = 0;
 			unsigned char unknown1[28];
@@ -43,7 +40,6 @@ namespace HumongousFileEditor
 		struct SGEN_Chunk : HumongousHeader
 		{
 			SGEN_Chunk() = default;
-			SGEN_Chunk(SGEN_Chunk* a_DataBuffer);
 
 			uint32_t id = 0;
 			// Direct pointer to the DIGI header of the song.
@@ -60,7 +56,6 @@ namespace HumongousFileEditor
 		struct HSHD_Chunk : HumongousHeader
 		{
 			HSHD_Chunk() = default;
-			HSHD_Chunk(HSHD_Chunk* a_DataBuffer);
 
 			unsigned char unknown1[2] = {
 				0,
@@ -83,8 +78,6 @@ namespace HumongousFileEditor
 		struct SDAT_Chunk : HumongousHeader
 		{
 			SDAT_Chunk() = default;
-			SDAT_Chunk(const SDAT_Chunk& rhs);
-			SDAT_Chunk(SDAT_Chunk* a_DataBuffer);
 
 			unsigned char* data = nullptr;
 		};
@@ -112,8 +105,6 @@ namespace HumongousFileEditor
 		struct SCRP_Chunk : HumongousHeader
 		{
 			SCRP_Chunk() = default;
-			SCRP_Chunk(const SCRP_Chunk& rhs);
-			SCRP_Chunk(SCRP_Chunk* a_DataBuffer);
 
 			unsigned char* data = nullptr;
 		};
@@ -130,8 +121,6 @@ namespace HumongousFileEditor
 		struct BMAP_Chunk : HumongousHeader
 		{
 			BMAP_Chunk() = default;
-			BMAP_Chunk(const BMAP_Chunk& rhs);
-			BMAP_Chunk(BMAP_Chunk* a_DataBuffer);
 
 			uint8_t transparency = 0;
 			uint8_t fill_color = 0;
@@ -143,6 +132,21 @@ namespace HumongousFileEditor
 			TRNS_Chunk() = default;
 
 			uint8_t trns_val = 0;
+		};
+
+		struct DISK_Chunk : HumongousHeader
+		{
+			DISK_Chunk() = default;
+
+			uint8_t num_rooms = 0;
+			unsigned char* data = nullptr;
+		};
+
+		struct RNAM_Chunk : HumongousHeader
+		{
+			RNAM_Chunk() = default;
+
+			unsigned char* data = nullptr;
 		};
 #pragma pack(pop)
 	}

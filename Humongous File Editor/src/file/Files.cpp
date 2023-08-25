@@ -15,10 +15,12 @@ namespace HumongousFileEditor
 				return nullptr;
 
 			// Load the file.
-			chunk_reader::FileContainer fc = chunk_reader::FileContainer(path);
+			chunk_reader::FileContainer* fc = new chunk_reader::FileContainer(path);
+			fc->fileType = fileType;
+			fc->path = path;
 
 			// Load the first header.
-			chunk_reader::ChunkInfo header = fc.GetChunkInfo(0);
+			chunk_reader::ChunkInfo header = fc->GetChunkInfo(0);
 
 			switch (fileType)
 			{
@@ -27,19 +29,17 @@ namespace HumongousFileEditor
 					if (utils::chunkcmp(header.chunk_id, chunk_reader::LECF_CHUNK_ID) != 0)
 					{
 						// If the first check fails, then decrypt. Maybe we already have a decrypted file, in which case it'd succeed.
-						utils::xorShift(fc.data, fc.size, 0x69);
+						utils::xorShift(fc->data, fc->size, 0x69);
 
 						// If after decryption it still does not start with a (a) chunk, return and give an error.
-						header = fc.GetChunkInfo(0);
+						header = fc->GetChunkInfo(0);
 						if (utils::chunkcmp(header.chunk_id, chunk_reader::LECF_CHUNK_ID) != 0)
 							return nullptr;
 					}
 
 					if (a != nullptr)
 						delete a;
-					a = new chunk_reader::FileContainer(fc);
-					a->fileType = FileType_A;
-					return a;
+					a = fc;
 					break;
 				}
 				case files::FileType_HE2:
@@ -50,9 +50,7 @@ namespace HumongousFileEditor
 
 					if (he2 != nullptr)
 						delete he2;
-					he2 = new chunk_reader::FileContainer(fc);
-					he2->fileType = FileType_HE2;
-					return he2;
+					he2 = fc;
 					break;
 				}
 				case files::FileType_HE4:
@@ -63,9 +61,25 @@ namespace HumongousFileEditor
 
 					if (he4 != nullptr)
 						delete he4;
-					he4 = new chunk_reader::FileContainer(fc);
-					he4->fileType = FileType_HE4;
-					return he4;
+					he4 = fc;
+					break;
+				}
+				case files::FileType_HE0:
+				{
+					if (utils::chunkcmp(header.chunk_id, chunk_reader::MAXS_CHUNK_ID) != 0)
+					{
+						// If the first check fails, then decrypt. Maybe we already have a decrypted file, in which case it'd succeed.
+						utils::xorShift(fc->data, fc->size, 0x69);
+
+						// If after decryption it still does not start with a HE0 chunk, return and give an error.
+						header = fc->GetChunkInfo(0);
+						if (utils::chunkcmp(header.chunk_id, chunk_reader::MAXS_CHUNK_ID) != 0)
+							return nullptr;
+					}
+
+					if (he0 != nullptr)
+						delete he0;
+					he0 = fc;
 					break;
 				}
 				default:
@@ -74,7 +88,22 @@ namespace HumongousFileEditor
 				}
 			}
 
-			return nullptr;
+			return fc;
 		}
+        chunk_reader::FileContainer* Files::getFile(FileType fileType)
+        {
+			switch (fileType)
+			{
+				case files::FileType_A:
+					return a;
+				case files::FileType_HE2:
+					return he2;
+				case files::FileType_HE4:
+					return he4;
+				case files::FileType_HE0:
+					return he0;
+			}
+			return nullptr;
+        }
 	}
 }
