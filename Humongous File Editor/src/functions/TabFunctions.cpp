@@ -1,5 +1,14 @@
 #include "functions/TabFunctions.h"
 
+#include <bitset>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iterator>
+#include <algorithm>
+#include <windows.h>
+#include <uaudio_wave_reader/WaveChunks.h>
+
 #include "lowlevel/HumongousChunks.h"
 #include "lowlevel/HumongousChunkDefinitions.h"
 #include "file/Files.h"
@@ -7,12 +16,15 @@
 #include "systems/AudioSystem.h"
 #include "file/BMPHeader.h"
 #include "file/BMPTransparency.h"
-#include <bitset>
-#include <iostream>
-#include <vector>
-#include <string>
-#include <iterator>
-#include <algorithm>
+#include "forms/HumongousNode.h"
+#include "lowlevel/FileContainer.h"
+#include "lowlevel/utils.h"
+#include "systems/Logger.h"
+#include "file/ResourceType.h"
+
+// Fixed decryption error when indexing .(a) and HE0 files
+// Added export functionality to wav files.
+// Added RNAM chunk to info tabs.
 
 namespace HumongousFileEditor
 {
@@ -25,7 +37,7 @@ namespace HumongousFileEditor
 	/// <param name="offset">The offset from where to look.</param>
 	/// <param name="chunk_name">The chunk ID.</param>
 	/// <returns>Offset if found, -1 if not found.</returns>
-	int32_t getOffsetChunk(chunk_reader::FileContainer*& fc, size_t offset, const char* chunk_name)
+	size_t getOffsetChunk(chunk_reader::FileContainer*& fc, size_t offset, const char* chunk_name)
 	{
 		chunk_reader::ChunkInfo info = fc->GetChunkInfo(offset);
 
@@ -69,7 +81,7 @@ namespace HumongousFileEditor
 
 		if (!has_sdat)
 		{
-			System::Windows::Forms::MessageBox::Show("Cannot process file type", "Decompilation failed", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+			LOGF(logger::LOGSEVERITY_ERROR, "Could not process file type of file \"%s\" because it has no SDAT chunk.", fc->path.c_str());
 			return;
 		}
 
@@ -84,13 +96,132 @@ namespace HumongousFileEditor
 	// Callback for the export button.
 	System::Void TabFunctions::ExportButton_Click(System::Object^ sender, System::EventArgs^ e)
 	{
-		audioSystem.Stop();
+		HumongousButton^ btn = (HumongousButton^)sender;
+
+		chunk_reader::FileContainer* fc = files::FILES.getFile(btn->fileType);
+
+		if (fc == nullptr)
+			return;
+
+		chunk_reader::ChunkInfo chunk = fc->GetChunkInfo(btn->offset);
+		files::ResourceType type = files::GetResourceTypeByChunkName(chunk.chunk_id);
+		switch (type)
+		{
+			case files::ResourceType::Song:
+			case files::ResourceType::Talkie:
+			case files::ResourceType::SFX:
+			{
+				chunk_reader::SDAT_Chunk sdat_chunk;
+				chunk_reader::HSHD_Chunk hshd_chunk;
+				bool has_sdat = false;
+				chunk_reader::ChunkInfo chunk = fc->GetChunkInfo(btn->offset);
+				if (utils::chunkcmp(chunk.chunk_id, chunk_reader::SGEN_CHUNK_ID) == 0)
+					has_sdat = SongTab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+				else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::TALK_CHUNK_ID) == 0)
+					has_sdat = TalkieTab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+				else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::DIGI_CHUNK_ID) == 0)
+					has_sdat = DigiTab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+
+				if (!has_sdat)
+				{
+					LOGF(logger::LOGSEVERITY_ERROR, "Could not process file type of file \"%s\" because it has no SDAT chunk.", fc->path.c_str());
+					return;
+				}
+
+				unsigned char* data = sdat_chunk.data;
+				size_t chunk_size = sdat_chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader) - sizeof(sdat_chunk.data);
+
+				OPENFILENAME ofn;
+				TCHAR sz_file[260] = { 0 };
+
+				ZeroMemory(&ofn, sizeof(ofn));
+				ofn.lStructSize = sizeof(ofn);
+				ofn.lpstrFile = sz_file;
+				ofn.nMaxFile = sizeof(sz_file);
+				ofn.lpstrFilter = L"\
+						WAVE file (*.wav)\
+						\0*.WAV;*.wav\0";;
+				ofn.lpstrFileTitle = nullptr;
+				ofn.nMaxFileTitle = 0;
+				ofn.lpstrInitialDir = nullptr;
+				ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+				if (GetSaveFileNameW(&ofn))
+				{
+					const auto path = new char[wcslen(ofn.lpstrFile) + 1];
+					wsprintfA(path, "%S", ofn.lpstrFile);
+
+					std::string save_path_s = std::string(path);
+
+					if (!utils::ends_with(save_path_s, ".wav"))
+						save_path_s += ".wav";
+
+					FILE* file = nullptr;
+					fopen_s(&file, save_path_s.c_str(), "wb");
+					if (file == nullptr)
+					{
+						LOGF(logger::LOGSEVERITY_ERROR, "Could not export file \"%s\".", fc->path.c_str());
+						return;
+					}
+
+					uaudio::wave_reader::FMT_Chunk fmt_chunk;
+					fmt_chunk.audioFormat = uaudio::wave_reader::WAV_FORMAT_UNCOMPRESSED;
+					fmt_chunk.bitsPerSample = uaudio::wave_reader::WAVE_BITS_PER_SAMPLE_8;
+					fmt_chunk.blockAlign = uaudio::wave_reader::BLOCK_ALIGN_8_BIT_MONO;
+					fmt_chunk.sampleRate = hshd_chunk.sample_rate;
+					fmt_chunk.numChannels = uaudio::wave_reader::WAVE_CHANNELS_MONO;
+					fmt_chunk.byteRate = hshd_chunk.sample_rate;
+					fmt_chunk.chunkSize = sizeof(uaudio::wave_reader::FMT_Chunk) - sizeof(uaudio::wave_reader::ChunkHeader);
+					memcpy(fmt_chunk.chunk_id, uaudio::wave_reader::FMT_CHUNK_ID, uaudio::wave_reader::CHUNK_ID_SIZE);
+
+					uaudio::wave_reader::DATA_Chunk data_chunk;
+					memcpy(data_chunk.chunk_id, uaudio::wave_reader::DATA_CHUNK_ID, uaudio::wave_reader::CHUNK_ID_SIZE);
+					data_chunk.chunkSize = static_cast<uint32_t>(chunk_size);
+					data_chunk.data = data;
+
+					uaudio::wave_reader::RIFF_Chunk riff_chunk;
+					memcpy(riff_chunk.chunk_id, uaudio::wave_reader::RIFF_CHUNK_ID, CHUNK_ID_SIZE);
+					riff_chunk.chunkSize =
+						sizeof(uaudio::wave_reader::FMT_Chunk) +
+						(sizeof(uaudio::wave_reader::RIFF_Chunk) - sizeof(uaudio::wave_reader::ChunkHeader)) +
+						sizeof(uaudio::wave_reader::DATA_Chunk) - sizeof(data_chunk.data) +
+						static_cast<uint32_t>(chunk_size);
+					memcpy(riff_chunk.format, uaudio::wave_reader::RIFF_CHUNK_FORMAT, uaudio::wave_reader::CHUNK_ID_SIZE);
+
+					fwrite(&riff_chunk, sizeof(riff_chunk), 1, file);
+					fwrite(&fmt_chunk, sizeof(fmt_chunk), 1, file);
+					fwrite(&data_chunk, sizeof(uaudio::wave_reader::ChunkHeader), 1, file);
+					fwrite(data, chunk_size, 1, file);
+
+					fclose(file);
+				}
+				break;
+			}
+			case files::ResourceType::Script:
+			{
+				break;
+			}
+			case files::ResourceType::Image:
+			{
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
 	}
 	void TabFunctions::AddTab(HumongousNode^ node, System::Windows::Forms::TabControl^ tabControl)
 	{
 		chunk_reader::FileContainer* fc = files::FILES.getFile(node->fileType);
 
 		if (fc == nullptr)
+			return;
+
+		chunk_reader::ChunkInfo chunk = fc->GetChunkInfo(node->offset);
+		files::ResourceType type = files::GetResourceTypeByChunkName(chunk.chunk_id);
+
+		if (type == files::ResourceType::Unknown)
 			return;
 
 		// Construct tab.
@@ -133,46 +264,43 @@ namespace HumongousFileEditor
 
 		// Construct info area.
 		float posX = 35, posY = 35;
-		AddInfoRow("Name", node->Text, propertyGrid, posX, posY);
 		AddInfoRow("Pos", gcnew System::String(std::to_string(node->offset).c_str()), propertyGrid, posX, posY);
 
-		chunk_reader::ChunkInfo chunk = fc->GetChunkInfo(node->offset);
-		if (utils::chunkcmp(chunk.chunk_id, chunk_reader::SGEN_CHUNK_ID) == 0)
-			GetSong(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
-		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::TALK_CHUNK_ID) == 0)
-			GetTalk(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
-		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::DIGI_CHUNK_ID) == 0)
-			GetDigi(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
-		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::SCRP_CHUNK_ID) == 0)
-			GetScrp(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
-		else if (
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM00_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM01_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM02_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM03_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM04_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM05_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM06_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM07_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM08_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM09_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM10_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM11_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM12_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM13_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM14_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM15_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM16_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM17_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM0A_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM0B_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM0C_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM0D_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM0E_CHUNK_ID) == 0 ||
-				utils::chunkcmp(chunk.chunk_id, chunk_reader::IM0F_CHUNK_ID) == 0)
-			GetImXX(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
-		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::DISK_CHUNK_ID) == 0)
-			GetRNAM(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+		switch (type)
+		{
+			case files::ResourceType::Song:
+			{
+				GetSong(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				break;
+			}
+			case files::ResourceType::Talkie:
+			{
+				GetTalk(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				break;
+			}
+			case files::ResourceType::SFX:
+			{
+				GetDigi(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				break;
+			}
+			case files::ResourceType::Script:
+			{
+				GetScrp(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				break;
+			}
+			case files::ResourceType::Image:
+			{
+				GetImXX(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				break;
+			}
+			case files::ResourceType::Room:
+			{
+				GetRNAM(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				break;
+			}
+			default:
+				return;
+		}
 
 		// Construct export button.
 		HumongousButton^ exportButton;
@@ -183,8 +311,10 @@ namespace HumongousFileEditor
 		exportButton->Size = System::Drawing::Size(75, 23);
 		exportButton->TabIndex = 2;
 		exportButton->offset = node->offset;
+		exportButton->fileType = node->fileType;
 		exportButton->Text = L"Export";
 		exportButton->UseVisualStyleBackColor = true;
+		exportButton->Click += gcnew System::EventHandler(this, &TabFunctions::ExportButton_Click);
 
 		exportButton->ResumeLayout(false);
 		actionPanel->Controls->Add(exportButton);
@@ -240,67 +370,66 @@ namespace HumongousFileEditor
 	{
 		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
 
-		//System::Windows::Forms::TextBox^ textBox1 = gcnew System::Windows::Forms::TextBox();
-		//textBox1->Location = System::Drawing::Point(panel->Location.X, panel->Location.Y);
-		//textBox1->Name = L"textBox1";
-		//textBox1->Size = System::Drawing::Size(panel->Size.Width, panel->Size.Height);
-		//textBox1->TabIndex = 2;
+		chunk_reader::SCRP_Chunk scrp_chunk;
+		memcpy(&scrp_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::SCRP_Chunk) - sizeof(scrp_chunk.data));
+		scrp_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader)));
 
-		//chunk_reader::SCRP_Chunk scrp_chunk;
-		//memcpy(&scrp_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::SCRP_Chunk) - sizeof(scrp_chunk.data));
-		//scrp_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader)));
-
-		//std::string t = std::string(reinterpret_cast<char*>(scrp_chunk.data));
-		//t.resize(scrp_chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader));
-		//textBox1->Text = gcnew System::String(t.c_str());
-
-		//tab->Controls->Add(textBox1);
+		std::string t = std::string(reinterpret_cast<char*>(scrp_chunk.data));
+		AddInfoRow("Script", gcnew System::String(t.c_str()), propertyGrid, posX, posY);
 	}
 	void TabFunctions::GetImXX(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
-		//AddInfoRow("Type", gcnew System::String("Image"), propertyGrid, posX, posY);
+		AddInfoRow("Type", gcnew System::String("Image"), propertyGrid, posX, posY);
 
-		//// Get RMHD chunk for width and height of image.
-		//size_t rmhd_offset = getOffsetChunk(fc, offset, chunk_reader::RMHD_CHUNK_ID);
-		//chunk_reader::RMHD_Chunk rmhd_chunk;
-		//memcpy(&rmhd_chunk, utils::add(fc->data, rmhd_offset), sizeof(chunk_reader::RMHD_Chunk));
+		// Get RMHD chunk for width and height of image.
+		size_t rmhd_offset = getOffsetChunk(fc, offset, chunk_reader::RMHD_CHUNK_ID);
+		chunk_reader::RMHD_Chunk rmhd_chunk;
+		memcpy(&rmhd_chunk, utils::add(fc->data, rmhd_offset), sizeof(chunk_reader::RMHD_Chunk));
+		unsigned char* d = reinterpret_cast<unsigned char*>(utils::add(fc->data, rmhd_offset));
 
-		//AddInfoRow("Width", gcnew System::String(std::to_string(rmhd_chunk.width).c_str()), propertyGrid, posX, posY);
-		//AddInfoRow("Height", gcnew System::String(std::to_string(rmhd_chunk.height).c_str()), propertyGrid, posX, posY);
+		AddInfoRow("Width", gcnew System::String(std::to_string(rmhd_chunk.width).c_str()), propertyGrid, posX, posY);
+		AddInfoRow("Height", gcnew System::String(std::to_string(rmhd_chunk.height).c_str()), propertyGrid, posX, posY);
 
-		//// Get BMAP chunk for raw data.
-		//size_t bmap_offset = getOffsetChunk(fc, offset, chunk_reader::BMAP_CHUNK_ID);
-		//chunk_reader::BMAP_Chunk bmap_chunk;
-		//size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
-		//memcpy(&bmap_chunk, utils::add(fc->data, bmap_offset), header_size);
-		//bmap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, bmap_offset + header_size));
+		// Get BMAP chunk for raw data.
+		size_t bmap_offset = getOffsetChunk(fc, offset, chunk_reader::BMAP_CHUNK_ID);
+		chunk_reader::BMAP_Chunk bmap_chunk;
+		size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
+		memcpy(&bmap_chunk, utils::add(fc->data, bmap_offset), header_size);
+		size_t bmap_size = bmap_chunk.ChunkSize() - header_size - sizeof(bmap_chunk.transparency) - sizeof(bmap_chunk.fill_color);
+		bmap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, bmap_offset + header_size + sizeof(bmap_chunk.transparency) + sizeof(bmap_chunk.fill_color)));
 
-		//// Get TRNS chunk for transparency settings.
-		//size_t trns_offset = getOffsetChunk(fc, offset, chunk_reader::TRNS_CHUNK_ID);
-		//chunk_reader::TRNS_Chunk trns_chunk;
-		//memcpy(&trns_chunk, utils::add(fc->data, trns_offset), sizeof(chunk_reader::TRNS_Chunk));
+		// Get TRNS chunk for transparency settings.
+		size_t trns_offset = getOffsetChunk(fc, offset, chunk_reader::TRNS_CHUNK_ID);
+		chunk_reader::TRNS_Chunk trns_chunk;
+		memcpy(&trns_chunk, utils::add(fc->data, trns_offset), sizeof(chunk_reader::TRNS_Chunk));
 
-		//// Actual bmap byte size.
-		//size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
+		// Actual bmap byte size.
 
-		//BMAP::BMPTransparency transparency;
-		//if (bmap_chunk.transparency >= 134 && bmap_chunk.transparency <= 138)
-		//	transparency = BMAP::BMPTransparency::Not_Transparent;
-		//else if (bmap_chunk.transparency >= 144 && bmap_chunk.transparency <= 148)
-		//	transparency = BMAP::BMPTransparency::Transparent;
-		//else if (bmap_chunk.transparency == 1 || bmap_chunk.transparency == 149)
-		//	transparency = BMAP::BMPTransparency::NotCompressed;
-		//else if (bmap_chunk.transparency == 150)
-		//	transparency = BMAP::BMPTransparency::NoIdea;
-		//else
-		//	transparency = BMAP::BMPTransparency::Invalid;
+		BMAP::BMPTransparency transparency;
+		if (bmap_chunk.transparency >= 134 && bmap_chunk.transparency <= 138)
+			transparency = BMAP::BMPTransparency::Not_Transparent;
+		else if (bmap_chunk.transparency >= 144 && bmap_chunk.transparency <= 148)
+			transparency = BMAP::BMPTransparency::Transparent;
+		else if (bmap_chunk.transparency == 1 || bmap_chunk.transparency == 149)
+			transparency = BMAP::BMPTransparency::NotCompressed;
+		else if (bmap_chunk.transparency == 150)
+			transparency = BMAP::BMPTransparency::NoIdea;
+		else
+			transparency = BMAP::BMPTransparency::Invalid;
 
-		//AddInfoRow("Transparent", gcnew System::String(transparency == BMAP::BMPTransparency::Transparent ? "Yes" : "No"), propertyGrid, posX, posY);
+		AddInfoRow("Transparent", gcnew System::String(transparency == BMAP::BMPTransparency::Transparent ? "Yes" : "No"), propertyGrid, posX, posY);
 
-		////std::string bits;
-		////for (size_t i = 0; i < bmap_size; i++)
-		////	bits += std::bitset<8>(reinterpret_cast<unsigned char*>(utils::add(bmap_chunk.data, i))).to_string();
+		size_t num_pixels = rmhd_chunk.width * rmhd_chunk.height;
 
+		std::string bits;
+		for (size_t i = 0; i < bmap_size; i++)
+		{
+			unsigned char* pC = reinterpret_cast<unsigned char*>(utils::add(bmap_chunk.data, i));
+			char c = *pC;
+			bits += c >> 0;
+		}
+
+		printf("Test\n ");
 		////auto gbits = grouper<std::string>(bits, 1);
 		////std::vector<int> bmap;
 		////bmap.reserve(rmhd_chunk.height * rmhd_chunk.width);
@@ -368,21 +497,17 @@ namespace HumongousFileEditor
 		chunk_reader::DISK_Chunk disk_chunk;
 		memcpy(&disk_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::DISK_Chunk) - sizeof(disk_chunk.data));
 
-		AddInfoRow("Number of Rooms", gcnew System::String(std::to_string(disk_chunk.num_rooms).c_str()), propertyGrid, posX, posY);
-
-		// Get HSHD chunk for the sample rate.
-		int32_t rnam_offset = getOffsetChunk(fc, offset, chunk_reader::RNAM_CHUNK_ID);
+		// Get RNAM chunk for the sample rate.
+		size_t rnam_offset = getOffsetChunk(fc, offset, chunk_reader::RNAM_CHUNK_ID);
 		if (rnam_offset == -1)
 			return;
 
 		chunk_reader::RNAM_Chunk* rnam_chunk = reinterpret_cast<chunk_reader::RNAM_Chunk*>(utils::add(fc->data, rnam_offset));
-
-		std::vector<std::string> room_names;
-
 		size_t rnam_end = rnam_offset + rnam_chunk->ChunkSize();
 		size_t pos = rnam_offset + sizeof(chunk_reader::HumongousHeader) + sizeof(uint16_t);
 		std::string room_name;
 
+		std::vector<std::string> room_names;
 		while (pos < rnam_end)
 		{
 			unsigned char ch;
@@ -390,7 +515,6 @@ namespace HumongousFileEditor
 			if (utils::unsignedCharCmp(ch, '\0'))
 			{
 				room_names.push_back(room_name);
-				AddInfoRow(gcnew System::String(std::to_string(room_names.size()).c_str()), gcnew System::String(room_name.c_str()), propertyGrid, posX, posY);
 				room_name = "";
 				pos += sizeof(uint16_t);
 			}
@@ -398,6 +522,11 @@ namespace HumongousFileEditor
 				room_name += ch;
 			pos++;
 		}
+
+		AddInfoRow("Number of Rooms", gcnew System::String(std::to_string(room_names.size()).c_str()), propertyGrid, posX, posY);
+
+		for (size_t i = 0; i < room_names.size(); i++)
+			AddInfoRow(gcnew System::String(std::to_string(i).c_str()), gcnew System::String(room_names[i].c_str()), propertyGrid, posX, posY);
 	}
 	void TabFunctions::AddSoundButtons(System::Windows::Forms::TabPage^ tab, size_t offset, files::FileType fileType, System::Windows::Forms::Panel^ panel)
 	{
@@ -435,14 +564,14 @@ namespace HumongousFileEditor
 	bool TalkieTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk)
 	{
 		// Get HSHD chunk for the sample rate.
-		int32_t hshd_offset = getOffsetChunk(fc, offset, chunk_reader::HSHD_CHUNK_ID);
+		size_t hshd_offset = getOffsetChunk(fc, offset, chunk_reader::HSHD_CHUNK_ID);
 		if (hshd_offset == -1)
 			return false;
 
 		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
 
 		// Get SDAT chunk for the raw audio data.
-		int32_t sdat_offset = getOffsetChunk(fc, offset, chunk_reader::SDAT_CHUNK_ID);
+		size_t sdat_offset = getOffsetChunk(fc, offset, chunk_reader::SDAT_CHUNK_ID);
 		if (sdat_offset == -1)
 			return false;
 
@@ -455,19 +584,19 @@ namespace HumongousFileEditor
 
 	bool SongTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk)
 	{
-		// Get SGEN chunk first (tells us the position of the SONG.
+		// Get SGEN chunk first (tells us the position of the SONG).
 		chunk_reader::SGEN_Chunk sgen_chunk;
 		memcpy(&sgen_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::SGEN_Chunk));
 
 		// Get HSHD chunk for the sample rate.
-		int32_t hshd_offset = getOffsetChunk(fc, sgen_chunk.song_pos, chunk_reader::HSHD_CHUNK_ID);
+		size_t hshd_offset = getOffsetChunk(fc, sgen_chunk.song_pos, chunk_reader::HSHD_CHUNK_ID);
 		if (hshd_offset == -1)
 			return false;
 
 		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
 
 		// Get SDAT chunk for the raw audio data.
-		int32_t sdat_offset = getOffsetChunk(fc, sgen_chunk.song_pos, chunk_reader::SDAT_CHUNK_ID);
+		size_t sdat_offset = getOffsetChunk(fc, sgen_chunk.song_pos, chunk_reader::SDAT_CHUNK_ID);
 		if (sdat_offset == -1)
 			return false;
 
@@ -481,14 +610,14 @@ namespace HumongousFileEditor
 	bool DigiTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk)
 	{
 		// Get HSHD chunk for the sample rate.
-		int32_t hshd_offset = getOffsetChunk(fc, offset, chunk_reader::HSHD_CHUNK_ID);
+		size_t hshd_offset = getOffsetChunk(fc, offset, chunk_reader::HSHD_CHUNK_ID);
 		if (hshd_offset == -1)
 			return false;
 
 		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
 
 		// Get SDAT chunk for the raw audio data.
-		int32_t sdat_offset = getOffsetChunk(fc, offset, chunk_reader::SDAT_CHUNK_ID);
+		size_t sdat_offset = getOffsetChunk(fc, offset, chunk_reader::SDAT_CHUNK_ID);
 		if (sdat_offset == -1)
 			return false;
 

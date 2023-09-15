@@ -19,7 +19,7 @@ namespace HumongousFileEditor
 		/// </summary>
 		/// <param name="data">The pcm data.</param>
 		/// <param name="size">The size of the data.</param>
-		void Play(unsigned char* data, uint32_t size);
+		void Play(unsigned char* data, size_t size);
 		/// <summary>
 		/// Stops the playback of the source voice.
 		/// </summary>

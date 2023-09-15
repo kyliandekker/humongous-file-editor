@@ -3,8 +3,8 @@
 #include <string>
 #include <windows.h>
 
-#include "Temp.h"
 #include "functions/FileIndexer.h"
+#include "functions/FileDecrypter.h"
 #include "functions/ResourceGatherer.h"
 #include "forms/HumongousNode.h"
 #include "forms/HumongousButton.h"
@@ -248,9 +248,9 @@ namespace HumongousFileEditor
 			// 
 			// tabWelcome
 			// 
-			this->tabWelcome->Location = System::Drawing::Point(4, 25);
+			this->tabWelcome->Location = System::Drawing::Point(4, 22);
 			this->tabWelcome->Name = L"tabWelcome";
-			this->tabWelcome->Size = System::Drawing::Size(355, 398);
+			this->tabWelcome->Size = System::Drawing::Size(355, 401);
 			this->tabWelcome->TabIndex = 0;
 			this->tabWelcome->Text = L"Welcome!";
 			this->tabWelcome->UseVisualStyleBackColor = true;
@@ -262,28 +262,28 @@ namespace HumongousFileEditor
 					this->toolStripSeparator1, this->optionSave, this->optionSaveAs, this->toolStripSeparator2, this->optionQuit
 			});
 			this->optionSeperator1->Name = L"optionSeperator1";
-			this->optionSeperator1->Size = System::Drawing::Size(51, 28);
+			this->optionSeperator1->Size = System::Drawing::Size(37, 20);
 			this->optionSeperator1->Text = L"File";
 			// 
 			// optionOpen
 			// 
 			this->optionOpen->Name = L"optionOpen";
 			this->optionOpen->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::O));
-			this->optionOpen->Size = System::Drawing::Size(266, 30);
+			this->optionOpen->Size = System::Drawing::Size(186, 22);
 			this->optionOpen->Text = L"Open";
 			this->optionOpen->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionOpen_Click);
 			// 
 			// toolStripSeparator1
 			// 
 			this->toolStripSeparator1->Name = L"toolStripSeparator1";
-			this->toolStripSeparator1->Size = System::Drawing::Size(263, 6);
+			this->toolStripSeparator1->Size = System::Drawing::Size(183, 6);
 			// 
 			// optionSave
 			// 
 			this->optionSave->Enabled = false;
 			this->optionSave->Name = L"optionSave";
 			this->optionSave->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::S));
-			this->optionSave->Size = System::Drawing::Size(266, 30);
+			this->optionSave->Size = System::Drawing::Size(186, 22);
 			this->optionSave->Text = L"Save";
 			// 
 			// optionSaveAs
@@ -292,44 +292,43 @@ namespace HumongousFileEditor
 			this->optionSaveAs->Name = L"optionSaveAs";
 			this->optionSaveAs->ShortcutKeys = static_cast<System::Windows::Forms::Keys>(((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::Shift)
 				| System::Windows::Forms::Keys::S));
-			this->optionSaveAs->Size = System::Drawing::Size(266, 30);
+			this->optionSaveAs->Size = System::Drawing::Size(186, 22);
 			this->optionSaveAs->Text = L"Save As";
 			// 
 			// toolStripSeparator2
 			// 
 			this->toolStripSeparator2->Name = L"toolStripSeparator2";
-			this->toolStripSeparator2->Size = System::Drawing::Size(263, 6);
+			this->toolStripSeparator2->Size = System::Drawing::Size(183, 6);
 			// 
 			// optionQuit
 			// 
 			this->optionQuit->Name = L"optionQuit";
 			this->optionQuit->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::Q));
-			this->optionQuit->Size = System::Drawing::Size(266, 30);
+			this->optionQuit->Size = System::Drawing::Size(186, 22);
 			this->optionQuit->Text = L"Exit";
 			// 
 			// helpMenu
 			// 
 			this->helpMenu->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->optionAbout });
 			this->helpMenu->Name = L"helpMenu";
-			this->helpMenu->Size = System::Drawing::Size(61, 28);
+			this->helpMenu->Size = System::Drawing::Size(44, 20);
 			this->helpMenu->Text = L"Help";
 			// 
 			// optionAbout
 			// 
 			this->optionAbout->Name = L"optionAbout";
-			this->optionAbout->Size = System::Drawing::Size(151, 30);
+			this->optionAbout->Size = System::Drawing::Size(107, 22);
 			this->optionAbout->Text = L"About";
 			this->optionAbout->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionAbout_Click);
 			// 
 			// topMenu
 			// 
 			this->topMenu->BackColor = System::Drawing::SystemColors::Window;
-			this->topMenu->GripMargin = System::Windows::Forms::Padding(2, 2, 0, 2);
 			this->topMenu->ImageScalingSize = System::Drawing::Size(22, 22);
 			this->topMenu->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) { this->optionSeperator1, this->helpMenu });
 			this->topMenu->Location = System::Drawing::Point(0, 0);
 			this->topMenu->Name = L"topMenu";
-			this->topMenu->Size = System::Drawing::Size(893, 34);
+			this->topMenu->Size = System::Drawing::Size(893, 24);
 			this->topMenu->TabIndex = 0;
 			this->topMenu->Text = L"menuStrip2";
 			// 
@@ -337,10 +336,10 @@ namespace HumongousFileEditor
 			// 
 			this->statusStrip2->ImageScalingSize = System::Drawing::Size(22, 22);
 			this->statusStrip2->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->toolProgressBar });
-			this->statusStrip2->Location = System::Drawing::Point(0, 515);
+			this->statusStrip2->Location = System::Drawing::Point(0, 517);
 			this->statusStrip2->Margin = System::Windows::Forms::Padding(5);
 			this->statusStrip2->Name = L"statusStrip2";
-			this->statusStrip2->Size = System::Drawing::Size(893, 27);
+			this->statusStrip2->Size = System::Drawing::Size(893, 25);
 			this->statusStrip2->TabIndex = 2;
 			this->statusStrip2->Text = L"statusStrip2";
 			// 
@@ -452,6 +451,7 @@ namespace HumongousFileEditor
 			this->encryptButton->TabIndex = 10;
 			this->encryptButton->TabStop = false;
 			this->encryptButton->UseVisualStyleBackColor = false;
+			this->encryptButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::encryptButton_Click);
 			this->encryptButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
 			this->encryptButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
 			// 
@@ -468,7 +468,7 @@ namespace HumongousFileEditor
 			this->actionPanel->Controls->Add(this->saveButton);
 			this->actionPanel->Controls->Add(this->openButton);
 			this->actionPanel->Dock = System::Windows::Forms::DockStyle::Top;
-			this->actionPanel->Location = System::Drawing::Point(0, 34);
+			this->actionPanel->Location = System::Drawing::Point(0, 24);
 			this->actionPanel->Name = L"actionPanel";
 			this->actionPanel->Padding = System::Windows::Forms::Padding(10);
 			this->actionPanel->Size = System::Drawing::Size(893, 44);
@@ -580,33 +580,9 @@ namespace HumongousFileEditor
 		// Opens a window with info about the application (via the top menu or info button).
 		System::Void optionIndex_Click(System::Object^ sender, System::EventArgs^ e)
 		{
-			OPENFILENAME ofn;
-			TCHAR sz_file[260] = { 0 };
-
-			ZeroMemory(&ofn, sizeof(ofn));
-			ofn.lStructSize = sizeof(ofn);
-			ofn.lpstrFile = sz_file;
-			ofn.nMaxFile = sizeof(sz_file);
-
-			ofn.lpstrFilter = getFilter();
-			ofn.nFilterIndex = 1;
-			ofn.lpstrFileTitle = nullptr;
-			ofn.nMaxFileTitle = 0;
-			ofn.lpstrInitialDir = nullptr;
-			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-			if (GetOpenFileNameW(&ofn))
-			{
-				const auto path = new char[wcslen(ofn.lpstrFile) + 1];
-				wsprintfA(path, "%S", ofn.lpstrFile);
-
-				chunk_reader::FileIndexer f = chunk_reader::FileIndexer();
-				f.Read(path);
-
-				delete[] path;
-			}
+			chunk_reader::FileIndexer f = chunk_reader::FileIndexer();
+			f.Read();
 		}
-		// Opens a window with info about the application (via the top menu or info button).
 		System::Void optionOpen_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			OPENFILENAME ofn;
@@ -720,15 +696,20 @@ namespace HumongousFileEditor
 			r->Offset(2, 2);
 			r->Width = 5;
 			r->Height = 5;
-			Brush^ b = (gcnew SolidBrush(Color::Black));
-			Pen^ p = (gcnew Pen(b));
+			System::Drawing::Brush^ b = (gcnew System::Drawing::SolidBrush(System::Drawing::Color::Black));
+			System::Drawing::Pen^ p = (gcnew System::Drawing::Pen(b));
 			e->Graphics->DrawLine(p, r->X, r->Y, r->X + r->Width, r->Y + r->Height);
 			e->Graphics->DrawLine(p, r->X + r->Width, r->Y, r->X, r->Y + r->Height);
 
 			System::String^ titel = this->tabControl1->TabPages[e->Index]->Text;
 			System::Drawing::Font^ f = this->Font;
-			PointF pointF = PointF(r->X + 5, r->Y);
+			System::Drawing::PointF pointF = System::Drawing::PointF(static_cast<float>(r->X + 5), static_cast<float>(r->Y));
 			e->Graphics->DrawString(titel, f, b, pointF);
+		}
+		System::Void encryptButton_Click(System::Object^ sender, System::EventArgs^ e)
+		{
+			chunk_reader::FileDecrypter fileDecrypter;
+			fileDecrypter.Read();
 		}
 	};
 }

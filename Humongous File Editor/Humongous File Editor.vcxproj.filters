@@ -84,6 +84,15 @@
     <ClInclude Include="include\file\BMPTransparency.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\functions\FileDecrypter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\functions\FileFunction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\systems\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">
@@ -125,6 +134,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\functions\TabFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\functions\FileDecrypter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\functions\FileFunction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\systems\Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\file\ResourceType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

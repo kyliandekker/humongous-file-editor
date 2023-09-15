@@ -1,5 +1,8 @@
 #include "file/Files.h"
+
 #include "lowlevel/HumongousChunkDefinitions.h"
+#include "lowlevel/FileContainer.h"
+#include "lowlevel/utils.h"
 
 HumongousFileEditor::files::Files HumongousFileEditor::files::FILES;
 
@@ -29,7 +32,7 @@ namespace HumongousFileEditor
 					if (utils::chunkcmp(header.chunk_id, chunk_reader::LECF_CHUNK_ID) != 0)
 					{
 						// If the first check fails, then decrypt. Maybe we already have a decrypted file, in which case it'd succeed.
-						utils::xorShift(fc->data, fc->size, 0x69);
+						fc->Decrypt(0x69);
 
 						// If after decryption it still does not start with a (a) chunk, return and give an error.
 						header = fc->GetChunkInfo(0);
@@ -69,7 +72,7 @@ namespace HumongousFileEditor
 					if (utils::chunkcmp(header.chunk_id, chunk_reader::MAXS_CHUNK_ID) != 0)
 					{
 						// If the first check fails, then decrypt. Maybe we already have a decrypted file, in which case it'd succeed.
-						utils::xorShift(fc->data, fc->size, 0x69);
+						fc->Decrypt(0x69);
 
 						// If after decryption it still does not start with a HE0 chunk, return and give an error.
 						header = fc->GetChunkInfo(0);

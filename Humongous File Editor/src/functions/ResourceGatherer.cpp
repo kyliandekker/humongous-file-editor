@@ -1,5 +1,6 @@
 ﻿#include "functions/ResourceGatherer.h"
 
+#include "systems/Logger.h"
 #include "lowlevel/FileContainer.h"
 #include "file/FileType.h"
 #include "lowlevel/HumongousChunkDefinitions.h"
@@ -9,6 +10,7 @@
 #include "lowlevel/HumongousChunks.h"
 #include "HumongousEditorForm.h"
 #include "file/ResourceType.h"
+#include "lowlevel/utils.h"
 
 namespace HumongousFileEditor
 {
@@ -47,7 +49,7 @@ namespace HumongousFileEditor
 			FileContainer* fc = files::FILES.Read(path);
 			if (fc == nullptr)
 			{
-				System::Windows::Forms::MessageBox::Show("Cannot open file.", "Decompilation failed", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+				LOGF(logger::LOGSEVERITY_ERROR, "Could not open file \"%s\".", path);
 				return;
 			}
 
@@ -70,9 +72,7 @@ namespace HumongousFileEditor
 					break;
 				}
 				default:
-				{
 					break;
-				}
 			}
 		}
 
@@ -88,7 +88,7 @@ namespace HumongousFileEditor
 				he0 = files::FILES.Read(he0path.c_str());
 				if (he0 == nullptr)
 				{
-					System::Windows::Forms::MessageBox::Show("Cannot open file.", "Decompilation failed", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+					LOGF(logger::LOGSEVERITY_ERROR, "Could not open file \"%s\".", he0path.c_str());
 					return;
 				}
 			}
@@ -100,7 +100,7 @@ namespace HumongousFileEditor
 				a = files::FILES.Read(apath.c_str());
 				if (a == nullptr)
 				{
-					System::Windows::Forms::MessageBox::Show("Cannot open file.", "Decompilation failed", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
+					LOGF(logger::LOGSEVERITY_ERROR, "Could not open file \"%s\".", apath.c_str());
 					return;
 				}
 			}
@@ -119,14 +119,13 @@ namespace HumongousFileEditor
 				return;
 
 			// Get HSHD chunk for the sample rate.
-			int32_t rnam_offset = info.offset;
+			size_t rnam_offset = info.offset;
 			if (rnam_offset == -1)
 				return;
 
-			chunk_reader::RNAM_Chunk* rnam_chunk = reinterpret_cast<chunk_reader::RNAM_Chunk*>(utils::add(he0->data, rnam_offset));
-
 			std::vector<std::string> room_names;
 
+			chunk_reader::RNAM_Chunk* rnam_chunk = reinterpret_cast<chunk_reader::RNAM_Chunk*>(utils::add(he0->data, rnam_offset));
 			size_t rnam_end = rnam_offset + rnam_chunk->ChunkSize();
 			size_t pos = rnam_offset + sizeof(chunk_reader::HumongousHeader) + sizeof(uint16_t);
 			std::string room_name;
@@ -149,12 +148,23 @@ namespace HumongousFileEditor
 			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 			System::Windows::Forms::TreeNode^ baseNode = form->GetBaseNode(gcnew System::String("HE0"));
 
+			{
+				HumongousNode^ node;
+				node = (gcnew HumongousNode);
+				node->fileType = he0->fileType;
+				node->Name = gcnew System::String("ROOMS");
+				node->offset = rnam_offset;
+				node->Text = gcnew System::String("ROOMS");
+				baseNode->Nodes->Add(node);
+			}
+
 			for (size_t i = 0; i < room_names.size(); i++)
 			{
 				HumongousNode^ node;
 				node = (gcnew HumongousNode);
 				node->fileType = he0->fileType;
-				node->Name = gcnew System::String(room_names[i].c_str());
+				std::string unique_name = room_names[i];
+				node->Name = gcnew System::String(unique_name.c_str());
 				node->Text = gcnew System::String(room_names[i].c_str());
 				baseNode->Nodes->Add(node);
 			}
@@ -194,6 +204,7 @@ namespace HumongousFileEditor
 			uint32_t lflf = 0;
 
 			ChunkInfo header = a->GetChunkInfo(0);
+			int random_number_for_unique_id = 0;
 			while (header.offset < a->size)
 			{
 				if (utils::chunkcmp(header.chunk_id, chunk_reader::LFLF_CHUNK_ID) == 0)
@@ -202,7 +213,7 @@ namespace HumongousFileEditor
 					uint32_t i = 0;
 					while (child_header.offset < header.offset + header.ChunkSize())
 					{
-							std::string chunk_id_name = std::string(reinterpret_cast<char*>(child_header.chunk_id));
+						std::string chunk_id_name = std::string(reinterpret_cast<char*>(child_header.chunk_id));
 						chunk_id_name.resize(CHUNK_ID_SIZE);
 
 						if (RESOURCE_CHUNKS.find(chunk_id_name) != RESOURCE_CHUNKS.end())
@@ -216,20 +227,21 @@ namespace HumongousFileEditor
 							node = (gcnew HumongousNode);
 							node->offset = child_header.offset;
 							node->fileType = a->fileType;
-							node->Name = gcnew System::String(std::to_string(i).c_str());
+							std::string unique_name = std::string(chunk_id_name) + "_" + std::to_string(fc->fileType) + "_" + std::to_string(i) + "_" + fc->path + "_" + std::to_string(lflf) + "_" + std::to_string(random_number_for_unique_id);
+							node->Name = gcnew System::String(unique_name.c_str());
 							node->Text = gcnew System::String(std::to_string(i).c_str());
 							categoryNode->Nodes->Add(node);
 							i++;
 						}
 						child_header = a->GetNextChunk(child_header.offset);
+						random_number_for_unique_id++;
 					}
 
 					lflf++;
 				}
 				header = a->GetNextChunk(header.offset);
 			}
-
-			printf("Test\n");
+			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .(A) and .HE0 resources for file \"%s\".", fc->path.c_str());
 		}
 
 		void ResourceGatherer::ReadHE2(FileContainer*& fc)
@@ -273,6 +285,7 @@ namespace HumongousFileEditor
 				node->Text = gcnew System::String(offsets[i].name.c_str());
 				categoryNode->Nodes->Add(node);
 			}
+			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE2 resources for file \"%s\".", fc->path.c_str());
 		}
 
 		void ResourceGatherer::ReadHE4(FileContainer*& fc)
@@ -316,6 +329,7 @@ namespace HumongousFileEditor
 				node->Text = gcnew System::String(offsets[i].name.c_str());
 				categoryNode->Nodes->Add(node);
 			}
+			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE4 resources for file \"%s\".", fc->path.c_str());
 		}
 	}
 }

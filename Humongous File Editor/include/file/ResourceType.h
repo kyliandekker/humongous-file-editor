@@ -8,11 +8,15 @@ namespace HumongousFileEditor
 	{
 		public enum ResourceType
 		{
+			Unknown,
 			Talkie,
 			SFX,
 			Song,
 			Image,
-			Script
+			Script,
+			Room
 		};
+
+		ResourceType GetResourceTypeByChunkName(unsigned char* chunk_id);
 	}
 }

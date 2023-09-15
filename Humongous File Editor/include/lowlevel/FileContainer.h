@@ -18,6 +18,7 @@ namespace HumongousFileEditor
 
 			ChunkInfo GetChunkInfo(size_t offset) const;
 			ChunkInfo GetNextChunk(size_t offset) const;
+			void Decrypt(char key);
 
 			files::FileType fileType;
 			size_t size = 0;

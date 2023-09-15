@@ -1,10 +1,11 @@
 #include "lowlevel/FileContainer.h"
 
 #include <cstdio>
+#include <cassert>
 
 #include "lowlevel/utils.h"
 #include "lowlevel/HumongousChunkDefinitions.h"
-#include <cassert>
+#include "systems/Logger.h"
 
 namespace HumongousFileEditor
 {
@@ -17,7 +18,7 @@ namespace HumongousFileEditor
 			fopen_s(&file, path.c_str(), "rb");
 			if (file == nullptr)
 			{
-				printf("Cannot open file");
+				LOGF(logger::LOGSEVERITY_ERROR, "Cannot open file \"%s\".", path.c_str());
 				return;
 			}
 
@@ -32,6 +33,7 @@ namespace HumongousFileEditor
 				fread(data, size, 1, file);
 			}
 			fclose(file);
+			LOGF(logger::LOGSEVERITY_INFO, "Successfully opened file \"%s\".", path.c_str());
 		}
 
         FileContainer::FileContainer(const FileContainer& rhs)
@@ -84,6 +86,11 @@ namespace HumongousFileEditor
 
 			assert(false);
 			return next;
+		}
+
+		void FileContainer::Decrypt(char key)
+		{
+			utils::xorShift(data, size, key);
 		}
 	}
 }

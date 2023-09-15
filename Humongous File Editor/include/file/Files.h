@@ -1,10 +1,13 @@
 #pragma once
 
-#include "lowlevel/FileContainer.h"
 #include "FileType.h"
 
 namespace HumongousFileEditor
 {
+	namespace chunk_reader
+	{
+		class FileContainer;
+	}
 	namespace files
 	{
 		enum FileType;

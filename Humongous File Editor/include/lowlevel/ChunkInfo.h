@@ -10,8 +10,10 @@ namespace HumongousFileEditor
 		{
 		public:
 			ChunkInfo() = default;
-			ChunkInfo(const HumongousHeader& rhs) : HumongousHeader(rhs)
-			{}
+			ChunkInfo(const ChunkInfo& rhs) : HumongousHeader(rhs)
+			{
+				offset = rhs.offset;
+			}
 			size_t offset = 0;
 		};
 	}

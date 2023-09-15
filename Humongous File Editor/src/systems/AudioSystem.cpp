@@ -53,7 +53,7 @@ namespace HumongousFileEditor
 		CoUninitialize();
 	}
 
-	void AudioSystem::Play(unsigned char* data, uint32_t size)
+	void AudioSystem::Play(unsigned char* data, size_t size)
 	{
 		m_SourceVoice->Stop(0);
 		m_SourceVoice->FlushSourceBuffers();
@@ -63,7 +63,7 @@ namespace HumongousFileEditor
 
 		XAUDIO2_BUFFER xaBuffer{};
 		xaBuffer.pAudioData = data;
-		xaBuffer.AudioBytes = size;
+		xaBuffer.AudioBytes = static_cast<UINT32>(size);
 		if (FAILED(hr = m_SourceVoice->SubmitSourceBuffer(&xaBuffer)))
 			std::cout << "Failed to play." << std::endl;
 	}

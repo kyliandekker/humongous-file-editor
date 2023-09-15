@@ -1,14 +1,31 @@
 #pragma once
 
-#include "forms/HumongousNode.h"
+#include "file/FileType.h"
+
+namespace System
+{
+	ref class Object;
+	ref class EventArgs;
+	namespace Windows
+	{
+		namespace Forms
+		{
+			ref class TabPage;
+			ref class DataGridView;
+			ref class Panel;
+		};
+	};
+};
 
 namespace HumongousFileEditor
 {
+	ref class HumongousNode;
+
 	namespace chunk_reader
 	{
 		class FileContainer;
-		class SDAT_Chunk;
-		class HSHD_Chunk;
+		struct SDAT_Chunk;
+		struct HSHD_Chunk;
 	}
 
 	public ref class TabFunctions

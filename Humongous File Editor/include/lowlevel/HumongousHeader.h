@@ -3,7 +3,6 @@
 #include <corecrt_malloc.h>
 
 #include "lowlevel/Defines.h"
-#include "lowlevel/utils.h"
 
 namespace HumongousFileEditor
 {

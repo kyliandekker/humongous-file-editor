@@ -8,7 +8,7 @@ namespace HumongousFileEditor
 {
 	namespace chunk_reader
 	{
-		class FileIndexer : public FileFunction
+		class FileDecrypter : public FileFunction
 		{
 		public:
 			void Read();

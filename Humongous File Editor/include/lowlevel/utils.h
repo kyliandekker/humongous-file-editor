@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 namespace HumongousFileEditor
 {
@@ -49,5 +50,7 @@ namespace HumongousFileEditor
 		}
 
 		void xorShift(unsigned char*& data, size_t size, char key);
+
+		bool ends_with(std::string const& value, std::string const& ending);
 	}
 }

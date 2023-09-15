@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <cstring>
 
+#include "lowlevel/utils.h"
+
 namespace HumongousFileEditor
 {
 	namespace chunk_reader
@@ -21,14 +23,17 @@ namespace HumongousFileEditor
 
 		uint32_t HumongousHeader::ChunkSize(bool isBigEndian) const
 		{
-			unsigned char size[sizeof(uint32_t)];
-			memcpy(&size, chunkSize, sizeof(uint32_t));
-			return isBigEndian ? utils::reverseBytesC<uint32_t>(size) : reinterpret_cast<uint32_t>(&size);
+			uint32_t size32 = 0;
+			memcpy(&size32, &chunkSize, sizeof(uint32_t));
+			if (isBigEndian)
+				size32 = utils::reverseBytesC<uint32_t>(reinterpret_cast<unsigned char*>(&size32));
+			return size32;
 		}
 
 		void HumongousHeader::SetChunkSize(uint32_t chunk_size, bool toBigEndian)
 		{
-			memcpy(chunkSize, reinterpret_cast<unsigned char*>(chunk_size), sizeof(uint32_t));
+			uint32_t size32 = static_cast<uint32_t>(chunk_size);
+			memcpy(chunkSize, reinterpret_cast<unsigned char*>(&size32), sizeof(uint32_t));
 			if (toBigEndian)
 				utils::reverseBytes(chunkSize, sizeof(uint32_t));
 		}

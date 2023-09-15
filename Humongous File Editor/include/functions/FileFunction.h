@@ -1,17 +1,16 @@
 #pragma once
 
 #include <string>
-
-#include "functions/FileFunction.h"
+#include <wtypes.h>
 
 namespace HumongousFileEditor
 {
 	namespace chunk_reader
 	{
-		class FileIndexer : public FileFunction
+		class FileFunction
 		{
 		public:
-			void Read();
+			LPCWSTR getFilter();
 		};
 	}
 }

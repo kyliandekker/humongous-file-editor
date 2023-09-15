@@ -56,6 +56,7 @@ namespace HumongousFileEditor
 					return ".HE2";
 				}
 			}
+			return "";
 		}
 	}
 }

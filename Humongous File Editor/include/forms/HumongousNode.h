@@ -5,15 +5,12 @@
 
 #include "file/FileType.h"
 
-using namespace System::Windows::Forms;
-using namespace System::Drawing;
-
 namespace HumongousFileEditor
 {
-	public ref class HumongousNode : public TreeNode
+	public ref class HumongousNode : public System::Windows::Forms::TreeNode
 	{
 	public:
-		uint32_t offset = 0;
+		size_t offset = 0;
 		files::FileType fileType;
 	};
 }
