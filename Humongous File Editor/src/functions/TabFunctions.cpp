@@ -15,16 +15,11 @@
 #include "forms/HumongousButton.h"
 #include "systems/AudioSystem.h"
 #include "file/BMPHeader.h"
-#include "file/BMPTransparency.h"
 #include "forms/HumongousNode.h"
 #include "lowlevel/FileContainer.h"
 #include "lowlevel/utils.h"
 #include "systems/Logger.h"
 #include "file/ResourceType.h"
-
-// Fixed decryption error when indexing .(a) and HE0 files
-// Added export functionality to wav files.
-// Added RNAM chunk to info tabs.
 
 namespace HumongousFileEditor
 {
@@ -395,50 +390,58 @@ namespace HumongousFileEditor
 		chunk_reader::BMAP_Chunk bmap_chunk;
 		size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
 		memcpy(&bmap_chunk, utils::add(fc->data, bmap_offset), header_size);
-		size_t bmap_size = bmap_chunk.ChunkSize() - header_size - sizeof(bmap_chunk.transparency) - sizeof(bmap_chunk.fill_color);
-		bmap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, bmap_offset + header_size + sizeof(bmap_chunk.transparency) + sizeof(bmap_chunk.fill_color)));
+		bmap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, bmap_offset + header_size));
+		size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
 
 		// Get TRNS chunk for transparency settings.
 		size_t trns_offset = getOffsetChunk(fc, offset, chunk_reader::TRNS_CHUNK_ID);
 		chunk_reader::TRNS_Chunk trns_chunk;
 		memcpy(&trns_chunk, utils::add(fc->data, trns_offset), sizeof(chunk_reader::TRNS_Chunk));
 
-		// Actual bmap byte size.
+		size_t apal_offset = getOffsetChunk(fc, rmhd_offset, chunk_reader::APAL_CHUNK_ID);
+		chunk_reader::APAL_Chunk apal_chunk;
+		header_size = sizeof(chunk_reader::APAL_Chunk) - sizeof(apal_chunk.data);
+		memcpy(&apal_chunk, utils::add(fc->data, apal_offset), header_size);
+		size_t apal_size = apal_chunk.ChunkSize() - header_size;
+		apal_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, apal_offset + header_size));
 
-		BMAP::BMPTransparency transparency;
-		if (bmap_chunk.transparency >= 134 && bmap_chunk.transparency <= 138)
-			transparency = BMAP::BMPTransparency::Not_Transparent;
-		else if (bmap_chunk.transparency >= 144 && bmap_chunk.transparency <= 148)
-			transparency = BMAP::BMPTransparency::Transparent;
-		else if (bmap_chunk.transparency == 1 || bmap_chunk.transparency == 149)
-			transparency = BMAP::BMPTransparency::NotCompressed;
-		else if (bmap_chunk.transparency == 150)
-			transparency = BMAP::BMPTransparency::NoIdea;
-		else
-			transparency = BMAP::BMPTransparency::Invalid;
+		int palen = bmap_chunk.encoding % 10;
 
-		AddInfoRow("Transparent", gcnew System::String(transparency == BMAP::BMPTransparency::Transparent ? "Yes" : "No"), propertyGrid, posX, posY);
+		// This seems to be Humongous encoding.
+		// Between 134 and 138 (134 and 138 counted)
+		if (bmap_chunk.encoding >= 0x86 && bmap_chunk.encoding <= 0x8A)
+		{
+
+		}
+		// This seems to be Humongous encoding with transparency.
+		// Between 144 and 148 (144 and 148 counted)
+		else if(bmap_chunk.encoding >= 0x90 && bmap_chunk.encoding <= 0x94)
+		{
+
+		}
+		// This is other encoding. (unknown to me)
+		else if (bmap_chunk.encoding == 0x96)
+		{
+
+		}
 
 		size_t num_pixels = rmhd_chunk.width * rmhd_chunk.height;
+
+		unsigned char color = bmap_chunk.fill_color;
 
 		std::string bits;
 		for (size_t i = 0; i < bmap_size; i++)
 		{
-			unsigned char* pC = reinterpret_cast<unsigned char*>(utils::add(bmap_chunk.data, i));
-			char c = *pC;
-			bits += c >> 0;
+			unsigned char color_data = *reinterpret_cast<unsigned char*>(utils::add(bmap_chunk.data, i));
+			for (int j = 0; j < 8; j++)
+				bits += (color_data >> j) & 1;
 		}
 
-		printf("Test\n ");
-		////auto gbits = grouper<std::string>(bits, 1);
-		////std::vector<int> bmap;
-		////bmap.reserve(rmhd_chunk.height * rmhd_chunk.width);
-		////for (int i = 0; i < rmhd_chunk.height * rmhd_chunk.width; ++i) {
-		////	std::string bit_str;
-		////	std::copy_n(std::prev(gbits[i / bpp].base()), bpp,
-		////		std::back_inserter(bit_str));
-		////	bmap.push_back(std::stoi(bit_str, 0, 2));
-		////}
+		size_t pos = 0;
+		while (pos < bmap_size)
+		{
+
+		}
 
 		//FILE* rfile = nullptr;
 

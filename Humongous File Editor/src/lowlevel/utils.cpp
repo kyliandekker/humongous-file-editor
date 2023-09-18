@@ -13,6 +13,11 @@ namespace HumongousFileEditor
 			return reinterpret_cast<unsigned char*>(a_Ptr) + a_Size;
 		}
 
+		int getBit(char i, size_t position)
+		{
+			return (i & (1 << position)) >> position;
+		}
+
 		int chunkcmp(unsigned char* chunkID1, const char* chunkID2)
 		{
 			int b = strncmp(reinterpret_cast<const char*>(chunkID1), chunkID2, CHUNK_ID_SIZE);

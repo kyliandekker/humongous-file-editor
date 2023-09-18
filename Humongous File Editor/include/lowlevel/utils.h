@@ -13,6 +13,8 @@ namespace HumongousFileEditor
 		/// <returns></returns>
 		void* add(void* a_Ptr, size_t a_Size);
 
+		int getBit(char i, size_t psition);
+
 		/// <summary>
 		/// Compares two chunks.
 		/// </summary>

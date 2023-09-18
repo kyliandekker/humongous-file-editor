@@ -122,7 +122,7 @@ namespace HumongousFileEditor
 		{
 			BMAP_Chunk() = default;
 
-			uint8_t transparency = 0;
+			uint8_t encoding = 0;
 			uint8_t fill_color = 0;
 			unsigned char* data = nullptr;
 		};
@@ -145,6 +145,13 @@ namespace HumongousFileEditor
 		struct RNAM_Chunk : HumongousHeader
 		{
 			RNAM_Chunk() = default;
+
+			unsigned char* data = nullptr;
+		};
+
+		struct APAL_Chunk : HumongousHeader
+		{
+			APAL_Chunk() = default;
 
 			unsigned char* data = nullptr;
 		};
