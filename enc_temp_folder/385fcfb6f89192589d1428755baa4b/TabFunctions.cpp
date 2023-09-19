@@ -461,6 +461,30 @@ namespace HumongousFileEditor
 
 		std::vector<int> bits = create_bitstream(bmap_chunk.data, bmap_size);
 
+		std::vector<int> newBits;
+
+		int pos = 0;
+		while (pos < bmap_size)
+		{
+			bits.erase(bits.begin());
+			if (bits[0])
+			{
+				bits.erase(bits.begin());
+				if (bits[0])
+				{
+					color += delta_color[collect_bits(bits, 3)];
+				}
+				else
+				{
+					color = collect_bits(bits, palen);
+				}
+				newBits.push_back(color % 256);
+			}
+			pos++;
+		}
+
+		unsigned char* dat = reinterpret_cast<unsigned char*>(newBits.data());
+
 		//System::IO::MemoryStream^ ms = gcnew System::IO::MemoryStream(ar);
 		//System::Drawing::Image^ pic = Image::FromStream(ms);
 
