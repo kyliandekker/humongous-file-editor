@@ -239,12 +239,21 @@ namespace HumongousFileEditor
 		newTab->Text = node->Text;
 		newTab->UseVisualStyleBackColor = true;
 
+		// Construct action panel (button area)
+		System::Windows::Forms::Panel^ propertyPanel = gcnew System::Windows::Forms::Panel();
+		propertyPanel->BackColor = System::Drawing::Color::WhiteSmoke;
+		newTab->Controls->Add(propertyPanel);
+		propertyPanel->Dock = System::Windows::Forms::DockStyle::Fill;
+		propertyPanel->Location = System::Drawing::Point(0, 0);
+		propertyPanel->Name = L"propertyPanel1";
+		propertyPanel->Size = System::Drawing::Size(497, 462);
+		propertyPanel->TabIndex = 0;
+
 		System::Windows::Forms::DataGridView^ propertyGrid = (gcnew System::Windows::Forms::DataGridView());
-		newTab->Controls->Add(propertyGrid);
+		propertyPanel->Controls->Add(propertyGrid);
 		propertyGrid->Dock = System::Windows::Forms::DockStyle::Fill;
 		propertyGrid->Location = System::Drawing::Point(0, 0);
 		propertyGrid->Name = L"propertyGrid1";
-		propertyGrid->Size = System::Drawing::Size(497, 462);
 		propertyGrid->TabIndex = 2;
 		propertyGrid->Columns->Add(gcnew System::String("Property Name"), gcnew System::String("Property Name"));
 		propertyGrid->Columns->Add(gcnew System::String("Value"), gcnew System::String("Value"));
@@ -291,7 +300,7 @@ namespace HumongousFileEditor
 			}
 			case files::ResourceType::Image:
 			{
-				GetImXX(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				GetImXX(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel, posX, posY);
 				break;
 			}
 			case files::ResourceType::Room:
@@ -403,7 +412,7 @@ namespace HumongousFileEditor
 
 		return result;
 	}
-	void TabFunctions::GetImXX(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetImXX(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
 	{
 		AddInfoRow("Type", gcnew System::String("Image"), propertyGrid, posX, posY);
 
@@ -498,7 +507,10 @@ namespace HumongousFileEditor
 			out.push_back(apal_chunk.data[color_index + 2]);
 		};
 
-		stbi_write_png("D:/test.png", rmhd_chunk.width, rmhd_chunk.height, channels, out.data(), rmhd_chunk.width * channels);
+		stbi_write_png("C:/ekkes/test.png", rmhd_chunk.width, rmhd_chunk.height, channels, out.data(), rmhd_chunk.width * channels);
+
+		propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
+		propertyGrid->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
 		//array<unsigned char>^ chararray = gcnew array<unsigned char>(out.size());
 		//for (size_t i = 0; i < out.size(); i++)
@@ -507,19 +519,19 @@ namespace HumongousFileEditor
 		//System::IO::MemoryStream^ ms = gcnew System::IO::MemoryStream(out.size());
 		//ms->Write(chararray, 0, out.size());
 
-		//System::Drawing::Image^ pic = System::Drawing::Image::FromStream(ms);
+		System::Drawing::Image^ pic = System::Drawing::Image::FromFile("C:/ekkes/test.png");
 
-		//System::Windows::Forms::PictureBox^ pictureBox;
-		//pictureBox = (gcnew System::Windows::Forms::PictureBox());
-		//pictureBox->Dock = System::Windows::Forms::DockStyle::Bottom;
-		//pictureBox->Location = System::Drawing::Point(3, 306);
-		//pictureBox->Name = L"Action Panel";
-		//float relativeW = 1.0f / pic->Width * tab->Width;
-		//pictureBox->Size = System::Drawing::Size(tab->Width, pic->Height * relativeW);
-		//pictureBox->Image = pic;
-		//pictureBox->SizeMode = System::Windows::Forms::PictureBoxSizeMode::StretchImage;
+		System::Windows::Forms::PictureBox^ pictureBox;
+		pictureBox = (gcnew System::Windows::Forms::PictureBox());
+		pictureBox->Dock = System::Windows::Forms::DockStyle::Top;
+		pictureBox->Location = System::Drawing::Point(0, propertyGrid->Height);
+		pictureBox->Name = L"Action Panel";
+		float relativeW = 1.0f / pic->Width * tab->Width;
+		pictureBox->Image = pic;
+		pictureBox->SizeMode = System::Windows::Forms::PictureBoxSizeMode::Zoom;
+		pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
-		//tab->Controls->Add(pictureBox);
+		propertyPanel->Controls->Add(pictureBox);
 	}
 	void TabFunctions::GetRNAM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
