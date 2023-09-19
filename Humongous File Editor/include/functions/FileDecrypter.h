@@ -11,7 +11,7 @@ namespace HumongousFileEditor
 		class FileDecrypter : public FileFunction
 		{
 		public:
-			void Read();
+			bool Read();
 		};
 	}
 }

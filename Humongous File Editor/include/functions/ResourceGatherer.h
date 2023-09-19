@@ -11,10 +11,10 @@ namespace HumongousFileEditor
 		class ResourceGatherer
 		{
 		public:
-			void Read(const char* path);
-			void ReadResourceFile(FileContainer*& fc);
-			void ReadHE2(FileContainer*& fc);
-			void ReadHE4(FileContainer*& fc);
+			bool Read(const char* path);
+			bool ReadResourceFile(FileContainer*& fc);
+			bool ReadHE2(FileContainer*& fc);
+			bool ReadHE4(FileContainer*& fc);
 		};
 	}
 }

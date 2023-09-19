@@ -389,6 +389,8 @@ namespace HumongousFileEditor
 					RGBS_CHUNK_ID,
 					CNVS_CHUNK_ID,
 					RMAP_CHUNK_ID,
+					CUSE_CHUNK_ID,
+					CUSE_CHUNK_ID,
 				}
 			},
 			{ AWIZ_CHUNK_ID, {
@@ -399,6 +401,8 @@ namespace HumongousFileEditor
 					RELO_CHUNK_ID,
 					RGBS_CHUNK_ID,
 					XMAP_CHUNK_ID,
+					TRNS_CHUNK_ID,
+					TRNS_CHUNK_ID,
 				}
 			},
 			{ TLKE_CHUNK_ID, {

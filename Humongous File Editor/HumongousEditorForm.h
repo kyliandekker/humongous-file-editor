@@ -514,7 +514,6 @@ namespace HumongousFileEditor
 			this->actionPanel->ResumeLayout(false);
 			this->ResumeLayout(false);
 			this->PerformLayout();
-
 		}
 #pragma endregion
 		// Opens a window with info about the application (via the top menu or info button).
@@ -606,7 +605,11 @@ namespace HumongousFileEditor
 				wsprintfA(path, "%S", ofn.lpstrFile);
 
 				chunk_reader::ResourceGatherer f = chunk_reader::ResourceGatherer();
-				f.Read(path);
+				if (f.Read(path))
+				{
+					System::Windows::Forms::MessageBox::Show("Successfully opened file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+					return;
+				}
 
 				delete[] path;
 			}
@@ -709,7 +712,11 @@ namespace HumongousFileEditor
 		System::Void encryptButton_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			chunk_reader::FileDecrypter fileDecrypter;
-			fileDecrypter.Read();
+			if (fileDecrypter.Read())
+			{
+				System::Windows::Forms::MessageBox::Show("Successfully decrypted/encrypted file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+				return;
+			}
 		}
 	};
 }

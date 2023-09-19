@@ -44,13 +44,13 @@ namespace HumongousFileEditor
 			return "";
 		}
 
-		void ResourceGatherer::Read(const char* path)
+		bool ResourceGatherer::Read(const char* path)
 		{
 			FileContainer* fc = files::FILES.Read(path);
 			if (fc == nullptr)
 			{
 				LOGF(logger::LOGSEVERITY_ERROR, "Could not open file \"%s\".", path);
-				return;
+				return false;
 			}
 
 			switch (fc->fileType)
@@ -58,25 +58,26 @@ namespace HumongousFileEditor
 				case files::FileType::FileType_HE0:
 				case files::FileType::FileType_A:
 				{
-					ReadResourceFile(fc);
+					return ReadResourceFile(fc);
 					break;
 				}
 				case files::FileType::FileType_HE2:
 				{
-					ReadHE2(fc);
+					return ReadHE2(fc);
 					break;
 				}
 				case files::FileType::FileType_HE4:
 				{
-					ReadHE4(fc);
+					return ReadHE4(fc);
 					break;
 				}
 				default:
 					break;
 			}
+			return false;
 		}
 
-		void ResourceGatherer::ReadResourceFile(FileContainer*& fc)
+		bool ResourceGatherer::ReadResourceFile(FileContainer*& fc)
 		{
 			FileContainer* a = nullptr;
 			FileContainer* he0 = nullptr;
@@ -89,7 +90,7 @@ namespace HumongousFileEditor
 				if (he0 == nullptr)
 				{
 					LOGF(logger::LOGSEVERITY_ERROR, "Could not open file \"%s\".", he0path.c_str());
-					return;
+					return false;
 				}
 			}
 			else if (fc->fileType == files::FileType_HE0)
@@ -101,11 +102,11 @@ namespace HumongousFileEditor
 				if (a == nullptr)
 				{
 					LOGF(logger::LOGSEVERITY_ERROR, "Could not open file \"%s\".", apath.c_str());
-					return;
+					return false;
 				}
 			}
 			else
-				return;
+				return false;
 
 			chunk_reader::ChunkInfo info = he0->GetChunkInfo(0);
 
@@ -116,12 +117,12 @@ namespace HumongousFileEditor
 				info = he0->GetNextChunk(info.offset);
 			}
 			if (utils::chunkcmp(info.chunk_id, chunk_reader::RNAM_CHUNK_ID) != 0)
-				return;
+				return false;
 
 			// Get HSHD chunk for the sample rate.
 			size_t rnam_offset = info.offset;
 			if (rnam_offset == -1)
-				return;
+				return false;
 
 			std::vector<std::string> room_names;
 
@@ -242,9 +243,10 @@ namespace HumongousFileEditor
 				header = a->GetNextChunk(header.offset);
 			}
 			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .(A) and .HE0 resources for file \"%s\".", fc->path.c_str());
+			return true;
 		}
 
-		void ResourceGatherer::ReadHE2(FileContainer*& fc)
+		bool ResourceGatherer::ReadHE2(FileContainer*& fc)
 		{
 			std::map<std::string, files::ResourceType> RESOURCE_CHUNKS =
 			{
@@ -286,9 +288,10 @@ namespace HumongousFileEditor
 				categoryNode->Nodes->Add(node);
 			}
 			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE2 resources for file \"%s\".", fc->path.c_str());
+			return true;
 		}
 
-		void ResourceGatherer::ReadHE4(FileContainer*& fc)
+		bool ResourceGatherer::ReadHE4(FileContainer*& fc)
 		{
 			std::map<std::string, files::ResourceType> RESOURCE_CHUNKS =
 			{
@@ -330,6 +333,7 @@ namespace HumongousFileEditor
 				categoryNode->Nodes->Add(node);
 			}
 			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE4 resources for file \"%s\".", fc->path.c_str());
+			return true;
 		}
 	}
 }

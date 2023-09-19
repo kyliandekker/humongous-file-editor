@@ -10,7 +10,7 @@ namespace HumongousFileEditor
 {
 	namespace chunk_reader
 	{
-		void FileDecrypter::Read()
+		bool FileDecrypter::Read()
 		{
 			OPENFILENAME ofn;
 			TCHAR sz_file[260] = { 0 };
@@ -67,7 +67,7 @@ namespace HumongousFileEditor
 					if (file == nullptr)
 					{
 						LOGF(logger::LOGSEVERITY_ERROR, "Cannot save file \"%s\".", save_path_s.c_str());
-						return;
+						return false;
 					}
 
 					fwrite(fc.data, fc.size, 1, file);
@@ -75,7 +75,9 @@ namespace HumongousFileEditor
 				}
 
 				delete[] path;
+				return true;
 			}
+			return false;
 		}
 	}
 }

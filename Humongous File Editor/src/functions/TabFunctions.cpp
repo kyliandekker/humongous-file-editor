@@ -10,6 +10,10 @@
 #include <uaudio_wave_reader/WaveChunks.h>
 #include <sstream>
 #include <fstream>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 
 #include "lowlevel/HumongousChunks.h"
 #include "lowlevel/HumongousChunkDefinitions.h"
@@ -385,7 +389,7 @@ namespace HumongousFileEditor
 		}
 		return bits;
 	}
-	uint8_t collect_bits(std::vector<uint8_t>& bitstream, int count)
+	uint8_t collect_bits(int& pos, std::vector<uint8_t>& bitstream, int count)
 	{
 		// TODO: check if special handling needed when count > 8
 		assert(count <= 8);
@@ -393,8 +397,8 @@ namespace HumongousFileEditor
 		int result = 0;
 		for (int i = 0; i < count; i++)
 		{
-			bitstream.erase(bitstream.begin());
-			result |= bitstream[0] << i;
+			pos++;
+			result |= bitstream[pos] << i;
 		}
 
 		return result;
@@ -462,44 +466,56 @@ namespace HumongousFileEditor
 
 		std::vector<uint8_t> out;
 		out.push_back(color % 256);
+		out.push_back(color % 256);
 
+		int pos = 0;
 		while (out.size() < num_pixels)
 		{
-			bits.erase(bits.begin());
-			if (bits[0] == 1)
+			pos++;
+			if (bits[pos] == 1)
 			{
-				bits.erase(bits.begin());
-				if (bits[0] == 1)
+				pos++;
+				if (bits[pos] == 1)
 				{
-					uint8_t bitc = collect_bits(bits, 3);
+					uint8_t bitc = collect_bits(pos, bits, 3);
 					color += delta_color[bitc];
 				}
 				else
 				{
-					color = collect_bits(bits, palen);
+					color = collect_bits(pos, bits, palen);
 				}
 			}
 			out.push_back(color % 256);
 		};
 
-		FILE* f;
-		fopen_s(&f, "D:/ekkes/compare.txt", "wb");
+		std::vector<uint8_t> newOut;
 		for (size_t i = 0; i < out.size(); i++)
-			fwrite(&out[i], 1, 1, f);
+		{
+			newOut.push_back(apal_chunk.data[out[i] * 3]);
+			newOut.push_back(apal_chunk.data[out[i] * 3 + 1]);
+			newOut.push_back(apal_chunk.data[out[i] * 3 + 2]);
+		}
 
-		fclose(f);
+		stbi_write_png("D:/test.png", rmhd_chunk.width, rmhd_chunk.height, 3, newOut.data(), rmhd_chunk.width * 3);
 
+		//array<unsigned char>^ chararray = gcnew array<unsigned char>(out.size());
+		//for (size_t i = 0; i < out.size(); i++)
+		//	chararray[i] = out.data()[i];
 
-		//System::IO::MemoryStream^ ms = gcnew System::IO::MemoryStream(ar);
-		//System::Drawing::Image^ pic = Image::FromStream(ms);
+		//System::IO::MemoryStream^ ms = gcnew System::IO::MemoryStream(out.size());
+		//ms->Write(chararray, 0, out.size());
 
+		//System::Drawing::Image^ pic = System::Drawing::Image::FromStream(ms);
+
+		//System::Windows::Forms::PictureBox^ pictureBox;
+		//pictureBox = (gcnew System::Windows::Forms::PictureBox());
 		//pictureBox->Dock = System::Windows::Forms::DockStyle::Bottom;
 		//pictureBox->Location = System::Drawing::Point(3, 306);
 		//pictureBox->Name = L"Action Panel";
-		//float d = 1.0f / pic->Width * tab->Width;
-		//pictureBox->Size = System::Drawing::Size(tab->Width, pic->Height * d);
+		//float relativeW = 1.0f / pic->Width * tab->Width;
+		//pictureBox->Size = System::Drawing::Size(tab->Width, pic->Height * relativeW);
 		//pictureBox->Image = pic;
-		//pictureBox->SizeMode = PictureBoxSizeMode::StretchImage;
+		//pictureBox->SizeMode = System::Windows::Forms::PictureBoxSizeMode::StretchImage;
 
 		//tab->Controls->Add(pictureBox);
 	}

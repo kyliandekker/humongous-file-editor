@@ -127,8 +127,10 @@ namespace HumongousFileEditor
 						&written,
 						nullptr
 					);
-					if (m_LoggerCallback)
-						m_LoggerCallback(lm);
+
+					if (lm.severity == LOGSEVERITY_ASSERT || lm.severity == LOGSEVERITY_ERROR)
+						System::Windows::Forms::MessageBox::Show(gcnew System::String(lm.message.c_str()), gcnew System::String("Error"), System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+					
 					if (lm.severity == logger::LOGSEVERITY_ASSERT)
 						assert(0 && "Logger assert, check log file for information");
 				}
