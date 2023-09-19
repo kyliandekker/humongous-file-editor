@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <windows.h>
 #include <uaudio_wave_reader/WaveChunks.h>
+#include <sstream>
+#include <fstream>
 
 #include "lowlevel/HumongousChunks.h"
 #include "lowlevel/HumongousChunkDefinitions.h"
@@ -372,9 +374,9 @@ namespace HumongousFileEditor
 		std::string t = std::string(reinterpret_cast<char*>(scrp_chunk.data));
 		AddInfoRow("Script", gcnew System::String(t.c_str()), propertyGrid, posX, posY);
 	}
-	std::vector<int> create_bitstream(unsigned char* data, size_t length)
+	std::vector<uint8_t> create_bitstream(unsigned char* data, size_t length)
 	{
-		std::vector<int> bits;
+		std::vector<uint8_t> bits;
 		for (size_t i = 0; i < length; ++i) {
 			char c = data[i];
 			for (int j = 0; j < 8; j++) {
@@ -383,19 +385,16 @@ namespace HumongousFileEditor
 		}
 		return bits;
 	}
-	int collect_bits(std::vector<int>& bitstream, int count) {
+	uint8_t collect_bits(std::vector<uint8_t>& bitstream, int count)
+	{
+		// TODO: check if special handling needed when count > 8
 		assert(count <= 8);
 
 		int result = 0;
-		for (int i = 0; i < count; ++i) {
-			if (!bitstream.empty()) {
-				result = (result << 1) | bitstream.back(); // Shift and add the last bit
-				bitstream.pop_back(); // Remove the last bit from the vector
-			}
-			else {
-				// Handle the case when the bitstream is empty
-				result <<= 1;
-			}
+		for (int i = 0; i < count; i++)
+		{
+			bitstream.erase(bitstream.begin());
+			result |= bitstream[0] << i;
 		}
 
 		return result;
@@ -459,7 +458,37 @@ namespace HumongousFileEditor
 
 		unsigned char color = bmap_chunk.fill_color;
 
-		std::vector<int> bits = create_bitstream(bmap_chunk.data, bmap_size);
+		std::vector<uint8_t> bits = create_bitstream(bmap_chunk.data, bmap_size);
+
+		std::vector<uint8_t> out;
+		out.push_back(color % 256);
+
+		while (out.size() < num_pixels)
+		{
+			bits.erase(bits.begin());
+			if (bits[0] == 1)
+			{
+				bits.erase(bits.begin());
+				if (bits[0] == 1)
+				{
+					uint8_t bitc = collect_bits(bits, 3);
+					color += delta_color[bitc];
+				}
+				else
+				{
+					color = collect_bits(bits, palen);
+				}
+			}
+			out.push_back(color % 256);
+		};
+
+		FILE* f;
+		fopen_s(&f, "D:/ekkes/compare.txt", "wb");
+		for (size_t i = 0; i < out.size(); i++)
+			fwrite(&out[i], 1, 1, f);
+
+		fclose(f);
+
 
 		//System::IO::MemoryStream^ ms = gcnew System::IO::MemoryStream(ar);
 		//System::Drawing::Image^ pic = Image::FromStream(ms);
