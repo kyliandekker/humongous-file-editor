@@ -32,7 +32,7 @@ namespace HumongousFileEditor
 				{
 					return "Soundtracks";
 				}
-				case files::ResourceType::Image:
+				case files::ResourceType::RoomBackground:
 				{
 					return "Images";
 				}
@@ -175,30 +175,30 @@ namespace HumongousFileEditor
 				{ TALK_CHUNK_ID, files::ResourceType::Talkie },
 				{ SGEN_CHUNK_ID, files::ResourceType::Song },
 				{ SCRP_CHUNK_ID, files::ResourceType::Script },
-				{ IM00_CHUNK_ID, files::ResourceType::Image },
-				{ IM01_CHUNK_ID, files::ResourceType::Image },
-				{ IM02_CHUNK_ID, files::ResourceType::Image },
-				{ IM03_CHUNK_ID, files::ResourceType::Image },
-				{ IM04_CHUNK_ID, files::ResourceType::Image },
-				{ IM05_CHUNK_ID, files::ResourceType::Image },
-				{ IM06_CHUNK_ID, files::ResourceType::Image },
-				{ IM07_CHUNK_ID, files::ResourceType::Image },
-				{ IM08_CHUNK_ID, files::ResourceType::Image },
-				{ IM09_CHUNK_ID, files::ResourceType::Image },
-				{ IM10_CHUNK_ID, files::ResourceType::Image },
-				{ IM11_CHUNK_ID, files::ResourceType::Image },
-				{ IM12_CHUNK_ID, files::ResourceType::Image },
-				{ IM13_CHUNK_ID, files::ResourceType::Image },
-				{ IM14_CHUNK_ID, files::ResourceType::Image },
-				{ IM15_CHUNK_ID, files::ResourceType::Image },
-				{ IM16_CHUNK_ID, files::ResourceType::Image },
-				{ IM17_CHUNK_ID, files::ResourceType::Image },
-				{ IM0A_CHUNK_ID, files::ResourceType::Image },
-				{ IM0B_CHUNK_ID, files::ResourceType::Image },
-				{ IM0C_CHUNK_ID, files::ResourceType::Image },
-				{ IM0D_CHUNK_ID, files::ResourceType::Image },
-				{ IM0E_CHUNK_ID, files::ResourceType::Image },
-				{ IM0F_CHUNK_ID, files::ResourceType::Image },
+				{ IM00_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM01_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM02_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM03_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM04_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM05_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM06_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM07_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM08_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM09_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM10_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM11_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM12_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM13_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM14_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM15_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM16_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM17_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM0A_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM0B_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM0C_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM0D_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM0E_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ IM0F_CHUNK_ID, files::ResourceType::RoomBackground },
 				{ DIGI_CHUNK_ID, files::ResourceType::SFX }
 			};
 

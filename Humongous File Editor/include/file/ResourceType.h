@@ -12,7 +12,7 @@ namespace HumongousFileEditor
 			Talkie,
 			SFX,
 			Song,
-			Image,
+			RoomBackground,
 			Script,
 			Room
 		};

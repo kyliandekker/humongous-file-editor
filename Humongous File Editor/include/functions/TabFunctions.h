@@ -26,6 +26,7 @@ namespace HumongousFileEditor
 		class FileContainer;
 		struct SDAT_Chunk;
 		struct HSHD_Chunk;
+		struct RMHD_Chunk;
 	}
 
 	public ref class TabFunctions
@@ -60,6 +61,12 @@ namespace HumongousFileEditor
 	class DigiTab
 	{
 	public:
-		static bool GetData(chunk_reader::FileContainer*& fc, size_t offse, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunkt);
+		static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk);
+	};
+
+	class RoomBackgroundTab
+	{
+	public:
+		static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::RMHD_Chunk& rmhd_chunk, unsigned char*& data, size_t& size, size_t& channels);
 	};
 }
