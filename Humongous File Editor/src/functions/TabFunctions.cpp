@@ -512,22 +512,23 @@ namespace HumongousFileEditor
 		propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
 		propertyGrid->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
-		//array<unsigned char>^ chararray = gcnew array<unsigned char>(out.size());
-		//for (size_t i = 0; i < out.size(); i++)
-		//	chararray[i] = out.data()[i];
+		System::Drawing::Bitmap^ bmp = gcnew System::Drawing::Bitmap(rmhd_chunk.width, rmhd_chunk.height);
 
-		//System::IO::MemoryStream^ ms = gcnew System::IO::MemoryStream(out.size());
-		//ms->Write(chararray, 0, out.size());
-
-		System::Drawing::Image^ pic = System::Drawing::Image::FromFile("C:/ekkes/test.png");
+		int cur = 0;
+		for (size_t i = 0; i < out.size(); i += 3, cur++)
+		{
+			int y = cur / rmhd_chunk.width;
+			int x = cur % rmhd_chunk.width;
+			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, out[i], out[i + 1], out[i + 2]));
+		}
 
 		System::Windows::Forms::PictureBox^ pictureBox;
 		pictureBox = (gcnew System::Windows::Forms::PictureBox());
 		pictureBox->Dock = System::Windows::Forms::DockStyle::Top;
 		pictureBox->Location = System::Drawing::Point(0, propertyGrid->Height);
 		pictureBox->Name = L"Action Panel";
-		float relativeW = 1.0f / pic->Width * tab->Width;
-		pictureBox->Image = pic;
+		float relativeW = 1.0f / bmp->Width * tab->Width;
+		pictureBox->Image = bmp;
 		pictureBox->SizeMode = System::Windows::Forms::PictureBoxSizeMode::Zoom;
 		pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
