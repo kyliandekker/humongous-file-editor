@@ -41,9 +41,33 @@ namespace HumongousFileEditor
 	size_t getOffsetChunk(chunk_reader::FileContainer*& fc, size_t offset, std::vector<std::string> chunk_names)
 	{
 		chunk_reader::ChunkInfo info = fc->GetChunkInfo(offset);
+		info = fc->GetNextChunk(info.offset);
 
 		int i = 0;
 		while (i < LOOKUP_LIMIT && offset < fc->size)
+		{
+			for (size_t j = 0; j < chunk_names.size(); j++)
+				if (utils::chunkcmp(info.chunk_id, chunk_names[j].c_str()) == 0)
+					return info.offset;
+			info = fc->GetNextChunk(info.offset);
+		}
+
+		return -1;
+	}
+	/// <summary>
+	/// Returns the offset of a chunk (looking from offset)
+	/// </summary>
+	/// <param name="fc">The file.</param>
+	/// <param name="offset">The offset from where to look.</param>
+	/// <param name="chunk_name">The chunk ID.</param>
+	/// <returns>Offset if found, -1 if not found.</returns>
+	size_t getOffsetChunkWithOffset(chunk_reader::FileContainer*& fc, size_t offset, size_t max_offset, std::vector<std::string> chunk_names)
+	{
+		chunk_reader::ChunkInfo info = fc->GetChunkInfo(offset);
+		info = fc->GetNextChunk(info.offset);
+
+		int i = 0;
+		while (i < LOOKUP_LIMIT && offset < max_offset)
 		{
 			for (size_t j = 0; j < chunk_names.size(); j++)
 				if (utils::chunkcmp(info.chunk_id, chunk_names[j].c_str()) == 0)
@@ -203,20 +227,10 @@ namespace HumongousFileEditor
 			{
 				break;
 			}
-			case files::ResourceType::RoomImage:
+			case files::ResourceType::RoomBackground:
 			{
-				// Get RMHD chunk for width and height of image.
-				size_t rmhd_offset = getOffsetChunk(fc, btn->offset, { chunk_reader::RMHD_CHUNK_ID });
-				if (rmhd_offset == -1)
-					return;
-
-				chunk_reader::RMHD_Chunk rmhd_chunk;
-				memcpy(&rmhd_chunk, utils::add(fc->data, rmhd_offset), sizeof(chunk_reader::RMHD_Chunk));
-				unsigned char* d = reinterpret_cast<unsigned char*>(utils::add(fc->data, rmhd_offset));
-
-				unsigned char* data = nullptr;
-				size_t size = 0, channels;
-				if (!RoomBackgroundTab::GetData(fc, btn->offset, rmhd_chunk, data, size, channels))
+				img_info info;
+				if (!RoomBackgroundTab::GetData(fc, btn->offset, info))
 					return;
 
 				OPENFILENAME ofn;
@@ -244,7 +258,9 @@ namespace HumongousFileEditor
 					if (!utils::ends_with(save_path_s, ".png"))
 						save_path_s += ".png";
 
-					stbi_write_png(save_path_s.c_str(), rmhd_chunk.width, rmhd_chunk.height, channels, data, rmhd_chunk.width* channels);
+					stbi_write_png(save_path_s.c_str(), info.width, info.height, info.channels, info.data, info.width* info.channels);
+
+					free(info.data);
 				}
 
 				break;
@@ -348,7 +364,7 @@ namespace HumongousFileEditor
 			}
 			case files::ResourceType::RoomImage:
 			{
-				//GetImXX(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel, posX, posY);
+				GetOBIM(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel, posX, posY);
 				break;
 			}
 			case files::ResourceType::Room:
@@ -506,9 +522,8 @@ namespace HumongousFileEditor
 		AddInfoRow("Width", gcnew System::String(std::to_string(rmhd_chunk.width).c_str()), propertyGrid, posX, posY);
 		AddInfoRow("Height", gcnew System::String(std::to_string(rmhd_chunk.height).c_str()), propertyGrid, posX, posY);
 
-		unsigned char* data = nullptr;
-		size_t size = 0, channels;
-		if (!RoomBackgroundTab::GetData(fc, offset, rmhd_chunk, data, size, channels))
+		img_info info;
+		if (!RoomBackgroundTab::GetData(fc, offset, info))
 			return;
 
 		propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
@@ -517,14 +532,14 @@ namespace HumongousFileEditor
 		System::Drawing::Bitmap^ bmp = gcnew System::Drawing::Bitmap(rmhd_chunk.width, rmhd_chunk.height);
 
 		int cur = 0;
-		for (size_t i = 0; i < size; i += channels, cur++)
+		for (size_t i = 0; i < info.size; i += info.channels, cur++)
 		{
 			int y = cur / rmhd_chunk.width;
 			int x = cur % rmhd_chunk.width;
-			if (channels < 4)
-				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, data[i], data[i + 1], data[i + 2]));
+			if (info.channels < 4)
+				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, info.data[i], info.data[i + 1], info.data[i + 2]));
 			else
-				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(data[i + 3], data[i], data[i + 1], data[i + 2]));
+				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data[i + 3], info.data[i], info.data[i + 1], info.data[i + 2]));
 		}
 
 		System::Windows::Forms::PictureBox^ pictureBox;
@@ -538,6 +553,15 @@ namespace HumongousFileEditor
 		pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
 		propertyPanel->Controls->Add(pictureBox);
+		free(info.data);
+	}
+	void TabFunctions::GetOBIM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
+	{
+		AddInfoRow("Type", gcnew System::String("Room Image"), propertyGrid, posX, posY);
+
+		std::vector<img_info> info;
+		if (!RoomImageTab::GetData(fc, offset, info))
+			return;
 	}
 	void TabFunctions::GetRNAM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
@@ -655,7 +679,6 @@ namespace HumongousFileEditor
 
 		return true;
 	}
-
 	bool DigiTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk)
 	{
 		// Get HSHD chunk for the sample rate.
@@ -676,129 +699,279 @@ namespace HumongousFileEditor
 
 		return true;
 	}
-
-	bool RoomBackgroundTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::RMHD_Chunk& rmhd_chunk, unsigned char*& data, size_t& size, size_t& channels)
+	bool RoomBackgroundTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
 	{
 		size_t type_offset = getOffsetChunk(fc, offset, {
 			chunk_reader::BMAP_CHUNK_ID,
 			chunk_reader::SMAP_CHUNK_ID,
-		});
+			});
 		if (type_offset == -1)
 			return false;
 
 		chunk_reader::ChunkInfo typeChunk = fc->GetChunkInfo(type_offset);
 		if (utils::chunkcmp(typeChunk.chunk_id, chunk_reader::BMAP_CHUNK_ID) == 0)
+			return ImageTab::DecodeBMAP(fc, offset, info);
+		else if (utils::chunkcmp(typeChunk.chunk_id, chunk_reader::SMAP_CHUNK_ID) == 0)
 		{
-			// Get BMAP chunk for raw data.
-			size_t bmap_offset = getOffsetChunk(fc, offset, { chunk_reader::BMAP_CHUNK_ID });
-			if (bmap_offset == -1)
-				return false;
 
-			chunk_reader::BMAP_Chunk bmap_chunk;
-			size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
-			memcpy(&bmap_chunk, utils::add(fc->data, bmap_offset), header_size);
-			bmap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, bmap_offset + header_size));
-			size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
+		}
 
-			// Get TRNS chunk for transparency settings.
-			size_t trns_offset = getOffsetChunk(fc, offset, { chunk_reader::TRNS_CHUNK_ID });
-			if (trns_offset == -1)
-				return false;
+		return false;
+	}
+	bool RoomImageTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<img_info>& info)
+	{
+		return false;
+	}
+	struct strip
+	{
+		uint32_t size;
+		unsigned char* data;
+	};
+	bool ImageTab::DecodeBMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
+	{
+		// Get RMHD chunk for width and height of image.
+		size_t rmhd_offset = getOffsetChunk(fc, offset, { chunk_reader::RMHD_CHUNK_ID });
+		if (rmhd_offset == -1)
+			return false;
 
-			chunk_reader::TRNS_Chunk trns_chunk;
-			memcpy(&trns_chunk, utils::add(fc->data, trns_offset), sizeof(chunk_reader::TRNS_Chunk));
+		chunk_reader::RMHD_Chunk rmhd_chunk;
+		memcpy(&rmhd_chunk, utils::add(fc->data, rmhd_offset), sizeof(chunk_reader::RMHD_Chunk));
 
-			size_t apal_offset = getOffsetChunk(fc, offset, { chunk_reader::APAL_CHUNK_ID });
-			if (apal_offset == -1)
-				return false;
+		// Get BMAP chunk for raw data.
+		size_t bmap_offset = getOffsetChunk(fc, offset, { chunk_reader::BMAP_CHUNK_ID });
+		if (bmap_offset == -1)
+			return false;
 
-			chunk_reader::APAL_Chunk apal_chunk;
-			header_size = sizeof(chunk_reader::APAL_Chunk) - sizeof(apal_chunk.data);
-			memcpy(&apal_chunk, utils::add(fc->data, apal_offset), header_size);
-			size_t apal_size = apal_chunk.ChunkSize() - header_size;
-			apal_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, apal_offset + header_size));
+		chunk_reader::BMAP_Chunk bmap_chunk;
+		size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
+		memcpy(&bmap_chunk, utils::add(fc->data, bmap_offset), header_size);
+		bmap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, bmap_offset + header_size));
+		size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
 
-			int palen = bmap_chunk.encoding % 10;
+		// Get TRNS chunk for transparency settings.
+		size_t trns_offset = getOffsetChunk(fc, offset, { chunk_reader::TRNS_CHUNK_ID });
+		if (trns_offset == -1)
+			return false;
 
-			bool he = bmap_chunk.encoding >= 0x86 && bmap_chunk.encoding <= 0x8A;
-			bool he_transparent = bmap_chunk.encoding >= 0x90 && bmap_chunk.encoding <= 0x94;
+		chunk_reader::TRNS_Chunk trns_chunk;
+		memcpy(&trns_chunk, utils::add(fc->data, trns_offset), sizeof(chunk_reader::TRNS_Chunk));
 
-			// This seems to be Humongous encoding.
+		size_t apal_offset = getOffsetChunk(fc, offset, { chunk_reader::APAL_CHUNK_ID });
+		if (apal_offset == -1)
+			return false;
+
+		chunk_reader::APAL_Chunk apal_chunk;
+		header_size = sizeof(chunk_reader::APAL_Chunk) - sizeof(apal_chunk.data);
+		memcpy(&apal_chunk, utils::add(fc->data, apal_offset), header_size);
+		size_t apal_size = apal_chunk.ChunkSize() - header_size;
+		apal_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, apal_offset + header_size));
+
+		int palen = bmap_chunk.encoding % 10;
+
+		bool he = bmap_chunk.encoding >= 0x86 && bmap_chunk.encoding <= 0x8A;
+		bool he_transparent = bmap_chunk.encoding >= 0x90 && bmap_chunk.encoding <= 0x94;
+
+		if (!DecodeHE(bmap_chunk.data, bmap_size, rmhd_chunk.width, rmhd_chunk.height, palen, he_transparent, info))
+			return false;
+
+		std::vector<uint8_t> newOut;
+		for (size_t i = 0; i < info.size; i++)
+		{
+			newOut.push_back(apal_chunk.data[info.data[i] * 3]);
+			newOut.push_back(apal_chunk.data[info.data[i] * 3 + 1]);
+			newOut.push_back(apal_chunk.data[info.data[i] * 3 + 2]);
+			if (he_transparent)
+			{
+				if (info.data[i] == bmap_chunk.fill_color)
+					newOut.push_back(0);
+				else
+					newOut.push_back(255);
+			}
+		}
+
+		info.size = newOut.size();
+		info.data = reinterpret_cast<unsigned char*>(malloc(newOut.size()));
+		memcpy(info.data, newOut.data(), newOut.size());
+
+		return true;
+	}
+	bool ImageTab::DecodeSMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
+	{
+		// Get IMHD chunk for width and height of image.
+		size_t imhd_offset = getOffsetChunk(fc, offset, { chunk_reader::IMHD_CHUNK_ID });
+		if (imhd_offset == -1)
+			return false;
+
+		chunk_reader::IMHD_Chunk imhd_chunk;
+		memcpy(&imhd_chunk, utils::add(fc->data, imhd_offset), sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data));
+		imhd_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, imhd_offset + (sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data))));
+
+		// Get SMAP chunk for raw data.
+		size_t smap_offset = getOffsetChunk(fc, offset, { chunk_reader::SMAP_CHUNK_ID });
+		if (smap_offset == -1)
+			return false;
+
+		chunk_reader::SMAP_Chunk smap_chunk;
+		size_t header_size = sizeof(chunk_reader::SMAP_Chunk) - sizeof(smap_chunk.data); // Pointer in the SMAP class is size 8 and needs to be deducted.
+		memcpy(&smap_chunk, utils::add(fc->data, smap_offset), header_size);
+		smap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, smap_offset + header_size));
+		size_t smap_size = smap_chunk.ChunkSize() - header_size;
+
+		int magic_number = 8;
+		uint32_t strip_width = magic_number;
+
+		size_t num_strips = floor(imhd_chunk.width / strip_width);
+
+		std::vector<uint32_t> offsets;
+		int j = 0;
+		for (size_t i = 0; i < num_strips; i++, j += sizeof(uint32_t))
+		{
+			uint32_t number = *reinterpret_cast<uint32_t*>(utils::add(smap_chunk.data, j));
+			number -= magic_number;
+			offsets.push_back(number);
+		}
+
+		std::vector<strip> strips;
+		for (size_t i = 0; i < num_strips; i++)
+		{
+			uint32_t start = offsets[i];
+			uint32_t end = (i + 1) == num_strips ? smap_size : offsets[i + 1];
+
+			strips.push_back({ end - start, reinterpret_cast<unsigned char*>(utils::add(smap_chunk.data, start)) });
+		}
+
+		for (size_t i = 0; i < strips.size(); i++)
+		{
+			uint8_t code = strips[i].data[0];
+
+			bool horizontal = true;
+			if (code >= 0x03 && code <= 0x12 || code >= 0x22 && code <= 0x26)
+				horizontal = false;
+
+			bool he = code >= 0x86 && code <= 0x94;
+			bool he_transparent = code >= 0x22 && code <= 0x30 || code >= 0x54 && code <= 0x80 || code >= 0x8F;
 			// Between 134 and 138 (134 and 138 counted)
 			// Between 144 and 148 (144 and 148 counted) means it is transparent as well.
 			if (he || he_transparent)
 			{
-				std::vector<int> delta_color = { -4, -3, -2, -1, 1, 2, 3, 4 };
-
-				size_t num_pixels = rmhd_chunk.width * rmhd_chunk.height;
-
-				unsigned char color = bmap_chunk.fill_color;
-
-				std::vector<uint8_t> bits = create_bitstream(bmap_chunk.data, bmap_size);
-
-				std::vector<uint8_t> out;
-
-				int color_index = color % 256;
-				color_index *= 3;
-
-				channels = 3;
+				uint8_t transparency = 0;
 				if (he_transparent)
-					channels = 4;
+					transparency = 255;
 
-				out.push_back(color % 256);
-				out.push_back(color % 256);
+				int palen = code % 10;
 
-				int pos = 0;
-				while (out.size() < num_pixels)
+				img_info strip_info;
+				if (!ImageTab::DecodeHE(reinterpret_cast<unsigned char*>(utils::add(strips[i].data, 1)), strips[i].size - 1, imhd_chunk.width, imhd_chunk.height, palen, he_transparent, strip_info))
+					return false;
+
+
+			}
+		}
+		return true;
+	}
+	bool ImageTab::DecodeHE(unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
+	{
+		info.width = width;
+		info.height = height;
+
+		std::vector<int> delta_color = { -4, -3, -2, -1, 1, 2, 3, 4 };
+
+		size_t num_pixels = info.width * info.height;
+
+		unsigned char color = data[0];
+
+		std::vector<uint8_t> bits = create_bitstream(data, data_size);
+
+		std::vector<uint8_t> out;
+
+		int color_index = color % 256;
+		color_index *= 3;
+
+		info.channels = 3;
+		if (transparent)
+			info.channels = 4;
+
+		out.push_back(color % 256);
+		out.push_back(color % 256);
+
+		int pos = 0;
+		while (out.size() < num_pixels)
+		{
+			pos++;
+			if (bits[pos] == 1)
+			{
+				pos++;
+				if (bits[pos] == 1)
+				{
+					uint8_t bitc = collect_bits(pos, bits, 3);
+					color += delta_color[bitc];
+				}
+				else
+				{
+					color = collect_bits(pos, bits, palen);
+				}
+			}
+			out.push_back(color % 256);
+		};
+
+		info.size = out.size();
+		info.data = reinterpret_cast<unsigned char*>(malloc(out.size()));
+		memcpy(info.data, out.data(), out.size());
+		return true;
+	}
+	bool ImageTab::DecodeBasic(unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
+	{
+		info.width = width;
+		info.height = height;
+
+		int sub = 1;
+
+		unsigned char color = data[0];
+		data++;
+
+		std::vector<uint8_t> bits = create_bitstream(data, data_size - 1);
+
+		std::vector<uint8_t> out;
+
+		int color_index = color % 256;
+		color_index *= 3;
+
+		info.channels = 3;
+		if (transparent)
+			info.channels = 4;
+
+		out.push_back(color % 256);
+
+		size_t num_pixels = info.width * info.height;
+
+		int pos = 0;
+		while (out.size() < num_pixels)
+		{
+			pos++;
+			if (bits[pos] == 1)
+			{
+				pos++;
+				if (bits[pos] == 1)
 				{
 					pos++;
 					if (bits[pos] == 1)
 					{
-						pos++;
-						if (bits[pos] == 1)
-						{
-							uint8_t bitc = collect_bits(pos, bits, 3);
-							color += delta_color[bitc];
-						}
-						else
-						{
-							color = collect_bits(pos, bits, palen);
-						}
+						sub = -sub;
 					}
-					out.push_back(color % 256);
-				};
-
-				std::vector<uint8_t> newOut;
-				for (size_t i = 0; i < out.size(); i++)
-				{
-					newOut.push_back(apal_chunk.data[out[i] * 3]);
-					newOut.push_back(apal_chunk.data[out[i] * 3 + 1]);
-					newOut.push_back(apal_chunk.data[out[i] * 3 + 2]);
-					if (he_transparent)
-					{
-						if (out[i] == bmap_chunk.fill_color)
-							newOut.push_back(0);
-						else
-							newOut.push_back(255);
-					}
+					color -= sub;
 				}
-
-				size = newOut.size();
-				data = reinterpret_cast<unsigned char*>(malloc(newOut.size()));
-				memcpy(data, newOut.data(), newOut.size());
+				else
+				{
+					color = collect_bits(pos, bits, palen);
+					sub = 1;
+				}
 			}
-			// This is other encoding. (unknown to me)
-			else if (bmap_chunk.encoding == 0x96)
-			{
+			out.push_back(color % 256);
+		};
 
-			}
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-
-		return false;
+		info.size = out.size();
+		info.data = reinterpret_cast<unsigned char*>(malloc(out.size()));
+		memcpy(info.data, out.data(), out.size());
+		return true;
 	}
 }

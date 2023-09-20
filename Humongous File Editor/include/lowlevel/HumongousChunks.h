@@ -118,12 +118,35 @@ namespace HumongousFileEditor
 			uint16_t robjs = 0;
 		};
 
+		struct IMHD_Chunk : HumongousHeader
+		{
+			IMHD_Chunk() = default;
+
+			uint16_t id = 0;
+			uint16_t num_imnn = 0;
+			uint16_t nums_zpnn = 0;
+			uint8_t flags = 0;
+			uint8_t unknown = 0;
+			uint16_t x = 0;
+			uint16_t y = 0;
+			uint16_t width = 0;
+			uint16_t height = 0;
+			unsigned char* data = nullptr;
+		};
+
 		struct BMAP_Chunk : HumongousHeader
 		{
 			BMAP_Chunk() = default;
 
 			uint8_t encoding = 0;
 			uint8_t fill_color = 0;
+			unsigned char* data = nullptr;
+		};
+
+		struct SMAP_Chunk : HumongousHeader
+		{
+			SMAP_Chunk() = default;
+
 			unsigned char* data = nullptr;
 		};
 
