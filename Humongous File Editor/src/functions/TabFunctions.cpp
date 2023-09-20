@@ -470,10 +470,7 @@ namespace HumongousFileEditor
 
 		int result = 0;
 		for (int i = 0; i < count; i++)
-		{
-			pos++;
-			result |= bitstream[pos] << i;
-		}
+			result |= bitstream[pos++] << i;
 
 		return result;
 	}
@@ -896,11 +893,9 @@ namespace HumongousFileEditor
 		int pos = 0;
 		while (out.size() < num_pixels)
 		{
-			pos++;
-			if (bits[pos] == 1)
+			if (bits[pos++] == 1)
 			{
-				pos++;
-				if (bits[pos] == 1)
+				if (bits[pos++] == 1)
 				{
 					uint8_t bitc = collect_bits(pos, bits, 3);
 					color += delta_color[bitc];
