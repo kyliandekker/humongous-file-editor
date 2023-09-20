@@ -694,7 +694,7 @@ namespace HumongousFileEditor
 			channels = 3;
 
 			int pos = 0;
-			while (out.size() < num_pixels * channels)
+			while (out.size() < num_pixels)
 			{
 				pos++;
 				if (bits[pos] == 1)
@@ -702,7 +702,7 @@ namespace HumongousFileEditor
 					pos++;
 					if (bits[pos] == 1)
 					{
-						uint8_t bitc = collect_bits(pos, bits, channels);
+						uint8_t bitc = collect_bits(pos, bits, 3);
 						color += delta_color[bitc];
 					}
 					else
@@ -710,16 +710,20 @@ namespace HumongousFileEditor
 						color = collect_bits(pos, bits, palen);
 					}
 				}
-				color_index = color % 256;
-				color_index *= 3;
-				out.push_back(apal_chunk.data[color_index]);
-				out.push_back(apal_chunk.data[color_index + 1]);
-				out.push_back(apal_chunk.data[color_index + 2]);
+				out.push_back(color % 256);
 			};
 
-			size = out.size();
-			data = reinterpret_cast<unsigned char*>(malloc(out.size()));
-			memcpy(data, out.data(), out.size());
+			std::vector<uint8_t> newOut;
+			for (size_t i = 0; i < out.size(); i++)
+			{
+				newOut.push_back(apal_chunk.data[out[i] * 3]);
+				newOut.push_back(apal_chunk.data[out[i] * 3 + 1]);
+				newOut.push_back(apal_chunk.data[out[i] * 3 + 2]);
+			}
+
+			size = newOut.size();
+			data = reinterpret_cast<unsigned char*>(malloc(newOut.size()));
+			memcpy(data, newOut.data(), newOut.size());
 		}
 		// This seems to be Humongous encoding with transparency.
 		// Between 144 and 148 (144 and 148 counted)
