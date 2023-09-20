@@ -13,7 +13,7 @@ namespace HumongousFileEditor
 			SFX,
 			Song,
 			RoomBackground,
-			RoomPicture,
+			RoomImage,
 			Script,
 			Room
 		};

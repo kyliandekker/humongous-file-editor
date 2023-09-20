@@ -38,15 +38,16 @@ namespace HumongousFileEditor
 	/// <param name="offset">The offset from where to look.</param>
 	/// <param name="chunk_name">The chunk ID.</param>
 	/// <returns>Offset if found, -1 if not found.</returns>
-	size_t getOffsetChunk(chunk_reader::FileContainer*& fc, size_t offset, const char* chunk_name)
+	size_t getOffsetChunk(chunk_reader::FileContainer*& fc, size_t offset, std::vector<std::string> chunk_names)
 	{
 		chunk_reader::ChunkInfo info = fc->GetChunkInfo(offset);
 
 		int i = 0;
 		while (i < LOOKUP_LIMIT && offset < fc->size)
 		{
-			if (utils::chunkcmp(info.chunk_id, chunk_name) == 0)
-				return info.offset;
+			for (size_t j = 0; j < chunk_names.size(); j++)
+				if (utils::chunkcmp(info.chunk_id, chunk_names[j].c_str()) == 0)
+					return info.offset;
 			info = fc->GetNextChunk(info.offset);
 		}
 
@@ -202,10 +203,10 @@ namespace HumongousFileEditor
 			{
 				break;
 			}
-			case files::ResourceType::RoomBackground:
+			case files::ResourceType::RoomImage:
 			{
 				// Get RMHD chunk for width and height of image.
-				size_t rmhd_offset = getOffsetChunk(fc, btn->offset, chunk_reader::RMHD_CHUNK_ID);
+				size_t rmhd_offset = getOffsetChunk(fc, btn->offset, { chunk_reader::RMHD_CHUNK_ID });
 				if (rmhd_offset == -1)
 					return;
 
@@ -215,7 +216,7 @@ namespace HumongousFileEditor
 
 				unsigned char* data = nullptr;
 				size_t size = 0, channels;
-				if (!RoomBackgroundTab::GetData(fc, rmhd_offset, rmhd_chunk, data, size, channels))
+				if (!RoomBackgroundTab::GetData(fc, btn->offset, rmhd_chunk, data, size, channels))
 					return;
 
 				OPENFILENAME ofn;
@@ -342,7 +343,12 @@ namespace HumongousFileEditor
 			}
 			case files::ResourceType::RoomBackground:
 			{
-				GetImXX(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel, posX, posY);
+				GetRMIM(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel, posX, posY);
+				break;
+			}
+			case files::ResourceType::RoomImage:
+			{
+				//GetImXX(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel, posX, posY);
 				break;
 			}
 			case files::ResourceType::Room:
@@ -454,12 +460,42 @@ namespace HumongousFileEditor
 
 		return result;
 	}
-	void TabFunctions::GetImXX(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
+	void TabFunctions::GetRMIM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
 	{
+		size_t next_offset = getOffsetChunk(fc, offset, 
+			{
+				chunk_reader::IM00_CHUNK_ID, 
+				chunk_reader::IM01_CHUNK_ID, 
+				chunk_reader::IM02_CHUNK_ID, 
+				chunk_reader::IM03_CHUNK_ID, 
+				chunk_reader::IM04_CHUNK_ID, 
+				chunk_reader::IM05_CHUNK_ID, 
+				chunk_reader::IM06_CHUNK_ID, 
+				chunk_reader::IM07_CHUNK_ID, 
+				chunk_reader::IM08_CHUNK_ID, 
+				chunk_reader::IM09_CHUNK_ID, 
+				chunk_reader::IM10_CHUNK_ID,
+				chunk_reader::IM11_CHUNK_ID,
+				chunk_reader::IM12_CHUNK_ID,
+				chunk_reader::IM13_CHUNK_ID,
+				chunk_reader::IM14_CHUNK_ID,
+				chunk_reader::IM15_CHUNK_ID,
+				chunk_reader::IM16_CHUNK_ID,
+				chunk_reader::IM17_CHUNK_ID,
+				chunk_reader::IM0A_CHUNK_ID,
+				chunk_reader::IM0B_CHUNK_ID,
+				chunk_reader::IM0C_CHUNK_ID,
+				chunk_reader::IM0D_CHUNK_ID,
+				chunk_reader::IM0E_CHUNK_ID,
+				chunk_reader::IM0F_CHUNK_ID
+			});
+		if (next_offset == -1)
+			return;
+
 		AddInfoRow("Type", gcnew System::String("Room Background"), propertyGrid, posX, posY);
 
 		// Get RMHD chunk for width and height of image.
-		size_t rmhd_offset = getOffsetChunk(fc, offset, chunk_reader::RMHD_CHUNK_ID);
+		size_t rmhd_offset = getOffsetChunk(fc, offset, { chunk_reader::RMHD_CHUNK_ID });
 		if (rmhd_offset == -1)
 			return;
 
@@ -481,11 +517,14 @@ namespace HumongousFileEditor
 		System::Drawing::Bitmap^ bmp = gcnew System::Drawing::Bitmap(rmhd_chunk.width, rmhd_chunk.height);
 
 		int cur = 0;
-		for (size_t i = 0; i < size; i += 3, cur++)
+		for (size_t i = 0; i < size; i += channels, cur++)
 		{
 			int y = cur / rmhd_chunk.width;
 			int x = cur % rmhd_chunk.width;
-			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, data[i], data[i + 1], data[i + 2]));
+			if (channels < 4)
+				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, data[i], data[i + 1], data[i + 2]));
+			else
+				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(data[i + 3], data[i], data[i + 1], data[i + 2]));
 		}
 
 		System::Windows::Forms::PictureBox^ pictureBox;
@@ -508,7 +547,7 @@ namespace HumongousFileEditor
 		memcpy(&disk_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::DISK_Chunk) - sizeof(disk_chunk.data));
 
 		// Get RNAM chunk for the sample rate.
-		size_t rnam_offset = getOffsetChunk(fc, offset, chunk_reader::RNAM_CHUNK_ID);
+		size_t rnam_offset = getOffsetChunk(fc, offset, { chunk_reader::RNAM_CHUNK_ID });
 		if (rnam_offset == -1)
 			return;
 
@@ -574,14 +613,14 @@ namespace HumongousFileEditor
 	bool TalkieTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk)
 	{
 		// Get HSHD chunk for the sample rate.
-		size_t hshd_offset = getOffsetChunk(fc, offset, chunk_reader::HSHD_CHUNK_ID);
+		size_t hshd_offset = getOffsetChunk(fc, offset, { chunk_reader::HSHD_CHUNK_ID });
 		if (hshd_offset == -1)
 			return false;
 
 		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
 
 		// Get SDAT chunk for the raw audio data.
-		size_t sdat_offset = getOffsetChunk(fc, offset, chunk_reader::SDAT_CHUNK_ID);
+		size_t sdat_offset = getOffsetChunk(fc, offset, { chunk_reader::SDAT_CHUNK_ID });
 		if (sdat_offset == -1)
 			return false;
 
@@ -599,14 +638,14 @@ namespace HumongousFileEditor
 		memcpy(&sgen_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::SGEN_Chunk));
 
 		// Get HSHD chunk for the sample rate.
-		size_t hshd_offset = getOffsetChunk(fc, sgen_chunk.song_pos, chunk_reader::HSHD_CHUNK_ID);
+		size_t hshd_offset = getOffsetChunk(fc, sgen_chunk.song_pos, { chunk_reader::HSHD_CHUNK_ID });
 		if (hshd_offset == -1)
 			return false;
 
 		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
 
 		// Get SDAT chunk for the raw audio data.
-		size_t sdat_offset = getOffsetChunk(fc, sgen_chunk.song_pos, chunk_reader::SDAT_CHUNK_ID);
+		size_t sdat_offset = getOffsetChunk(fc, sgen_chunk.song_pos, { chunk_reader::SDAT_CHUNK_ID });
 		if (sdat_offset == -1)
 			return false;
 
@@ -620,14 +659,14 @@ namespace HumongousFileEditor
 	bool DigiTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk)
 	{
 		// Get HSHD chunk for the sample rate.
-		size_t hshd_offset = getOffsetChunk(fc, offset, chunk_reader::HSHD_CHUNK_ID);
+		size_t hshd_offset = getOffsetChunk(fc, offset, { chunk_reader::HSHD_CHUNK_ID });
 		if (hshd_offset == -1)
 			return false;
 
 		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
 
 		// Get SDAT chunk for the raw audio data.
-		size_t sdat_offset = getOffsetChunk(fc, offset, chunk_reader::SDAT_CHUNK_ID);
+		size_t sdat_offset = getOffsetChunk(fc, offset, { chunk_reader::SDAT_CHUNK_ID });
 		if (sdat_offset == -1)
 			return false;
 
@@ -640,103 +679,126 @@ namespace HumongousFileEditor
 
 	bool RoomBackgroundTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::RMHD_Chunk& rmhd_chunk, unsigned char*& data, size_t& size, size_t& channels)
 	{
-		// Get BMAP chunk for raw data.
-		size_t bmap_offset = getOffsetChunk(fc, offset, chunk_reader::BMAP_CHUNK_ID);
-		if (bmap_offset == -1)
+		size_t type_offset = getOffsetChunk(fc, offset, {
+			chunk_reader::BMAP_CHUNK_ID,
+			chunk_reader::SMAP_CHUNK_ID,
+		});
+		if (type_offset == -1)
 			return false;
 
-		chunk_reader::BMAP_Chunk bmap_chunk;
-		size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
-		memcpy(&bmap_chunk, utils::add(fc->data, bmap_offset), header_size);
-		bmap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, bmap_offset + header_size));
-		size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
-
-		// Get TRNS chunk for transparency settings.
-		size_t trns_offset = getOffsetChunk(fc, offset, chunk_reader::TRNS_CHUNK_ID);
-		if (trns_offset == -1)
-			return false;
-
-		chunk_reader::TRNS_Chunk trns_chunk;
-		memcpy(&trns_chunk, utils::add(fc->data, trns_offset), sizeof(chunk_reader::TRNS_Chunk));
-
-		size_t apal_offset = getOffsetChunk(fc, offset, chunk_reader::APAL_CHUNK_ID);
-		if (apal_offset == -1)
-			return false;
-
-		chunk_reader::APAL_Chunk apal_chunk;
-		header_size = sizeof(chunk_reader::APAL_Chunk) - sizeof(apal_chunk.data);
-		memcpy(&apal_chunk, utils::add(fc->data, apal_offset), header_size);
-		size_t apal_size = apal_chunk.ChunkSize() - header_size;
-		apal_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, apal_offset + header_size));
-
-		int palen = bmap_chunk.encoding % 10;
-
-		// This seems to be Humongous encoding.
-		// Between 134 and 138 (134 and 138 counted)
-		if (bmap_chunk.encoding >= 0x86 && bmap_chunk.encoding <= 0x8A)
+		chunk_reader::ChunkInfo typeChunk = fc->GetChunkInfo(type_offset);
+		if (utils::chunkcmp(typeChunk.chunk_id, chunk_reader::BMAP_CHUNK_ID) == 0)
 		{
-			std::vector<int> delta_color = { -4, -3, -2, -1, 1, 2, 3, 4 };
+			// Get BMAP chunk for raw data.
+			size_t bmap_offset = getOffsetChunk(fc, offset, { chunk_reader::BMAP_CHUNK_ID });
+			if (bmap_offset == -1)
+				return false;
 
-			size_t num_pixels = rmhd_chunk.width * rmhd_chunk.height;
+			chunk_reader::BMAP_Chunk bmap_chunk;
+			size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
+			memcpy(&bmap_chunk, utils::add(fc->data, bmap_offset), header_size);
+			bmap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, bmap_offset + header_size));
+			size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
 
-			unsigned char color = bmap_chunk.fill_color;
+			// Get TRNS chunk for transparency settings.
+			size_t trns_offset = getOffsetChunk(fc, offset, { chunk_reader::TRNS_CHUNK_ID });
+			if (trns_offset == -1)
+				return false;
 
-			std::vector<uint8_t> bits = create_bitstream(bmap_chunk.data, bmap_size);
+			chunk_reader::TRNS_Chunk trns_chunk;
+			memcpy(&trns_chunk, utils::add(fc->data, trns_offset), sizeof(chunk_reader::TRNS_Chunk));
 
-			std::vector<uint8_t> out;
+			size_t apal_offset = getOffsetChunk(fc, offset, { chunk_reader::APAL_CHUNK_ID });
+			if (apal_offset == -1)
+				return false;
 
-			int color_index = color % 256;
-			color_index *= 3;
-			out.push_back(apal_chunk.data[color_index]);
-			out.push_back(apal_chunk.data[color_index] + 1);
-			out.push_back(apal_chunk.data[color_index] + 2);
+			chunk_reader::APAL_Chunk apal_chunk;
+			header_size = sizeof(chunk_reader::APAL_Chunk) - sizeof(apal_chunk.data);
+			memcpy(&apal_chunk, utils::add(fc->data, apal_offset), header_size);
+			size_t apal_size = apal_chunk.ChunkSize() - header_size;
+			apal_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, apal_offset + header_size));
 
-			channels = 3;
+			int palen = bmap_chunk.encoding % 10;
 
-			int pos = 0;
-			while (out.size() < num_pixels)
+			bool he = bmap_chunk.encoding >= 0x86 && bmap_chunk.encoding <= 0x8A;
+			bool he_transparent = bmap_chunk.encoding >= 0x90 && bmap_chunk.encoding <= 0x94;
+
+			// This seems to be Humongous encoding.
+			// Between 134 and 138 (134 and 138 counted)
+			// Between 144 and 148 (144 and 148 counted) means it is transparent as well.
+			if (he || he_transparent)
 			{
-				pos++;
-				if (bits[pos] == 1)
+				std::vector<int> delta_color = { -4, -3, -2, -1, 1, 2, 3, 4 };
+
+				size_t num_pixels = rmhd_chunk.width * rmhd_chunk.height;
+
+				unsigned char color = bmap_chunk.fill_color;
+
+				std::vector<uint8_t> bits = create_bitstream(bmap_chunk.data, bmap_size);
+
+				std::vector<uint8_t> out;
+
+				int color_index = color % 256;
+				color_index *= 3;
+
+				channels = 3;
+				if (he_transparent)
+					channels = 4;
+
+				out.push_back(color % 256);
+				out.push_back(color % 256);
+
+				int pos = 0;
+				while (out.size() < num_pixels)
 				{
 					pos++;
 					if (bits[pos] == 1)
 					{
-						uint8_t bitc = collect_bits(pos, bits, 3);
-						color += delta_color[bitc];
+						pos++;
+						if (bits[pos] == 1)
+						{
+							uint8_t bitc = collect_bits(pos, bits, 3);
+							color += delta_color[bitc];
+						}
+						else
+						{
+							color = collect_bits(pos, bits, palen);
+						}
 					}
-					else
+					out.push_back(color % 256);
+				};
+
+				std::vector<uint8_t> newOut;
+				for (size_t i = 0; i < out.size(); i++)
+				{
+					newOut.push_back(apal_chunk.data[out[i] * 3]);
+					newOut.push_back(apal_chunk.data[out[i] * 3 + 1]);
+					newOut.push_back(apal_chunk.data[out[i] * 3 + 2]);
+					if (he_transparent)
 					{
-						color = collect_bits(pos, bits, palen);
+						if (out[i] == bmap_chunk.fill_color)
+							newOut.push_back(0);
+						else
+							newOut.push_back(255);
 					}
 				}
-				out.push_back(color % 256);
-			};
 
-			std::vector<uint8_t> newOut;
-			for (size_t i = 0; i < out.size(); i++)
-			{
-				newOut.push_back(apal_chunk.data[out[i] * 3]);
-				newOut.push_back(apal_chunk.data[out[i] * 3 + 1]);
-				newOut.push_back(apal_chunk.data[out[i] * 3 + 2]);
+				size = newOut.size();
+				data = reinterpret_cast<unsigned char*>(malloc(newOut.size()));
+				memcpy(data, newOut.data(), newOut.size());
 			}
+			// This is other encoding. (unknown to me)
+			else if (bmap_chunk.encoding == 0x96)
+			{
 
-			size = newOut.size();
-			data = reinterpret_cast<unsigned char*>(malloc(newOut.size()));
-			memcpy(data, newOut.data(), newOut.size());
+			}
+			return true;
 		}
-		// This seems to be Humongous encoding with transparency.
-		// Between 144 and 148 (144 and 148 counted)
-		else if (bmap_chunk.encoding >= 0x90 && bmap_chunk.encoding <= 0x94)
+		else
 		{
-
-		}
-		// This is other encoding. (unknown to me)
-		else if (bmap_chunk.encoding == 0x96)
-		{
-
+			return false;
 		}
 
-		return true;
+		return false;
 	}
 }

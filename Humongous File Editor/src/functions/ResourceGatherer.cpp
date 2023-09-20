@@ -34,7 +34,11 @@ namespace HumongousFileEditor
 				}
 				case files::ResourceType::RoomBackground:
 				{
-					return "Images";
+					return "Room Background";
+				}
+				case files::ResourceType::RoomImage:
+				{
+					return "Room Images";
 				}
 				case files::ResourceType::Script:
 				{
@@ -175,30 +179,8 @@ namespace HumongousFileEditor
 				{ TALK_CHUNK_ID, files::ResourceType::Talkie },
 				{ SGEN_CHUNK_ID, files::ResourceType::Song },
 				{ SCRP_CHUNK_ID, files::ResourceType::Script },
-				{ IM00_CHUNK_ID, files::ResourceType::RoomBackground },
-				//{ IM01_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM02_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM03_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM04_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM05_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM06_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM07_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM08_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM09_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM10_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM11_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM12_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM13_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM14_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM15_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM16_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM17_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM0A_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM0B_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM0C_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM0D_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM0E_CHUNK_ID, files::ResourceType::RoomPicture },
-				//{ IM0F_CHUNK_ID, files::ResourceType::RoomPicture },
+				{ RMIM_CHUNK_ID, files::ResourceType::RoomBackground },
+				{ OBIM_CHUNK_ID, files::ResourceType::RoomImage },
 				{ DIGI_CHUNK_ID, files::ResourceType::SFX }
 			};
 
