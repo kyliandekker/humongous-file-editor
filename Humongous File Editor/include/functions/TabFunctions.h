@@ -92,7 +92,7 @@ namespace HumongousFileEditor
 	public:
 		static bool DecodeBMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
 		static bool DecodeSMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
-		static bool DecodeHE(unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
+		static bool DecodeHE(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
 		static bool DecodeBasic(unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
 	};
 }

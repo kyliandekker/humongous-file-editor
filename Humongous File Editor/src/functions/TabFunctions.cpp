@@ -456,7 +456,8 @@ namespace HumongousFileEditor
 		std::vector<uint8_t> bits;
 		for (size_t i = 0; i < length; ++i) {
 			char c = data[i];
-			for (int j = 0; j < 8; j++) {
+			for (int j = 0; j < 8; j++)
+			{
 				bits.push_back((c >> j) & 1);
 			}
 		}
@@ -529,13 +530,13 @@ namespace HumongousFileEditor
 		propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
 		propertyGrid->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
-		System::Drawing::Bitmap^ bmp = gcnew System::Drawing::Bitmap(rmhd_chunk.width, rmhd_chunk.height);
+		System::Drawing::Bitmap^ bmp = gcnew System::Drawing::Bitmap(info.width, info.height);
 
 		int cur = 0;
 		for (size_t i = 0; i < info.size; i += info.channels, cur++)
 		{
-			int y = cur / rmhd_chunk.width;
-			int x = cur % rmhd_chunk.width;
+			int y = cur / info.width;
+			int x = cur % info.width;
 			if (info.channels < 4)
 				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, info.data[i], info.data[i + 1], info.data[i + 2]));
 			else
@@ -771,7 +772,7 @@ namespace HumongousFileEditor
 		bool he = bmap_chunk.encoding >= 0x86 && bmap_chunk.encoding <= 0x8A;
 		bool he_transparent = bmap_chunk.encoding >= 0x90 && bmap_chunk.encoding <= 0x94;
 
-		if (!DecodeHE(bmap_chunk.data, bmap_size, rmhd_chunk.width, rmhd_chunk.height, palen, he_transparent, info))
+		if (!DecodeHE(bmap_chunk.fill_color, bmap_chunk.data, bmap_size, rmhd_chunk.width, rmhd_chunk.height, palen, he_transparent, info))
 			return false;
 
 		std::vector<uint8_t> newOut;
@@ -788,6 +789,8 @@ namespace HumongousFileEditor
 					newOut.push_back(255);
 			}
 		}
+
+		free(info.data);
 
 		info.size = newOut.size();
 		info.data = reinterpret_cast<unsigned char*>(malloc(newOut.size()));
@@ -861,38 +864,34 @@ namespace HumongousFileEditor
 				int palen = code % 10;
 
 				img_info strip_info;
-				if (!ImageTab::DecodeHE(reinterpret_cast<unsigned char*>(utils::add(strips[i].data, 1)), strips[i].size - 1, imhd_chunk.width, imhd_chunk.height, palen, he_transparent, strip_info))
-					return false;
+				//if (!ImageTab::DecodeHE(reinterpret_cast<unsigned char*>(utils::add(strips[i].data, 1)), strips[i].size - 1, imhd_chunk.width, imhd_chunk.height, palen, he_transparent, strip_info))
+					//return false;
 
 
 			}
 		}
 		return true;
 	}
-	bool ImageTab::DecodeHE(unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
+	bool ImageTab::DecodeHE(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
 	{
 		info.width = width;
 		info.height = height;
 
 		std::vector<int> delta_color = { -4, -3, -2, -1, 1, 2, 3, 4 };
 
-		size_t num_pixels = info.width * info.height;
-
-		unsigned char color = data[0];
+		unsigned char color = fill_color;
 
 		std::vector<uint8_t> bits = create_bitstream(data, data_size);
 
 		std::vector<uint8_t> out;
-
-		int color_index = color % 256;
-		color_index *= 3;
 
 		info.channels = 3;
 		if (transparent)
 			info.channels = 4;
 
 		out.push_back(color % 256);
-		out.push_back(color % 256);
+
+		size_t num_pixels = info.width * info.height;
 
 		int pos = 0;
 		while (out.size() < num_pixels)
