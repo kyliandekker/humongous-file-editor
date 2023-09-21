@@ -840,8 +840,6 @@ namespace HumongousFileEditor
 			strips.push_back({ end - start, reinterpret_cast<unsigned char*>(utils::add(smap_chunk.data, start)) });
 		}
 
-		std::vector<img_info> strip_data;
-		size_t total_size = 0;
 		for (size_t i = 0; i < strips.size(); i++)
 		{
 			uint8_t code = strips[i].data[0];
@@ -863,23 +861,11 @@ namespace HumongousFileEditor
 				int palen = code % 10;
 
 				img_info strip_info;
-				if (!DecodeBasic(strips[i].data, strips[i].size, imhd_chunk.width, imhd_chunk.height, palen, he_transparent, info))
-					return;
+				//if (!ImageTab::DecodeHE(reinterpret_cast<unsigned char*>(utils::add(strips[i].data, 1)), strips[i].size - 1, imhd_chunk.width, imhd_chunk.height, palen, he_transparent, strip_info))
+					//return false;
 
-				strip_data.push_back(strip_info);
-				total_size += strip_info.size;
+
 			}
-
-			info.data = reinterpret_cast<unsigned char*>(malloc(total_size));
-			size_t offset = 0;
-			for (size_t i = 0; i < strip_data.size(); i++)
-			{
-				memcpy(reinterpret_cast<unsigned char*>(utils::add(info.data, offset)), strip_data[i].data, strip_data[i].size);
-				free(strip_data[i].data);
-				offset += strip_data[i].size;
-			}
-
-
 		}
 		return true;
 	}
