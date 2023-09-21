@@ -52,7 +52,7 @@ namespace HumongousFileEditor
 		void GetDigi(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY);
 		void GetScrp(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY);
 		void GetRMIM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY);
-		void GetOBIM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY);
+		//void GetOBIM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY);
 		void GetRNAM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY);
 		void AddSoundButtons(System::Windows::Forms::TabPage^ tab, size_t offset, files::FileType fileType, System::Windows::Forms::Panel^ panel);
 	};
@@ -81,18 +81,19 @@ namespace HumongousFileEditor
 		static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
 	};
 
-	class RoomImageTab
-	{
-	public:
-		static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<img_info>& info);
-	};
+	//class RoomImageTab
+	//{
+	//public:
+	//	static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<img_info>& info);
+	//};
 
 	class ImageTab
 	{
 	public:
 		static bool DecodeBMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
-		static bool DecodeSMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
+		//static bool DecodeSMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
 		static bool DecodeHE(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
-		static bool DecodeBasic(unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
+		static bool EncodeHE(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
+		//static bool DecodeBasic(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
 	};
 }

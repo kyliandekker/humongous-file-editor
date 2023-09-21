@@ -241,6 +241,8 @@ namespace HumongousFileEditor
 				ofn.lpstrFile = sz_file;
 				ofn.nMaxFile = sizeof(sz_file);
 				ofn.lpstrFilter = L"\
+						BMP file (*.bmp)\
+						\0*.BMP;*.bmp\0\
 						PNG file (*.png)\
 						\0*.PNG;*.png\0";
 				ofn.lpstrFileTitle = nullptr;
@@ -252,13 +254,20 @@ namespace HumongousFileEditor
 				{
 					const auto path = new char[wcslen(ofn.lpstrFile) + 1];
 					wsprintfA(path, "%S", ofn.lpstrFile);
-
 					std::string save_path_s = std::string(path);
 
-					if (!utils::ends_with(save_path_s, ".png"))
-						save_path_s += ".png";
-
-					stbi_write_png(save_path_s.c_str(), info.width, info.height, info.channels, info.data, info.width* info.channels);
+					if (ofn.nFilterIndex == 1)
+					{
+						if (!utils::ends_with(save_path_s, ".bmp"))
+							save_path_s += ".bmp";
+						stbi_write_bmp(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data);
+					}
+					else
+					{
+						if (!utils::ends_with(save_path_s, ".png"))
+							save_path_s += ".png";
+						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data, info.width * info.channels);
+					}
 
 					free(info.data);
 				}
@@ -364,7 +373,7 @@ namespace HumongousFileEditor
 			}
 			case files::ResourceType::RoomImage:
 			{
-				GetOBIM(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel, posX, posY);
+				//GetOBIM(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel, posX, posY);
 				break;
 			}
 			case files::ResourceType::Room:
@@ -527,13 +536,13 @@ namespace HumongousFileEditor
 		propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
 		propertyGrid->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
-		System::Drawing::Bitmap^ bmp = gcnew System::Drawing::Bitmap(info.width, info.height);
+		System::Drawing::Bitmap^ bmp = gcnew System::Drawing::Bitmap(static_cast<int>(info.width), static_cast<int>(info.height));
 
 		int cur = 0;
 		for (size_t i = 0; i < info.size; i += info.channels, cur++)
 		{
-			int y = cur / info.width;
-			int x = cur % info.width;
+			int y = cur / static_cast<int>(info.width);
+			int x = cur % static_cast<int>(info.width);
 			if (info.channels < 4)
 				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, info.data[i], info.data[i + 1], info.data[i + 2]));
 			else
@@ -553,14 +562,57 @@ namespace HumongousFileEditor
 		propertyPanel->Controls->Add(pictureBox);
 		free(info.data);
 	}
-	void TabFunctions::GetOBIM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
-	{
-		AddInfoRow("Type", gcnew System::String("Room Image"), propertyGrid, posX, posY);
+	//void TabFunctions::GetOBIM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
+	//{
+	//	AddInfoRow("Type", gcnew System::String("Room Image"), propertyGrid, posX, posY);
 
-		std::vector<img_info> info;
-		if (!RoomImageTab::GetData(fc, offset, info))
-			return;
-	}
+	//	// Get IMHD chunk for width and height of image.
+	//	size_t imhd_offset = getOffsetChunk(fc, offset, { chunk_reader::IMHD_CHUNK_ID });
+	//	if (imhd_offset == -1)
+	//		return;
+
+	//	chunk_reader::IMHD_Chunk imhd_chunk;
+	//	memcpy(&imhd_chunk, utils::add(fc->data, imhd_offset), sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data));
+	//	imhd_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, imhd_offset + (sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data))));
+
+	//	AddInfoRow("Width", gcnew System::String(std::to_string(imhd_chunk.width).c_str()), propertyGrid, posX, posY);
+	//	AddInfoRow("Height", gcnew System::String(std::to_string(imhd_chunk.height).c_str()), propertyGrid, posX, posY);
+
+	//	std::vector<img_info> infos;
+	//	if (!RoomImageTab::GetData(fc, offset, infos))
+	//		return;
+
+	//	img_info& info = infos[0];
+
+	//	propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
+	//	propertyGrid->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
+
+	//	System::Drawing::Bitmap^ bmp = gcnew System::Drawing::Bitmap(static_cast<int>(imhd_chunk.width), static_cast<int>(info.height));
+
+	//	int cur = 0;
+	//	for (size_t i = 0; i < info.size; i += info.channels, cur++)
+	//	{
+	//		int y = cur / static_cast<int>(imhd_chunk.width);
+	//		int x = cur % static_cast<int>(imhd_chunk.width);
+	//		if (info.channels < 4)
+	//			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, info.data[i], info.data[i + 1], info.data[i + 2]));
+	//		else
+	//			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data[i + 3], info.data[i], info.data[i + 1], info.data[i + 2]));
+	//	}
+
+	//	System::Windows::Forms::PictureBox^ pictureBox;
+	//	pictureBox = (gcnew System::Windows::Forms::PictureBox());
+	//	pictureBox->Dock = System::Windows::Forms::DockStyle::Top;
+	//	pictureBox->Location = System::Drawing::Point(0, propertyGrid->Height);
+	//	pictureBox->Name = L"Action Panel";
+	//	float relativeW = 1.0f / bmp->Width * tab->Width;
+	//	pictureBox->Image = bmp;
+	//	pictureBox->SizeMode = System::Windows::Forms::PictureBoxSizeMode::Zoom;
+	//	pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
+
+	//	propertyPanel->Controls->Add(pictureBox);
+	//	free(info.data);
+	//}
 	void TabFunctions::GetRNAM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
 		AddInfoRow("Type", gcnew System::String("Rooms"), propertyGrid, posX, posY);
@@ -716,15 +768,13 @@ namespace HumongousFileEditor
 
 		return false;
 	}
-	bool RoomImageTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<img_info>& info)
-	{
-		return false;
-	}
-	struct strip
-	{
-		uint32_t size;
-		unsigned char* data;
-	};
+	//bool RoomImageTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<img_info>& info)
+	//{
+	//	img_info inf;
+	//	ImageTab::DecodeSMAP(fc, offset, inf);
+	//	info.push_back(inf);
+	//	return info.size() > 0;
+	//}
 	bool ImageTab::DecodeBMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
 	{
 		// Get RMHD chunk for width and height of image.
@@ -795,94 +845,126 @@ namespace HumongousFileEditor
 
 		return true;
 	}
-	bool ImageTab::DecodeSMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
-	{
-		// Get IMHD chunk for width and height of image.
-		size_t imhd_offset = getOffsetChunk(fc, offset, { chunk_reader::IMHD_CHUNK_ID });
-		if (imhd_offset == -1)
-			return false;
+	//struct offset_pair
+	//{
+	//	size_t start, end;
+	//};
+	//struct strip
+	//{
+	//	unsigned char* data;
+	//	size_t size;
+	//};
+	//bool ImageTab::DecodeSMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
+	//{
+	//	// Get IMHD chunk for width and height of image.
+	//	size_t imhd_offset = getOffsetChunk(fc, offset, { chunk_reader::IMHD_CHUNK_ID });
+	//	if (imhd_offset == -1)
+	//		return false;
 
-		chunk_reader::IMHD_Chunk imhd_chunk;
-		memcpy(&imhd_chunk, utils::add(fc->data, imhd_offset), sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data));
-		imhd_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, imhd_offset + (sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data))));
+	//	chunk_reader::IMHD_Chunk imhd_chunk;
+	//	memcpy(&imhd_chunk, utils::add(fc->data, imhd_offset), sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data));
+	//	imhd_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, imhd_offset + (sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data))));
 
-		// Get SMAP chunk for raw data.
-		size_t smap_offset = getOffsetChunk(fc, offset, { chunk_reader::SMAP_CHUNK_ID });
-		if (smap_offset == -1)
-			return false;
+	//	// Get SMAP chunk for raw data.
+	//	size_t smap_offset = getOffsetChunk(fc, offset, { chunk_reader::SMAP_CHUNK_ID });
+	//	if (smap_offset == -1)
+	//		return false;
 
-		chunk_reader::SMAP_Chunk smap_chunk;
-		size_t header_size = sizeof(chunk_reader::SMAP_Chunk) - sizeof(smap_chunk.data); // Pointer in the SMAP class is size 8 and needs to be deducted.
-		memcpy(&smap_chunk, utils::add(fc->data, smap_offset), header_size);
-		smap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, smap_offset + header_size));
-		size_t smap_size = smap_chunk.ChunkSize() - header_size;
+	//	chunk_reader::SMAP_Chunk smap_chunk;
+	//	size_t header_size = sizeof(chunk_reader::SMAP_Chunk) - sizeof(smap_chunk.data); // Pointer in the SMAP class is size 8 and needs to be deducted.
+	//	memcpy(&smap_chunk, utils::add(fc->data, smap_offset), header_size);
+	//	smap_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, smap_offset + header_size));
+	//	size_t smap_size = smap_chunk.ChunkSize() - header_size;
 
-		int magic_number = 8;
-		uint32_t strip_width = magic_number;
+	//	int magic_number = 8;
+	//	uint32_t strip_width = magic_number;
 
-		size_t num_strips = floor(imhd_chunk.width / strip_width);
+	//	size_t num_strips = static_cast<size_t>(floor(imhd_chunk.width / strip_width));
 
-		std::vector<uint32_t> offsets;
-		int j = 0;
-		for (size_t i = 0; i < num_strips; i++, j += sizeof(uint32_t))
-		{
-			uint32_t number = *reinterpret_cast<uint32_t*>(utils::add(smap_chunk.data, j));
-			number -= magic_number;
-			offsets.push_back(number);
-		}
+	//	std::vector<uint32_t> offsets;
+	//	int j = 0;
+	//	for (size_t i = 0; i < num_strips; i++, j += sizeof(uint32_t))
+	//	{
+	//		uint32_t number = *reinterpret_cast<uint32_t*>(utils::add(smap_chunk.data, j));
+	//		number -= magic_number;
+	//		offsets.push_back(number);
+	//	}
 
-		std::vector<strip> strips;
-		for (size_t i = 0; i < num_strips; i++)
-		{
-			uint32_t start = offsets[i];
-			uint32_t end = (i + 1) == num_strips ? smap_size : offsets[i + 1];
+	//	std::vector<offset_pair> index;
 
-			strips.push_back({ end - start, reinterpret_cast<unsigned char*>(utils::add(smap_chunk.data, start)) });
-		}
+	//	for (size_t i = 0; i < offsets.size(); i++)
+	//		index.push_back({offsets[i], (i + 1) == offsets.size() ? smap_size : offsets[i + 1]});
 
-		std::vector<img_info> strip_data;
-		size_t total_size = 0;
-		for (size_t i = 0; i < strips.size(); i++)
-		{
-			uint8_t code = strips[i].data[0];
+	//	std::vector<strip> strips;
+	//	for (size_t i = 0; i < num_strips; i++)
+	//		strips.push_back({ reinterpret_cast<unsigned char*>(utils::add(smap_chunk.data, index[i].start)), index[i].end });
 
-			bool horizontal = true;
-			if (code >= 0x03 && code <= 0x12 || code >= 0x22 && code <= 0x26)
-				horizontal = false;
+	//	size_t total_size = 0;
+	//	std::vector<img_info> data_blocks;
+	//	for (size_t i = 0; i < strips.size(); i++)
+	//	{
+	//		uint8_t code = strips[i].data[0];
 
-			bool he = code >= 0x86 && code <= 0x94;
-			bool he_transparent = code >= 0x22 && code <= 0x30 || code >= 0x54 && code <= 0x80 || code >= 0x8F;
-			// Between 134 and 138 (134 and 138 counted)
-			// Between 144 and 148 (144 and 148 counted) means it is transparent as well.
-			if (he || he_transparent)
-			{
-				uint8_t transparency = 0;
-				if (he_transparent)
-					transparency = 255;
+	//		bool horizontal = true;
+	//		if (code >= 0x03 && code <= 0x12 || code >= 0x22 && code <= 0x26)
+	//			horizontal = false;
 
-				int palen = code % 10;
+	//		bool he = code >= 0x86 && code <= 0x94;
+	//		bool he_transparent = code >= 0x22 && code <= 0x30 || code >= 0x54 && code <= 0x80 || code >= 0x8F;
+	//		// Between 134 and 138 (134 and 138 counted)
+	//		// Between 144 and 148 (144 and 148 counted) means it is transparent as well.
+	//		if (he || he_transparent)
+	//		{
+	//			uint8_t transparency = 0;
+	//			if (he_transparent)
+	//				transparency = 255;
 
-				img_info strip_info;
-				if (!DecodeBasic(strips[i].data, strips[i].size, imhd_chunk.width, imhd_chunk.height, palen, he_transparent, info))
-					return;
+	//			int palen = code % 10;
 
-				strip_data.push_back(strip_info);
-				total_size += strip_info.size;
-			}
-
-			info.data = reinterpret_cast<unsigned char*>(malloc(total_size));
-			size_t offset = 0;
-			for (size_t i = 0; i < strip_data.size(); i++)
-			{
-				memcpy(reinterpret_cast<unsigned char*>(utils::add(info.data, offset)), strip_data[i].data, strip_data[i].size);
-				free(strip_data[i].data);
-				offset += strip_data[i].size;
-			}
+	//			img_info strip_info;
+	//			if (!DecodeBasic(strips[i].data[1], reinterpret_cast<unsigned char*>(utils::add(strips[i].data, 2)), strips[i].size - 2, strip_width, imhd_chunk.height, palen, he_transparent, info))
+	//				return false;
 
 
-		}
-		return true;
-	}
+	//			// Vertical.
+	//			unsigned char* data = reinterpret_cast<unsigned char*>(malloc(info.size));
+	//			if (horizontal)
+	//			{
+
+	//			}
+	//			else
+	//			{
+	//				int dataIndex = 0; // Index to traverse the 1D data
+	//				for (int i = 0; i < strip_width; ++i)
+	//				{
+	//					for (int j = 0; j < imhd_chunk.height; ++j)
+	//					{
+	//						data[(j * strip_width) + i] = data[dataIndex];
+	//						++dataIndex;
+	//					}
+	//				}
+	//			}
+
+	//			free(info.data);
+	//			info.data = data;
+	//			total_size += info.size;
+	//			data_blocks.push_back(info);
+	//		}
+	//	}
+
+	//	unsigned char* total_data = reinterpret_cast<unsigned char*>(malloc(total_size));
+	//	size_t prev_offset = 0;
+	//	for (size_t i = 0; i < data_blocks.size(); i++)
+	//	{
+	//		memcpy(reinterpret_cast<unsigned char*>(utils::add(total_data, prev_offset)), data_blocks[i].data, data_blocks[i].size);
+	//		free(data_blocks[i].data);
+	//		prev_offset += data_blocks[i].size;
+	//	}
+
+	//	info.data = total_data;
+	//	info.size = total_size;
+	//	return true;
+	//}
 	bool ImageTab::DecodeHE(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
 	{
 		info.width = width;
@@ -927,59 +1009,49 @@ namespace HumongousFileEditor
 		memcpy(info.data, out.data(), out.size());
 		return true;
 	}
-	bool ImageTab::DecodeBasic(unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
-	{
-		info.width = width;
-		info.height = height;
+	//bool ImageTab::DecodeBasic(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
+	//{
+	//	info.width = width;
+	//	info.height = height;
 
-		int sub = 1;
+	//	unsigned char color = fill_color;
 
-		unsigned char color = data[0];
-		data++;
+	//	std::vector<uint8_t> bits = create_bitstream(data, data_size);
 
-		std::vector<uint8_t> bits = create_bitstream(data, data_size - 1);
+	//	std::vector<uint8_t> out;
 
-		std::vector<uint8_t> out;
+	//	info.channels = 3;
+	//	if (transparent)
+	//		info.channels = 4;
 
-		int color_index = color % 256;
-		color_index *= 3;
+	//	out.push_back(color % 256);
 
-		info.channels = 3;
-		if (transparent)
-			info.channels = 4;
+	//	size_t num_pixels = info.width * info.height;
 
-		out.push_back(color % 256);
+	//	int sub = 1;
+	//	int pos = 0;
+	//	while (out.size() < num_pixels)
+	//	{
+	//		if (bits[pos++] == 1)
+	//		{
+	//			if (bits[pos++] == 1)
+	//			{
+	//				if (bits[pos++] == 1)
+	//					sub = -sub;
+	//				color -= sub;
+	//			}
+	//			else
+	//			{
+	//				color = collect_bits(pos, bits, palen);
+	//				sub = 1;
+	//			}
+	//		}
+	//		out.push_back(color % 256);
+	//	};
 
-		size_t num_pixels = info.width * info.height;
-
-		int pos = 0;
-		while (out.size() < num_pixels)
-		{
-			pos++;
-			if (bits[pos] == 1)
-			{
-				pos++;
-				if (bits[pos] == 1)
-				{
-					pos++;
-					if (bits[pos] == 1)
-					{
-						sub = -sub;
-					}
-					color -= sub;
-				}
-				else
-				{
-					color = collect_bits(pos, bits, palen);
-					sub = 1;
-				}
-			}
-			out.push_back(color % 256);
-		};
-
-		info.size = out.size();
-		info.data = reinterpret_cast<unsigned char*>(malloc(out.size()));
-		memcpy(info.data, out.data(), out.size());
-		return true;
-	}
+	//	info.size = out.size();
+	//	info.data = reinterpret_cast<unsigned char*>(malloc(out.size()));
+	//	memcpy(info.data, out.data(), out.size());
+	//	return true;
+	//}
 }
