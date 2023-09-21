@@ -45,6 +45,7 @@ namespace HumongousFileEditor
 		System::Void PlayButton_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void StopButton_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void ExportButton_Click(System::Object^ sender, System::EventArgs^ e);
+		System::Void ReplaceSongButton_Click(System::Object^ sender, System::EventArgs^ e);
 		void AddTab(HumongousNode^ node, System::Windows::Forms::TabControl^ tabControl);
 	private:
 		void GetTalk(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY);
@@ -94,6 +95,6 @@ namespace HumongousFileEditor
 		//static bool DecodeSMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
 		static bool DecodeHE(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
 		static bool EncodeHE(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
-		//static bool DecodeBasic(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
+		static bool DecodeBasic(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
 	};
 }

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <windows.h>
 #include <uaudio_wave_reader/WaveChunks.h>
+#include <uaudio_wave_reader/WaveReader.h>
 #include <sstream>
 #include <fstream>
 #define STB_IMAGE_IMPLEMENTATION
@@ -26,6 +27,7 @@
 #include "lowlevel/utils.h"
 #include "systems/Logger.h"
 #include "file/ResourceType.h"
+#include <HumongousEditorForm.h>
 
 namespace HumongousFileEditor
 {
@@ -280,6 +282,82 @@ namespace HumongousFileEditor
 			}
 		}
 	}
+	// Callback for the export button.
+	System::Void TabFunctions::ReplaceSongButton_Click(System::Object^ sender, System::EventArgs^ e)
+	{
+		HumongousButton^ btn = (HumongousButton^)sender;
+
+		chunk_reader::FileContainer* fc = files::FILES.getFile(btn->fileType);
+
+		if (fc == nullptr)
+			return;
+
+		OPENFILENAME ofn;
+		TCHAR sz_file[260] = { 0 };
+
+		ZeroMemory(&ofn, sizeof(ofn));
+		ofn.lStructSize = sizeof(ofn);
+		ofn.lpstrFile = sz_file;
+		ofn.nMaxFile = sizeof(sz_file);
+		ofn.lpstrFilter = L"\
+						WAVE file (*.wav)\
+						\0*.WAV;*.wav\0";
+		ofn.lpstrFileTitle = nullptr;
+		ofn.nMaxFileTitle = 0;
+		ofn.lpstrInitialDir = nullptr;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+		if (GetOpenFileNameW(&ofn))
+		{
+			const auto path = new char[wcslen(ofn.lpstrFile) + 1];
+			wsprintfA(path, "%S", ofn.lpstrFile);
+
+			std::string save_path_s = std::string(path);
+
+			if (!utils::ends_with(save_path_s, ".wav"))
+				save_path_s += ".wav";
+
+			size_t wave_size = 0;
+			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::FTell(save_path_s.c_str(), wave_size)))
+				return;
+
+			uaudio::wave_reader::ChunkCollection chunkCollection(malloc(wave_size), wave_size);
+			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::LoadWave(save_path_s.c_str(), chunkCollection)))
+				return;
+
+			uaudio::wave_reader::DATA_Chunk data_chunk;
+			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
+				return;
+
+			uaudio::wave_reader::FMT_Chunk fmt_chunk;
+			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
+				return;
+
+			if (fmt_chunk.byteRate != 11025)
+				return;
+
+			if (fmt_chunk.sampleRate != 11025)
+				return;
+
+			if (fmt_chunk.bitsPerSample != uaudio::wave_reader::WAVE_BITS_PER_SAMPLE_8)
+				return;
+
+			if (fmt_chunk.numChannels != uaudio::wave_reader::WAVE_CHANNELS_MONO)
+				return;
+
+			// Get SGEN chunk first (tells us the position of the SONG).
+			chunk_reader::SGEN_Chunk sgen_chunk;
+			memcpy(&sgen_chunk, utils::add(fc->data, btn->offset), sizeof(chunk_reader::SGEN_Chunk));
+
+			fc->Replace(sgen_chunk.song_pos, data_chunk.data, data_chunk.chunkSize);
+
+			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+			form->entryView->Nodes->Clear();
+
+			HumongousFileEditor::chunk_reader::ResourceGatherer rg;
+			rg.ReadHE4(fc);
+		}
+	}
 	void TabFunctions::AddTab(HumongousNode^ node, System::Windows::Forms::TabControl^ tabControl)
 	{
 		chunk_reader::FileContainer* fc = files::FILES.getFile(node->fileType);
@@ -448,6 +526,22 @@ namespace HumongousFileEditor
 		AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str()), propertyGrid, posX, posY);
 
 		AddSoundButtons(tab, offset, fc->fileType, panel);
+
+		HumongousButton^ replaceButton;
+		replaceButton = (gcnew HumongousButton());
+
+		replaceButton->Location = System::Drawing::Point(232, 53);
+		replaceButton->Name = gcnew System::String("ReplaceSong_") + gcnew System::String(tab->Name);
+		replaceButton->Size = System::Drawing::Size(75, 23);
+		replaceButton->TabIndex = 2;
+		replaceButton->Text = L"Replace";
+		replaceButton->offset = offset;
+		replaceButton->fileType = fc->fileType;
+		replaceButton->UseVisualStyleBackColor = true;
+		replaceButton->Click += gcnew System::EventHandler(this, &TabFunctions::ReplaceSongButton_Click);
+
+		replaceButton->ResumeLayout(false);
+		panel->Controls->Add(replaceButton);
 	}
 	void TabFunctions::GetScrp(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
@@ -1009,49 +1103,49 @@ namespace HumongousFileEditor
 		memcpy(info.data, out.data(), out.size());
 		return true;
 	}
-	//bool ImageTab::DecodeBasic(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
-	//{
-	//	info.width = width;
-	//	info.height = height;
+	bool ImageTab::DecodeBasic(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
+	{
+		info.width = width;
+		info.height = height;
 
-	//	unsigned char color = fill_color;
+		unsigned char color = fill_color;
 
-	//	std::vector<uint8_t> bits = create_bitstream(data, data_size);
+		std::vector<uint8_t> bits = create_bitstream(data, data_size);
 
-	//	std::vector<uint8_t> out;
+		std::vector<uint8_t> out;
 
-	//	info.channels = 3;
-	//	if (transparent)
-	//		info.channels = 4;
+		info.channels = 3;
+		if (transparent)
+			info.channels = 4;
 
-	//	out.push_back(color % 256);
+		out.push_back(color % 256);
 
-	//	size_t num_pixels = info.width * info.height;
+		size_t num_pixels = info.width * info.height;
 
-	//	int sub = 1;
-	//	int pos = 0;
-	//	while (out.size() < num_pixels)
-	//	{
-	//		if (bits[pos++] == 1)
-	//		{
-	//			if (bits[pos++] == 1)
-	//			{
-	//				if (bits[pos++] == 1)
-	//					sub = -sub;
-	//				color -= sub;
-	//			}
-	//			else
-	//			{
-	//				color = collect_bits(pos, bits, palen);
-	//				sub = 1;
-	//			}
-	//		}
-	//		out.push_back(color % 256);
-	//	};
+		int sub = 1;
+		int pos = 0;
+		while (out.size() < num_pixels)
+		{
+			if (bits[pos++] == 1)
+			{
+				if (bits[pos++] == 1)
+				{
+					if (bits[pos++] == 1)
+						sub = -sub;
+					color -= sub;
+				}
+				else
+				{
+					color = collect_bits(pos, bits, palen);
+					sub = 1;
+				}
+			}
+			out.push_back(color % 256);
+		};
 
-	//	info.size = out.size();
-	//	info.data = reinterpret_cast<unsigned char*>(malloc(out.size()));
-	//	memcpy(info.data, out.data(), out.size());
-	//	return true;
-	//}
+		info.size = out.size();
+		info.data = reinterpret_cast<unsigned char*>(malloc(out.size()));
+		memcpy(info.data, out.data(), out.size());
+		return true;
+	}
 }
