@@ -349,13 +349,58 @@ namespace HumongousFileEditor
 			chunk_reader::SGEN_Chunk sgen_chunk;
 			memcpy(&sgen_chunk, utils::add(fc->data, btn->offset), sizeof(chunk_reader::SGEN_Chunk));
 
-			fc->Replace(sgen_chunk.song_pos, data_chunk.data, data_chunk.chunkSize);
-
 			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 			form->entryView->Nodes->Clear();
 
+			chunk_reader::SDAT_Chunk sdat_chunk;
+
+			// Get SDAT chunk for the raw audio data.
+			size_t sdat_offset = getOffsetChunk(fc, sgen_chunk.song_pos, { chunk_reader::SDAT_CHUNK_ID });
+			if (sdat_offset == -1)
+				return;
+
+			size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
+			memcpy(&sdat_chunk, utils::add(fc->data, sdat_offset), header_size);
+			sdat_chunk.SetChunkSize(data_chunk.chunkSize + header_size);
+
+			unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(header_size + data_chunk.chunkSize));
+			memcpy(new_data, &sdat_chunk, header_size);
+			memcpy(utils::add(new_data, header_size), data_chunk.data, data_chunk.chunkSize);
+
+			fc->Replace(sdat_offset, new_data, sdat_chunk.ChunkSize());
+
+			// AFTER PROCESSING:
+			//// TODO: Maybe do this specifically for replacing a song in the replace method.
+			//// There is a chance this was a song chunk. If so, change the offset of the SGEN and the SGENS following (or before).
+			//if (utils::chunkcmp(chunk.chunk_id, DIGI_CHUNK_ID) == 0)
+			//{
+			//	bool past = false;
+
+			//	next_chunk = GetChunkInfo(sizeof(HumongousHeader));
+			//	while (next_chunk.offset < size)
+			//	{
+			//		if (utils::chunkcmp(next_chunk.chunk_id, SGEN_CHUNK_ID) == 0)
+			//		{
+			//			SGEN_Chunk* sgen_chunk = reinterpret_cast<SGEN_Chunk*>(utils::add(new_data, next_chunk.offset));
+			//			if (sgen_chunk->song_pos == offset)
+			//			{
+			//				sgen_chunk->song_pos = offset;
+			//				sgen_chunk->song_size = new_size;
+			//				past = true;
+			//			}
+			//			else if (past)
+			//			{
+			//				sgen_chunk->song_pos = offset += dif_size;
+			//			}
+			//		}
+			//		next_chunk = GetNextChunk(next_chunk.offset);
+			//	}
+			//}
+
 			HumongousFileEditor::chunk_reader::ResourceGatherer rg;
 			rg.ReadHE4(fc);
+
+			free(new_data);
 		}
 	}
 	void TabFunctions::AddTab(HumongousNode^ node, System::Windows::Forms::TabControl^ tabControl)
