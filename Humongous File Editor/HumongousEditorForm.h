@@ -582,7 +582,12 @@ namespace HumongousFileEditor
 		System::Void optionIndex_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			chunk_reader::FileIndexer f = chunk_reader::FileIndexer();
-			f.Read();
+			if (f.Read())
+			{
+				System::Windows::Forms::MessageBox::Show("Successfully indexed file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+				toolProgressBar->Value = 0;
+				return;
+			}
 		}
 		System::Void optionOpen_Click(System::Object^ sender, System::EventArgs^ e)
 		{
@@ -610,6 +615,7 @@ namespace HumongousFileEditor
 				if (f.Read(path))
 				{
 					System::Windows::Forms::MessageBox::Show("Successfully opened file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+					toolProgressBar->Value = 0;
 					return;
 				}
 
@@ -717,6 +723,7 @@ namespace HumongousFileEditor
 			if (fileDecrypter.Read())
 			{
 				System::Windows::Forms::MessageBox::Show("Successfully decrypted/encrypted file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+				toolProgressBar->Value = 0;
 				return;
 			}
 		}

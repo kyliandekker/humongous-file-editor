@@ -55,7 +55,7 @@ namespace HumongousFileEditor
 			return text;
 		};
 
-		void FileIndexer::Read()
+		bool FileIndexer::Read()
 		{
 			OPENFILENAME ofn;
 			TCHAR sz_file[260] = { 0 };
@@ -117,7 +117,7 @@ namespace HumongousFileEditor
 					if (file == nullptr)
 					{
 						LOGF(logger::LOGSEVERITY_ERROR, "Cannot save file \"%s\".", save_path_s.c_str());
-						return;
+						return false;
 					}
 
 					delete[] save_path;
@@ -141,6 +141,8 @@ namespace HumongousFileEditor
 					ChunkInfo header = fc.GetChunkInfo(0);
 					std::vector<ChunkInfo> top_chunks;
 
+					HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+
 					std::string text;
 					while (header.offset < fc.size)
 					{
@@ -161,6 +163,13 @@ namespace HumongousFileEditor
 								top_chunks.erase(top_chunks.begin() + i);
 								text += getCloseChunkText(closed.chunk_id, top_chunks.size());
 							}
+
+						int value = 100.0f / fc.size * header.offset;
+						value = std::clamp(value, 0, 100);
+						int higherValue = value + 1;
+						higherValue = std::clamp(higherValue, 0, 100);
+						form->toolProgressBar->Value = higherValue;
+						form->toolProgressBar->Value = value;
 					}
 					for (auto i : chunks)
 					{
@@ -175,6 +184,7 @@ namespace HumongousFileEditor
 				}
 
 				delete[] path;
+				return true;
 			}
 		}
 	}

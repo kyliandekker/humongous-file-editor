@@ -11,7 +11,7 @@ namespace HumongousFileEditor
 		class FileIndexer : public FileFunction
 		{
 		public:
-			void Read();
+			bool Read();
 		};
 	}
 }

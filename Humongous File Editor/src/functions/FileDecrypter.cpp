@@ -5,6 +5,7 @@
 #include "lowlevel/FileContainer.h"
 #include "systems/Logger.h"
 #include "lowlevel/utils.h"
+#include "HumongousEditorForm.h"
 
 namespace HumongousFileEditor
 {
@@ -34,6 +35,9 @@ namespace HumongousFileEditor
 
 				chunk_reader::FileContainer fc = chunk_reader::FileContainer(path);
 				fc.Decrypt(0x69);
+
+				HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+				form->toolProgressBar->Value = 100;
 
 				OPENFILENAME ofn;
 				TCHAR sz_file[260] = { 0 };

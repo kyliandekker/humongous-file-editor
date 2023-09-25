@@ -112,11 +112,6 @@ namespace HumongousFileEditor
 			memcpy(utils::add(new_data, offset), new_chunk_data, new_size);
 			memcpy(utils::add(new_data, offset + new_size), utils::add(data, offset + chunk.ChunkSize()), size - (offset + chunk.ChunkSize()));
 
-			FILE* file;
-			fopen_s(&file, "D:/ekkes/test.he4", "wb");
-			fwrite(new_data, size + dif_size, 1, file);
-			fclose(file);
-
 			free(data);
 			data = new_data;
 			size += dif_size;

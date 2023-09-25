@@ -48,6 +48,15 @@ namespace HumongousFileEditor
 			return "";
 		}
 
+		void setProgressBar(System::Windows::Forms::ToolStripProgressBar^ progressBar, int value)
+		{
+			value = std::clamp(value, 0, 100);
+			int higherValue = value + 1;
+			higherValue = std::clamp(higherValue, 0, 100);
+			progressBar->Value = higherValue;
+			progressBar->Value = value;
+		}
+
 		bool ResourceGatherer::Read(const char* path)
 		{
 			FileContainer* fc = files::FILES.Read(path);
@@ -223,6 +232,8 @@ namespace HumongousFileEditor
 					lflf++;
 				}
 				header = a->GetNextChunk(header.offset);
+
+				setProgressBar(form->toolProgressBar, 100.0f / fc->size * header.offset);
 			}
 			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .(A) and .HE0 resources for file \"%s\".", fc->path.c_str());
 			return true;
@@ -234,6 +245,8 @@ namespace HumongousFileEditor
 			{
 				{ TALK_CHUNK_ID, files::ResourceType::Talkie }
 			};
+
+			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 
 			std::vector<files::Resource> offsets;
 			ChunkInfo header = fc->GetChunkInfo(0);
@@ -253,9 +266,10 @@ namespace HumongousFileEditor
 					i++;
 				}
 				header = fc->GetNextChunk(header.offset);
+
+				setProgressBar(form->toolProgressBar, 100.0f / fc->size * header.offset);
 			}
 
-			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 			System::Windows::Forms::TreeNode^ baseNode = form->GetBaseNode(gcnew System::String("HE2"));
 
 			for (size_t i = 0; i < offsets.size(); i++)
@@ -280,6 +294,8 @@ namespace HumongousFileEditor
 				{ SGEN_CHUNK_ID, files::ResourceType::Song }
 			};
 
+			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+
 			std::vector<files::Resource> offsets;
 			ChunkInfo header = fc->GetChunkInfo(0);
 			int i = 0;
@@ -298,9 +314,10 @@ namespace HumongousFileEditor
 					i++;
 				}
 				header = fc->GetNextChunk(header.offset);
+
+				setProgressBar(form->toolProgressBar, 100.0f / fc->size * header.offset);
 			}
 
-			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 			System::Windows::Forms::TreeNode^ baseNode = form->GetBaseNode(gcnew System::String("HE4"));
 
 			for (size_t i = 0; i < offsets.size(); i++)
