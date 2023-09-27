@@ -69,18 +69,6 @@ namespace HumongousFileEditor
 	public: System::Windows::Forms::Panel^ actionPanel;
 	public: System::Windows::Forms::Button^ indexButton;
 	public: System::Windows::Forms::TabPage^ tabWelcome;
-
-	public:
-
-	public:
-
-	public:
-
-	public:
-
-
-
-
 		  System::Windows::Forms::TabControl^ tabControl1;
 	protected:
 		/// <summary>

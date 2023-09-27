@@ -8,7 +8,7 @@ namespace HumongousFileEditor
 {
 	namespace utils
 	{
-		void* add(void* a_Ptr, size_t a_Size)
+		unsigned char* add(void* a_Ptr, size_t a_Size)
 		{
 			return reinterpret_cast<unsigned char*>(a_Ptr) + a_Size;
 		}

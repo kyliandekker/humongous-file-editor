@@ -145,6 +145,7 @@
     <ClInclude Include="include\file\Resource.h" />
     <ClInclude Include="include\file\ResourceType.h" />
     <ClInclude Include="include\forms\HumongousNode.h" />
+    <ClInclude Include="include\functions\ChunkFunctions.h" />
     <ClInclude Include="include\functions\FileFunction.h" />
     <ClInclude Include="include\functions\FileIndexer.h" />
     <ClInclude Include="HumongousEditorForm.h">
@@ -153,6 +154,11 @@
     <ClInclude Include="include\forms\HumongousButton.h" />
     <ClInclude Include="include\forms\HumongousToolStripMenuItem.h" />
     <ClInclude Include="include\functions\TabFunctions.h" />
+    <ClInclude Include="include\functions\types\base\SoundTab.h" />
+    <ClInclude Include="include\functions\types\BMAPTab.h" />
+    <ClInclude Include="include\functions\types\DIGITab.h" />
+    <ClInclude Include="include\functions\types\SONGTab.h" />
+    <ClInclude Include="include\functions\types\TALKTab.h" />
     <ClInclude Include="include\lowlevel\ChunkInfo.h" />
     <ClInclude Include="include\lowlevel\Defines.h" />
     <ClInclude Include="include\lowlevel\FileContainer.h" />
@@ -165,6 +171,7 @@
     <ClInclude Include="include\Temp.h" />
     <ClInclude Include="include\functions\ResourceGatherer.h" />
     <ClInclude Include="include\functions\FileDecrypter.h" />
+    <ClInclude Include="include\functions\types\base\ImageTab.h" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">
@@ -175,6 +182,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\functions\ChunkFunctions.cpp" />
+    <ClCompile Include="src\functions\types\BMAPTab.cpp" />
+    <ClCompile Include="src\functions\types\base\ImageTab.cpp" />
+    <ClCompile Include="src\functions\types\SONGTab.cpp" />
     <ClCompile Include="src\file\Files.cpp" />
     <ClCompile Include="src\file\ResourceType.cpp" />
     <ClCompile Include="src\functions\FileDecrypter.cpp" />
@@ -183,6 +194,9 @@
     <ClCompile Include="include\Temp.cpp" />
     <ClCompile Include="src\functions\ResourceGatherer.cpp" />
     <ClCompile Include="src\functions\TabFunctions.cpp" />
+    <ClCompile Include="src\functions\types\base\SoundTab.cpp" />
+    <ClCompile Include="src\functions\types\DIGITab.cpp" />
+    <ClCompile Include="src\functions\types\TALKTab.cpp" />
     <ClCompile Include="src\HumongousEditorForm.cpp" />
     <ClCompile Include="src\lowlevel\FileContainer.cpp" />
     <ClCompile Include="src\lowlevel\HumongousChunkDefinitions.cpp" />

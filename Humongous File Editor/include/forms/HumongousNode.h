@@ -11,6 +11,7 @@ namespace HumongousFileEditor
 	{
 	public:
 		size_t offset = 0;
+		size_t lflf = 0;
 		files::FileType fileType;
 	};
 }

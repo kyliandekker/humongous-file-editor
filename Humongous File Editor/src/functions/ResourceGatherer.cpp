@@ -218,6 +218,7 @@ namespace HumongousFileEditor
 							HumongousNode^ node;
 							node = (gcnew HumongousNode);
 							node->offset = child_header.offset;
+							node->lflf = header.offset;
 							node->fileType = a->fileType;
 							std::string unique_name = std::string(chunk_id_name) + "_" + std::to_string(fc->fileType) + "_" + std::to_string(i) + "_" + fc->path + "_" + std::to_string(lflf) + "_" + std::to_string(random_number_for_unique_id);
 							node->Name = gcnew System::String(unique_name.c_str());

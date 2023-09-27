@@ -27,6 +27,8 @@ namespace HumongousFileEditor
 
 			void SetChunkSize(uint32_t chunkSize, bool toBigEndian = true);
 		};
+
+		using ChunkHeader = HumongousHeader;
 #pragma pack(pop)
 	}
 }

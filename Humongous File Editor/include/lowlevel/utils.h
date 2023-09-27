@@ -11,7 +11,7 @@ namespace HumongousFileEditor
 		/// <param name="a_Ptr">The pointer</param>
 		/// <param name="a_Size">The size that needs to be added.</param>
 		/// <returns></returns>
-		void* add(void* a_Ptr, size_t a_Size);
+		unsigned char* add(void* a_Ptr, size_t a_Size);
 
 		int getBit(char i, size_t psition);
 

@@ -90,6 +90,27 @@
     <ClInclude Include="include\systems\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\functions\types\base\SoundTab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\functions\types\DIGITab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\functions\types\SONGTab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\functions\types\base\ImageTab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\functions\types\BMAPTab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\functions\types\TALKTab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\functions\ChunkFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">
@@ -143,6 +164,27 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\file\ResourceType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\functions\types\base\SoundTab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\functions\types\DIGITab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\functions\types\SONGTab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\functions\types\base\ImageTab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\functions\types\BMAPTab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\functions\types\TALKTab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\functions\ChunkFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

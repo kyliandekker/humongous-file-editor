@@ -31,14 +31,6 @@ namespace HumongousFileEditor
 		struct IMHD_Chunk;
 	}
 
-	struct img_info
-	{
-		unsigned char* data = nullptr;
-		uint16_t channels = 0;
-		size_t size = 0;
-		size_t width = 0, height = 0;
-	};
-
 	public ref class TabFunctions
 	{
 	public:
@@ -55,46 +47,7 @@ namespace HumongousFileEditor
 		void GetRMIM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY);
 		//void GetOBIM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY);
 		void GetRNAM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY);
+		void GetOBIM(chunk_reader::FileContainer*& fc, size_t offset, size_t lflf, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY);
 		void AddSoundButtons(System::Windows::Forms::TabPage^ tab, size_t offset, files::FileType fileType, System::Windows::Forms::Panel^ panel);
 	};
-
-	class TalkieTab
-	{
-	public:
-		static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk);
-	};
-
-	class SongTab
-	{
-	public:
-		static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk);
-	};
-
-	class DigiTab
-	{
-	public:
-		static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk);
-	};
-
-	class RoomBackgroundTab
-	{
-	public:
-		static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
-	};
-
-	//class RoomImageTab
-	//{
-	//public:
-	//	static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<img_info>& info);
-	//};
-
-	class ImageTab
-	{
-	public:
-		static bool DecodeBMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
-		//static bool DecodeSMAP(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
-		static bool DecodeHE(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
-		static bool EncodeHE(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
-		static bool DecodeBasic(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info);
-	};
-}
+};

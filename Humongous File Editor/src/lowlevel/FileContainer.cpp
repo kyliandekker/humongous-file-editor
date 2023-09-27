@@ -65,7 +65,7 @@ namespace HumongousFileEditor
 		ChunkInfo FileContainer::GetNextChunk(size_t offset) const
 		{
 			size_t extra_offset = 0;
-			while (reinterpret_cast<unsigned char*>(utils::add(data, offset + extra_offset))[0] == 128)
+			while (utils::add(data, offset + extra_offset)[0] == 128)
 				extra_offset++;
 
 			offset += extra_offset;
