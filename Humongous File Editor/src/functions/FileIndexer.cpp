@@ -124,12 +124,7 @@ namespace HumongousFileEditor
 						return false;
 					}
 
-					FileContainer fc = FileContainer(path);
-
-					files::FileType f = files::getFileTypeByExtension(path);
-					std::string extension = files::getExtensionByFileType(f);
-
-					switch (f)
+					switch (fc.fileType)
 					{
 						case files::FileType::FileType_A:
 						case files::FileType::FileType_HE0:

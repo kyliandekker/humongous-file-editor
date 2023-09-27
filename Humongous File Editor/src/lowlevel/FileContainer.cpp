@@ -28,6 +28,10 @@ namespace HumongousFileEditor
 			size = ftell(file);
 			rewind(file);
 
+			this->path = path;
+
+			fileType = files::getFileTypeByExtension(path);
+
 			data = reinterpret_cast<unsigned char*>(malloc(size));
 			if (data != nullptr)
 			{
