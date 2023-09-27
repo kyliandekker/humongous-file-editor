@@ -742,7 +742,7 @@ namespace HumongousFileEditor
 			bmap_chunk.data = utils::add(fc->data, bsmap_offset + header_size);
 			size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
 
-			return BMAPTab::GetDataBMAP(fc, bmap_chunk, apal_chunk, bmap_chunk.data[0], imhd_chunk.width, imhd_chunk.height, info);
+			return BMAPTab::GetDataBMAP(fc, bmap_chunk, apal_chunk, bmap_chunk.fill_color, imhd_chunk.width, imhd_chunk.height, info);
 		}
 
 		return false;

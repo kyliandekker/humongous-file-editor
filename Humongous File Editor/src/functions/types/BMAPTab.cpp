@@ -25,9 +25,6 @@ namespace HumongousFileEditor
 		size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
 		size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
 
-		if (bmap_size == 0)
-			return false;
-
 		int palen = bmap_chunk.encoding % 10;
 
 		bool he = bmap_chunk.encoding >= 0x86 && bmap_chunk.encoding <= 0x8A;
