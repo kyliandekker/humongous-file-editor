@@ -66,7 +66,7 @@ namespace HumongousFileEditor
 		size_t smap_size = smap_chunk.ChunkSize() - header_size;
 
 		uint32_t strip_width = 8;
-		size_t num_strips = static_cast<size_t>(floor(width / strip_width));
+		size_t num_strips = static_cast<size_t>(static_cast<size_t>(floor(static_cast<double>(width / strip_width))));
 
 		unsigned char* data = smap_chunk.data;
 
@@ -141,10 +141,10 @@ namespace HumongousFileEditor
 				memcpy(data, strip_info.data, strip_info.size);
 			else
 			{
-				int dataIndex = 0;
-				for (int k = 0; k < strip_width; ++k)
+				uint32_t dataIndex = 0;
+				for (uint32_t k = 0; k < strip_width; ++k)
 				{
-					for (int j = 0; j < height; ++j)
+					for (uint32_t j = 0; j < height; ++j)
 					{
 						data[(j * strip_width) + k] = strip_info.data[dataIndex];
 						++dataIndex;

@@ -76,10 +76,13 @@ namespace HumongousFileEditor
 
 					fwrite(fc.data, fc.size, 1, file);
 					fclose(file);
+
+					delete[] path;
+					return true;
 				}
 
 				delete[] path;
-				return true;
+				return false;
 			}
 			return false;
 		}

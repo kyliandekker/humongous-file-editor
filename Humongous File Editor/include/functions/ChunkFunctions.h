@@ -23,8 +23,7 @@ namespace HumongousFileEditor
 		class ChunkFunctions
 		{
 		public:
-			static size_t GetOffsetChunk(FileContainer*& fc, size_t offset, std::vector<std::string> chunk_names);
-			static void SetProgressBar(System::Windows::Forms::ToolStripProgressBar^ progressBar, int value);
+			static void SetProgressBar(System::Windows::Forms::ToolStripProgressBar^ progressBar, size_t value);
 		};
 	};
 };

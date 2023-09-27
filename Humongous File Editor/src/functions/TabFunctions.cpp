@@ -164,7 +164,7 @@ namespace HumongousFileEditor
 					{
 						if (!utils::ends_with(save_path_s, ".png"))
 							save_path_s += ".png";
-						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data, info.width * info.channels);
+						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data, static_cast<int>(info.width * info.channels));
 					}
 
 					free(info.data);
@@ -214,7 +214,7 @@ namespace HumongousFileEditor
 					{
 						if (!utils::ends_with(save_path_s, ".png"))
 							save_path_s += ".png";
-						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data, info.width * info.channels);
+						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data, static_cast<int>(info.width * info.channels));
 					}
 
 					free(info.data);

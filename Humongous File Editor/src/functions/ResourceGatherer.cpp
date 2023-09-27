@@ -10,6 +10,7 @@
 #include "lowlevel/HumongousChunks.h"
 #include "HumongousEditorForm.h"
 #include "file/ResourceType.h"
+#include "functions/ChunkFunctions.h"
 #include "lowlevel/utils.h"
 
 namespace HumongousFileEditor
@@ -46,15 +47,6 @@ namespace HumongousFileEditor
 				}
 			}
 			return "";
-		}
-
-		void setProgressBar(System::Windows::Forms::ToolStripProgressBar^ progressBar, int value)
-		{
-			value = std::clamp(value, 0, 100);
-			int higherValue = value + 1;
-			higherValue = std::clamp(higherValue, 0, 100);
-			progressBar->Value = higherValue;
-			progressBar->Value = value;
 		}
 
 		bool ResourceGatherer::Read(const char* path)
@@ -256,7 +248,7 @@ namespace HumongousFileEditor
 				}
 				header = a->GetNextChunk(header.offset);
 
-				setProgressBar(form->toolProgressBar, 100.0f / fc->size * header.offset);
+				ChunkFunctions::SetProgressBar(form->toolProgressBar, 100 / fc->size * header.offset);
 			}
 			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .(A) and .HE0 resources for file \"%s\".", fc->path.c_str());
 			return true;
@@ -290,7 +282,7 @@ namespace HumongousFileEditor
 				}
 				header = fc->GetNextChunk(header.offset);
 
-				setProgressBar(form->toolProgressBar, 100.0f / fc->size * header.offset);
+				ChunkFunctions::SetProgressBar(form->toolProgressBar, 100 / fc->size * header.offset);
 			}
 
 			System::Windows::Forms::TreeNode^ baseNode = form->GetBaseNode(gcnew System::String("HE2"));
@@ -338,7 +330,7 @@ namespace HumongousFileEditor
 				}
 				header = fc->GetNextChunk(header.offset);
 
-				setProgressBar(form->toolProgressBar, 100.0f / fc->size * header.offset);
+				ChunkFunctions::SetProgressBar(form->toolProgressBar, 100 / fc->size * header.offset);
 			}
 
 			System::Windows::Forms::TreeNode^ baseNode = form->GetBaseNode(gcnew System::String("HE4"));

@@ -128,7 +128,7 @@ namespace HumongousFileEditor
 		void FileContainer::Replace(size_t offset, unsigned char* new_chunk_data, size_t new_size)
 		{
 			ChunkInfo chunk = GetChunkInfo(offset);
-			int32_t dif_size = new_size - chunk.ChunkSize();
+			int32_t dif_size = static_cast<int32_t>(new_size - chunk.ChunkSize());
 
 			ChunkInfo next_chunk = GetChunkInfo(0);
 			while (next_chunk.offset < chunk.offset)

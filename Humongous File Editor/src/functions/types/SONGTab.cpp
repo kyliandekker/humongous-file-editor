@@ -14,17 +14,24 @@ namespace HumongousFileEditor
 		chunk_reader::SGEN_Chunk sgen_chunk;
 		memcpy(&sgen_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::SGEN_Chunk));
 
-		// Get HSHD chunk for the sample rate.
-		size_t hshd_offset = chunk_reader::ChunkFunctions::GetOffsetChunk(fc, sgen_chunk.song_pos, { chunk_reader::HSHD_CHUNK_ID });
+		std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(sgen_chunk.song_pos);
+		size_t hshd_offset = -1;
+		size_t sdat_offset = -1;
+		for (size_t i = 0; i < children.size(); i++)
+		{
+			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
+				hshd_offset = children[i].offset;
+			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
+				sdat_offset = children[i].offset;
+		}
+
 		if (hshd_offset == -1)
 			return false;
 
-		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
-
-		// Get SDAT chunk for the raw audio data.
-		size_t sdat_offset = chunk_reader::ChunkFunctions::GetOffsetChunk(fc, sgen_chunk.song_pos, { chunk_reader::SDAT_CHUNK_ID });
 		if (sdat_offset == -1)
 			return false;
+
+		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
 
 		size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
 		memcpy(&sdat_chunk, utils::add(fc->data, sdat_offset), header_size);

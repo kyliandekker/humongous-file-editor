@@ -22,7 +22,7 @@ namespace HumongousFileEditor
 {
 	ref class HumongousNode;
 
-	class img_info;
+	struct img_info;
 
 	namespace chunk_reader
 	{

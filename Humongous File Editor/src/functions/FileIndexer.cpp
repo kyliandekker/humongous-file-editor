@@ -11,6 +11,7 @@
 #include "lowlevel/HumongousChunks.h"
 #include "lowlevel/HumongousChunkDefinitions.h"
 #include "systems/Logger.h"
+#include "functions/ChunkFunctions.h"
 
 namespace HumongousFileEditor
 {
@@ -164,12 +165,7 @@ namespace HumongousFileEditor
 								text += getCloseChunkText(closed.chunk_id, top_chunks.size());
 							}
 
-						int value = 100.0f / fc.size * header.offset;
-						value = std::clamp(value, 0, 100);
-						int higherValue = value + 1;
-						higherValue = std::clamp(higherValue, 0, 100);
-						form->toolProgressBar->Value = higherValue;
-						form->toolProgressBar->Value = value;
+						ChunkFunctions::SetProgressBar(form->toolProgressBar, 100 / fc.size * header.offset);
 					}
 					for (auto i : chunks)
 					{
@@ -186,6 +182,7 @@ namespace HumongousFileEditor
 				delete[] path;
 				return true;
 			}
+			return false;
 		}
 	}
 }
