@@ -178,6 +178,11 @@ namespace HumongousFileEditor
 
 			unsigned char* data = nullptr;
 		};
+
+		struct OBIM_Chunk : HumongousHeader
+		{
+			OBIM_Chunk() = default;
+		};
 #pragma pack(pop)
 	}
 }

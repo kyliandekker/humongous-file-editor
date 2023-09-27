@@ -90,6 +90,41 @@ namespace HumongousFileEditor
 			return next;
 		}
 
+		ChunkInfo FileContainer::GetParent(size_t offset) const
+		{
+			ChunkInfo parent;
+
+			ChunkInfo chunk = GetChunkInfo(offset);
+			ChunkInfo next_chunk = GetChunkInfo(0);
+			while (next_chunk.offset < chunk.offset)
+			{
+				if (next_chunk.offset + next_chunk.ChunkSize() >= chunk.offset + chunk.ChunkSize())
+				{
+					if (parent.offset < next_chunk.offset)
+						parent = next_chunk;
+				}
+				next_chunk = GetNextChunk(next_chunk.offset);
+			}
+
+			return parent;
+		}
+
+		std::vector<ChunkInfo> FileContainer::GetChildren(size_t offset) const
+		{
+			std::vector<ChunkInfo> children;
+
+			ChunkInfo chunk = GetChunkInfo(offset);
+			ChunkInfo next_chunk = GetChunkInfo(offset);
+			next_chunk = GetNextChunk(next_chunk.offset);
+			while (next_chunk.offset < chunk.offset + chunk.ChunkSize())
+			{
+				children.push_back(next_chunk);
+				next_chunk = GetNextChunk(next_chunk.offset);
+			}
+
+			return children;
+		}
+
 		void FileContainer::Replace(size_t offset, unsigned char* new_chunk_data, size_t new_size)
 		{
 			ChunkInfo chunk = GetChunkInfo(offset);

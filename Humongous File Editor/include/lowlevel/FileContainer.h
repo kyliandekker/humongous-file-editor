@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include "ChunkInfo.h"
 #include "file/FileType.h"
 
@@ -18,6 +19,8 @@ namespace HumongousFileEditor
 
 			ChunkInfo GetChunkInfo(size_t offset) const;
 			ChunkInfo GetNextChunk(size_t offset) const;
+			ChunkInfo GetParent(size_t offset) const;
+			std::vector<ChunkInfo> GetChildren(size_t offset) const;
 			void Replace(size_t offset, unsigned char* new_data, size_t new_size);
 			void Decrypt(char key);
 
