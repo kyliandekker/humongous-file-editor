@@ -809,14 +809,9 @@ namespace HumongousFileEditor
 	{
 		AddInfoRow("Type", gcnew System::String("Rooms"), propertyGrid, posX, posY);
 
-		// Get RNAM chunk for the sample rate.
-		size_t rnam_offset = chunk_reader::ChunkFunctions::GetOffsetChunk(fc, offset, { chunk_reader::RNAM_CHUNK_ID });
-		if (rnam_offset == -1)
-			return;
-
-		chunk_reader::RNAM_Chunk* rnam_chunk = reinterpret_cast<chunk_reader::RNAM_Chunk*>(utils::add(fc->data, rnam_offset));
-		size_t rnam_end = rnam_offset + rnam_chunk->ChunkSize();
-		size_t pos = rnam_offset + sizeof(chunk_reader::HumongousHeader) + sizeof(uint16_t);
+		chunk_reader::RNAM_Chunk* rnam_chunk = reinterpret_cast<chunk_reader::RNAM_Chunk*>(utils::add(fc->data, offset));
+		size_t rnam_end = offset + rnam_chunk->ChunkSize();
+		size_t pos = offset + sizeof(chunk_reader::HumongousHeader) + sizeof(uint16_t);
 		std::string room_name;
 
 		std::vector<std::string> room_names;
