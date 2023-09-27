@@ -71,9 +71,7 @@ namespace HumongousFileEditor
 		};
 
 		info.size = out.size();
-		info.data = reinterpret_cast<unsigned char*>(malloc(out.size()));
-		memset((info.data), 0, (out.size()));
-		memcpy(info.data, out.data(), out.size());
+		info.data = out;
 		return true;
 	}
 
@@ -118,9 +116,7 @@ namespace HumongousFileEditor
 		};
 
 		info.size = out.size();
-		info.data = reinterpret_cast<unsigned char*>(malloc(out.size()));
-		memset((info.data), 0, (out.size()));
-		memcpy(info.data, out.data(), out.size());
+		info.data = out;
 		return true;
 	}
 
@@ -170,18 +166,17 @@ namespace HumongousFileEditor
 		};
 
 		info.size = out.size();
-		info.data = reinterpret_cast<unsigned char*>(malloc(out.size()));
-		memset((info.data), 0, (out.size()));
-		memcpy(info.data, out.data(), out.size());
+		info.data = out;
 		return true;
 	}
 
 	bool ImageTab::DecodeRaw(unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
 	{
 		info.size = width * height;
-		info.data = reinterpret_cast<unsigned char*>(malloc(info.size));
-		memset((info.data), 0, (info.size));
-		memcpy(info.data, data, info.size);
+		std::vector<uint8_t> data_buf;
+		for (size_t i = 0; i < data_size; i++)
+			data_buf.push_back(data[i]);
+		info.data = data_buf;
 		return true;
 	}
 }

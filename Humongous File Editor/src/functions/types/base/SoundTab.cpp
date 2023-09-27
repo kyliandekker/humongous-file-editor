@@ -58,6 +58,8 @@ namespace HumongousFileEditor
 			wsprintfA(path, "%S", ofn.lpstrFile);
 
 			std::string save_path_s = std::string(path);
+			
+			delete[] path;
 
 			if (!utils::ends_with(save_path_s, ".wav"))
 				save_path_s += ".wav";
@@ -100,6 +102,8 @@ namespace HumongousFileEditor
 			fwrite(data, chunk_size, 1, file);
 
 			fclose(file);
+
+			delete[] path;
 			return true;
 		}
 

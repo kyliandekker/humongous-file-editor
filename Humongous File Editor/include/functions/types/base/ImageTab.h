@@ -2,12 +2,13 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace HumongousFileEditor
 {
 	struct img_info
 	{
-		unsigned char* data = nullptr;
+		std::vector<uint8_t> data;
 		uint16_t channels = 0;
 		size_t size = 0;
 		size_t width = 0, height = 0;

@@ -154,20 +154,20 @@ namespace HumongousFileEditor
 					wsprintfA(path, "%S", ofn.lpstrFile);
 					std::string save_path_s = std::string(path);
 
+					delete[] path;
+
 					if (ofn.nFilterIndex == 1)
 					{
 						if (!utils::ends_with(save_path_s, ".bmp"))
 							save_path_s += ".bmp";
-						stbi_write_bmp(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data);
+						stbi_write_bmp(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data());
 					}
 					else
 					{
 						if (!utils::ends_with(save_path_s, ".png"))
 							save_path_s += ".png";
-						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data, static_cast<int>(info.width * info.channels));
+						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data(), static_cast<int>(info.width * info.channels));
 					}
-
-					free(info.data);
 
 					System::Windows::Forms::MessageBox::Show("Successfully exported file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
 					return;
@@ -208,16 +208,14 @@ namespace HumongousFileEditor
 					{
 						if (!utils::ends_with(save_path_s, ".bmp"))
 							save_path_s += ".bmp";
-						stbi_write_bmp(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data);
+						stbi_write_bmp(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data());
 					}
 					else
 					{
 						if (!utils::ends_with(save_path_s, ".png"))
 							save_path_s += ".png";
-						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data, static_cast<int>(info.width * info.channels));
+						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data(), static_cast<int>(info.width* info.channels));
 					}
-
-					free(info.data);
 
 					System::Windows::Forms::MessageBox::Show("Successfully exported file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
 					return;
@@ -677,7 +675,6 @@ namespace HumongousFileEditor
 		pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
 		propertyPanel->Controls->Add(pictureBox);
-		free(info.data);
 	}
 
 	bool TabFunctions::GetRoomImageData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
@@ -803,7 +800,6 @@ namespace HumongousFileEditor
 		pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
 		propertyPanel->Controls->Add(pictureBox);
-		free(info.data);
 	}
 	void TabFunctions::GetRNAM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{

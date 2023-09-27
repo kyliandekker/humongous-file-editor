@@ -36,6 +36,8 @@ namespace HumongousFileEditor
 				chunk_reader::FileContainer fc = chunk_reader::FileContainer(path);
 				fc.Decrypt(0x69);
 
+				delete[] path;
+
 				HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 				form->toolProgressBar->Value = 100;
 
@@ -62,6 +64,8 @@ namespace HumongousFileEditor
 					std::string extension = files::getExtensionByFileType(ft);
 
 					std::string save_path_s = std::string(save_path);
+					
+					delete[] save_path;
 
 					if (!utils::ends_with(save_path_s, extension))
 						save_path_s += extension;
@@ -77,11 +81,9 @@ namespace HumongousFileEditor
 					fwrite(fc.data, fc.size, 1, file);
 					fclose(file);
 
-					delete[] path;
 					return true;
 				}
 
-				delete[] path;
 				return false;
 			}
 			return false;

@@ -51,11 +51,8 @@ namespace HumongousFileEditor
 			}
 		}
 
-		free(info.data);
-
 		info.size = newOut.size();
-		info.data = reinterpret_cast<unsigned char*>(malloc(newOut.size()));
-		memcpy(info.data, newOut.data(), newOut.size());
+		info.data = newOut;
 
 		return true;
 	}
@@ -135,25 +132,22 @@ namespace HumongousFileEditor
 					return false;
 			}
 
-			unsigned char* data = reinterpret_cast<unsigned char*>(malloc(strip_info.size));
+			std::vector<uint8_t> new_data = strip_info.data;
 
-			if (horizontal)
-				memcpy(data, strip_info.data, strip_info.size);
-			else
+			if (!horizontal)
 			{
 				uint32_t dataIndex = 0;
 				for (uint32_t k = 0; k < strip_width; ++k)
 				{
 					for (uint32_t j = 0; j < height; ++j)
 					{
-						data[(j * strip_width) + k] = strip_info.data[dataIndex];
+						new_data[(j * strip_width) + k] = strip_info.data[dataIndex];
 						++dataIndex;
 					}
 				}
 			}
 
-			free(strip_info.data);
-			strip_info.data = data;
+			strip_info.data = new_data;
 			total_size += strip_info.size;
 
 			for (size_t k = 0; k < height; k++)
@@ -184,21 +178,21 @@ namespace HumongousFileEditor
 			finals.push_back(arr);
 		}
 
-		unsigned char* total_data = reinterpret_cast<unsigned char*>(malloc(total_size));
+		std::vector<uint8_t> final_data = std::vector<uint8_t>(total_size);
 		int pos = 0;
 		for (size_t i = 0; i < finals.size(); i++)
 		{
 			std::vector<uint8_t>& arr = finals[i];
 			for (size_t j = 0; j < arr.size(); j++)
 			{
-				memcpy(reinterpret_cast<unsigned char*>(utils::add(total_data, pos)), &finals[i][j], sizeof(uint8_t));
+				final_data[pos] = finals[i][j];
 				pos++;
 			}
 		}
 
 		info.width = width;
 		info.height = height;
-		info.data = total_data;
+		info.data = final_data;
 		info.size = total_size;
 		info.channels = 4;
 
@@ -211,11 +205,8 @@ namespace HumongousFileEditor
 			newOut.push_back(255);
 		}
 
-		free(info.data);
-
 		info.size = newOut.size();
-		info.data = reinterpret_cast<unsigned char*>(malloc(newOut.size()));
-		memcpy(info.data, newOut.data(), newOut.size());
+		info.data = newOut;
 
 		return true;
 	}

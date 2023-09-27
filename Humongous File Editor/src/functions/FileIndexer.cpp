@@ -80,6 +80,8 @@ namespace HumongousFileEditor
 
 				FileContainer fc = FileContainer(path);
 
+				delete[] path;
+
 				std::string root_chunks[4]
 				{
 					TLKB_CHUNK_ID,
@@ -109,6 +111,7 @@ namespace HumongousFileEditor
 					wsprintfA(save_path, "%S", ofn.lpstrFile);
 
 					std::string save_path_s = std::string(save_path);
+					delete[] save_path;
 
 					if (!utils::ends_with(save_path_s, ".html"))
 						save_path_s += ".html";
@@ -120,8 +123,6 @@ namespace HumongousFileEditor
 						LOGF(logger::LOGSEVERITY_ERROR, "Cannot save file \"%s\".", save_path_s.c_str());
 						return false;
 					}
-
-					delete[] save_path;
 
 					FileContainer fc = FileContainer(path);
 
@@ -179,7 +180,6 @@ namespace HumongousFileEditor
 					fclose(file);
 				}
 
-				delete[] path;
 				return true;
 			}
 			return false;

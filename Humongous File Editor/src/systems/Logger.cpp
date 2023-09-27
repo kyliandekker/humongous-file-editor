@@ -81,7 +81,7 @@ namespace HumongousFileEditor
 			va_start(va_format_list, a_Line);
 
 			size_t buffersize = vsnprintf(NULL, 0, a_Message, va_format_list) + 1;
-			char* formatted_message = (char*)malloc(buffersize);
+			char* formatted_message = reinterpret_cast<char*>(malloc(buffersize));
 			vsnprintf(formatted_message, buffersize, a_Message, va_format_list);
 
 			PrintMessage(a_Severity, formatted_message, a_File, a_Line);
