@@ -178,8 +178,16 @@ namespace HumongousFileEditor
 			case files::ResourceType::RoomImage:
 			{
 				img_info info;
-				if (!GetRoomImageData(fc, btn->offset, info))
-					return;
+				if (btn->special)
+				{
+					if (!GetRoomImageLayerData(fc, btn->offset, info))
+						return;
+				}
+				else
+				{
+					if (!GetRoomImageData(fc, btn->offset, info))
+						return;
+				}
 
 				OPENFILENAME ofn;
 				TCHAR sz_file[260] = { 0 };
@@ -788,11 +796,11 @@ namespace HumongousFileEditor
 
 		propertyPanel->Controls->Add(pictureBox);
 	}
-	void TabFunctions::GetRoomImageLayer(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
+	bool TabFunctions::GetRoomImageLayerData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
 	{
 		img_info image_info;
 		if (!GetRoomImageData(fc, offset, image_info))
-			return;
+			return false;
 
 		size_t lflf_offset = fc->GetParent(fc->GetParent(fc->GetParent(offset).offset).offset).offset;
 		std::vector<chunk_reader::ChunkInfo> lflf_children = fc->GetChildren(lflf_offset);
@@ -803,7 +811,7 @@ namespace HumongousFileEditor
 
 		img_info background_info;
 		if (!GetRoomBackgroundData(fc, im00_offset, background_info))
-			return;
+			return false;
 
 		size_t obim_offset = fc->GetParent(offset).offset;
 		std::vector<chunk_reader::ChunkInfo> obim_children = fc->GetChildren(obim_offset);
@@ -813,41 +821,74 @@ namespace HumongousFileEditor
 				imhd_offset = obim_children[i].offset;
 
 		if (imhd_offset < 0)
-			return;
+			return false;
 
 		chunk_reader::IMHD_Chunk imhd_chunk;
 		memcpy(&imhd_chunk, utils::add(fc->data, imhd_offset), sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data));
 		imhd_chunk.data = utils::add(fc->data, imhd_offset + (sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data)));
-
-		AddInfoRow("Type", gcnew System::String("Room Image"), propertyGrid, posX, posY);
-
-		AddInfoRow("Background Width", gcnew System::String(std::to_string(background_info.width).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("Background Height", gcnew System::String(std::to_string(background_info.height).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("Width", gcnew System::String(std::to_string(image_info.width).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("Height", gcnew System::String(std::to_string(image_info.height).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("x", gcnew System::String(std::to_string(image_info.x).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("y", gcnew System::String(std::to_string(image_info.y).c_str()), propertyGrid, posX, posY);
-
-		propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
-		propertyGrid->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
-
-		System::Drawing::Bitmap^ bmp = gcnew System::Drawing::Bitmap(static_cast<int>(background_info.width), static_cast<int>(background_info.height));
 
 		int cur = 0;
 		for (size_t i = 0; i < background_info.size; i += background_info.channels, cur++)
 		{
 			int y = cur / static_cast<int>(background_info.width);
 			int x = cur % static_cast<int>(background_info.width);
-			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(55, background_info.data[i], background_info.data[i + 1], background_info.data[i + 2]));
+
+			if (x >= imhd_chunk.x && x < imhd_chunk.x + imhd_chunk.width &&
+				y >= imhd_chunk.y && y < imhd_chunk.y + imhd_chunk.height)
+			{
+				int relativeX = x - imhd_chunk.x;
+				int relativeY = y - imhd_chunk.y;
+
+				relativeY *= imhd_chunk.width;
+
+				int index = relativeX + relativeY;
+
+				index *= 4;
+
+				if (image_info.data[index + 3] != 0)
+				{
+					background_info.data[i] = image_info.data[index];
+					background_info.data[i + 1] = image_info.data[index + 1];
+					background_info.data[i + 2] = image_info.data[index + 2];
+					background_info.data[i + 3] = image_info.data[index + 3];
+				}
+			}
+			else
+			{
+				background_info.data[i + 3] = 55;
+			}
 		}
 
-		cur = 0;
-		for (size_t i = 0; i < image_info.size; i += image_info.channels, cur++)
+		background_info.x = image_info.x;
+		background_info.y = image_info.y;
+		info = background_info;
+
+		return true;
+	}
+	void TabFunctions::GetRoomImageLayer(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
+	{
+		img_info info;
+		if (!GetRoomImageLayerData(fc, offset, info))
+			return;
+
+		AddInfoRow("Type", gcnew System::String("Room Image"), propertyGrid, posX, posY);
+
+		AddInfoRow("Background Width", gcnew System::String(std::to_string(info.width).c_str()), propertyGrid, posX, posY);
+		AddInfoRow("Background Height", gcnew System::String(std::to_string(info.height).c_str()), propertyGrid, posX, posY);
+		AddInfoRow("x", gcnew System::String(std::to_string(info.x).c_str()), propertyGrid, posX, posY);
+		AddInfoRow("y", gcnew System::String(std::to_string(info.y).c_str()), propertyGrid, posX, posY);
+
+		propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
+		propertyGrid->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
+
+		System::Drawing::Bitmap^ bmp = gcnew System::Drawing::Bitmap(static_cast<int>(info.width), static_cast<int>(info.height));
+
+		int cur = 0;
+		for (size_t i = 0; i < info.size; i += info.channels, cur++)
 		{
-			int y = cur / static_cast<int>(image_info.width);
-			int x = cur % static_cast<int>(image_info.width);
-			if (image_info.data[i + 3] != 0)
-				bmp->SetPixel(x + image_info.x, y + image_info.y, System::Drawing::Color::FromArgb(image_info.data[i + 3], image_info.data[i], image_info.data[i + 1], image_info.data[i + 2]));
+			int y = cur / static_cast<int>(info.width);
+			int x = cur % static_cast<int>(info.width);
+			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data[i + 3], info.data[i], info.data[i + 1], info.data[i + 2]));
 		}
 
 		System::Windows::Forms::PictureBox^ pictureBox;

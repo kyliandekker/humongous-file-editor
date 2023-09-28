@@ -20,6 +20,21 @@ namespace HumongousFileEditor
 		size_t size;
 	};
 
+	struct IndexColor
+	{
+		uint8_t index;
+		uint8_t trans_color;
+
+		IndexColor(uint8_t index, uint8_t trans_color)
+		{
+			this->index = index;
+			this->trans_color = trans_color;
+		}
+
+		IndexColor()
+		{}
+	};
+
 	bool BMAPTab::GetDataBMAP(chunk_reader::FileContainer*& fc, chunk_reader::BMAP_Chunk& bmap_chunk, chunk_reader::APAL_Chunk& apal_chunk, uint8_t fill_color, size_t width, size_t height, img_info& info)
 	{
 		if (utils::chunkcmp(bmap_chunk.chunk_id, chunk_reader::BMAP_CHUNK_ID) != 0)
@@ -57,21 +72,6 @@ namespace HumongousFileEditor
 
 		return true;
 	}
-
-	struct IndexColor
-	{
-		uint8_t index;
-		uint8_t trans_color;
-
-		IndexColor(uint8_t index, uint8_t trans_color)
-		{
-			this->index = index;
-			this->trans_color = trans_color;
-		}
-
-		IndexColor()
-		{}
-	};
 
 	bool BMAPTab::GetDataSMAP(chunk_reader::FileContainer*& fc, chunk_reader::OBIM_Chunk& obim_chunk, size_t width, size_t height, chunk_reader::SMAP_Chunk& smap_chunk, chunk_reader::APAL_Chunk& apal_chunk, img_info& info)
 	{
