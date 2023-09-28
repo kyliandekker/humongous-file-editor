@@ -15,39 +15,10 @@ namespace HumongousFileEditor
 	bool SONGTab::ReplaceResource(chunk_reader::FileContainer*& fc, size_t offset)
 	{
 		std::string path;
-		if (SoundTab::ReplaceResource(path))
+		uaudio::wave_reader::DATA_Chunk data_chunk;
+		uaudio::wave_reader::FMT_Chunk fmt_chunk;
+		if (SoundTab::ReplaceResource(path, fmt_chunk, data_chunk))
 		{
-			if (!utils::ends_with(path, ".wav"))
-				path += ".wav";
-
-			size_t wave_size = 0;
-			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::FTell(path.c_str(), wave_size)))
-				return false;
-
-			uaudio::wave_reader::ChunkCollection chunkCollection(malloc(wave_size), wave_size);
-			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::LoadWave(path.c_str(), chunkCollection)))
-				return false;
-
-			uaudio::wave_reader::DATA_Chunk data_chunk;
-			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
-				return false;
-
-			uaudio::wave_reader::FMT_Chunk fmt_chunk;
-			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
-				return false;
-
-			if (fmt_chunk.byteRate != 11025)
-				return false;
-
-			if (fmt_chunk.sampleRate != 11025)
-				return false;
-
-			if (fmt_chunk.bitsPerSample != uaudio::wave_reader::WAVE_BITS_PER_SAMPLE_8)
-				return false;
-
-			if (fmt_chunk.numChannels != uaudio::wave_reader::WAVE_CHANNELS_MONO)
-				return false;
-
 			// Get SGEN chunk first (tells us the position of the SONG).
 			chunk_reader::SGEN_Chunk sgen_chunk;
 			memcpy(&sgen_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::SGEN_Chunk));

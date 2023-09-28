@@ -249,6 +249,8 @@ namespace HumongousFileEditor
 		if (fc == nullptr)
 			return;
 
+		audioSystem.Stop();
+
 		bool success = false;
 		switch (btn->resourceType)
 		{
@@ -260,6 +262,11 @@ namespace HumongousFileEditor
 			case files::ResourceType::Talkie:
 			{
 				success = TALKTab::ReplaceResource(fc, btn->offset);
+				break;
+			}
+			case files::ResourceType::SFX:
+			{
+				success = DIGITab::ReplaceResource(fc, btn->offset);
 				break;
 			}
 		}

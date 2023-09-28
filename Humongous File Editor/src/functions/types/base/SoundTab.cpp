@@ -3,6 +3,7 @@
 #include <wtypes.h>
 #include <uaudio_wave_reader/WaveChunks.h>
 #include <commdlg.h>
+#include <uaudio_wave_reader/WaveReader.h>
 
 #include "lowlevel/utils.h"
 #include "systems/Logger.h"
@@ -11,7 +12,7 @@
 
 namespace HumongousFileEditor
 {
-    bool SoundTab::ReplaceResource(std::string& file_path)
+    bool SoundTab::ReplaceResource(std::string& file_path, uaudio::wave_reader::FMT_Chunk fmt_chunk, uaudio::wave_reader::DATA_Chunk data_chunk)
     {
 		OPENFILENAME ofn;
 		TCHAR sz_file[260] = { 0 };
@@ -28,16 +29,50 @@ namespace HumongousFileEditor
 		ofn.lpstrInitialDir = nullptr;
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
-		bool opened = GetOpenFileNameW(&ofn);
+		if (GetOpenFileNameW(&ofn))
+		{
+			const auto path = new char[wcslen(ofn.lpstrFile) + 1];
+			wsprintfA(path, "%S", ofn.lpstrFile);
 
-		const auto path = new char[wcslen(ofn.lpstrFile) + 1];
-		wsprintfA(path, "%S", ofn.lpstrFile);
+			file_path = std::string(path);
 
-		file_path = std::string(path);
+			if (!utils::ends_with(path, ".wav"))
+				file_path += ".wav";
 
-		delete[] path;
+			delete[] path;
 
-		return opened;
+			size_t wave_size = 0;
+			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::FTell(file_path.c_str(), wave_size)))
+				return false;
+
+			uaudio::wave_reader::ChunkCollection chunkCollection(malloc(wave_size), wave_size);
+			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::LoadWave(file_path.c_str(), chunkCollection)))
+				return false;
+
+			uaudio::wave_reader::DATA_Chunk data_chunk;
+			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
+				return false;
+
+			uaudio::wave_reader::FMT_Chunk fmt_chunk;
+			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
+				return false;
+
+			if (fmt_chunk.byteRate != 11025)
+				return false;
+
+			if (fmt_chunk.sampleRate != 11025)
+				return false;
+
+			if (fmt_chunk.bitsPerSample != uaudio::wave_reader::WAVE_BITS_PER_SAMPLE_8)
+				return false;
+
+			if (fmt_chunk.numChannels != uaudio::wave_reader::WAVE_CHANNELS_MONO)
+				return false;
+
+			return true;
+		}
+
+		return false;
     }
 
 	bool SoundTab::SaveSound(chunk_reader::HSHD_Chunk& hshd_chunk, chunk_reader::SDAT_Chunk& sdat_chunk)
