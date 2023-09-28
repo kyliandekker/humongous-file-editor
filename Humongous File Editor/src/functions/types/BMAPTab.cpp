@@ -45,20 +45,33 @@ namespace HumongousFileEditor
 			newOut.push_back(apal_chunk.data[info.data[i] * 3]);
 			newOut.push_back(apal_chunk.data[info.data[i] * 3 + 1]);
 			newOut.push_back(apal_chunk.data[info.data[i] * 3 + 2]);
-			if (he_transparent)
-			{
-				if (info.data[i] == fill_color)
-					newOut.push_back(0);
-				else
-					newOut.push_back(255);
-			}
+			if (info.data[i] == fill_color)
+				newOut.push_back(0);
+			else
+				newOut.push_back(255);
 		}
 
 		info.size = newOut.size();
 		info.data = newOut;
+		info.channels = 4;
 
 		return true;
 	}
+
+	struct IndexColor
+	{
+		uint8_t index;
+		uint8_t trans_color;
+
+		IndexColor(uint8_t index, uint8_t trans_color)
+		{
+			this->index = index;
+			this->trans_color = trans_color;
+		}
+
+		IndexColor()
+		{}
+	};
 
 	bool BMAPTab::GetDataSMAP(chunk_reader::FileContainer*& fc, chunk_reader::OBIM_Chunk& obim_chunk, size_t width, size_t height, chunk_reader::SMAP_Chunk& smap_chunk, chunk_reader::APAL_Chunk& apal_chunk, img_info& info)
 	{
@@ -89,12 +102,12 @@ namespace HumongousFileEditor
 			strips.push_back({ utils::add(smap_chunk.data, index[i].start), index[i].end - index[i].start });
 
 		size_t total_size = 0;
-		std::vector< std::vector<std::vector<uint8_t>>> data_blocks;
+		std::vector< std::vector<std::vector<IndexColor>>> data_blocks;
 		for (size_t i = 0; i < strips.size(); i++)
 		{
 			strip& strip = strips[i];
 
-			std::vector<std::vector<uint8_t>> data_new_block;
+			std::vector<std::vector<IndexColor>> data_new_block;
 
 			uint8_t code = strip.data[0];
 
@@ -103,10 +116,6 @@ namespace HumongousFileEditor
 				horizontal = false;
 
 			bool he_transparent = code >= 0x22 && code <= 0x30 || code >= 0x54 && code <= 0x80 || code >= 0x8F;
-
-			uint8_t transparency = 0;
-			if (he_transparent)
-				transparency = 255;
 
 			int palen = code % 10;
 
@@ -154,10 +163,10 @@ namespace HumongousFileEditor
 
 			for (size_t k = 0; k < height; k++)
 			{
-				std::vector<uint8_t> new_strip;
+				std::vector<IndexColor> new_strip;
 				for (size_t j = 0; j < strip_width; j++)
 				{
-					new_strip.push_back(strip_info.data[(k * strip_width) + j]);
+					new_strip.push_back({ strip_info.data[(k * strip_width) + j], color });
 				}
 				data_new_block.push_back(new_strip);
 			}
@@ -165,11 +174,11 @@ namespace HumongousFileEditor
 			data_blocks.push_back(data_new_block);
 		}
 
-		std::vector<std::vector<uint8_t>> finals;
+		std::vector<std::vector<IndexColor>> finals;
 
 		for (size_t i = 0; i < data_blocks[0].size(); i++)
 		{
-			std::vector<uint8_t> arr;
+			std::vector<IndexColor> arr;
 			for (size_t j = 0; j < data_blocks.size(); j++)
 			{
 				for (size_t h = 0; h < strip_width; h++)
@@ -180,11 +189,11 @@ namespace HumongousFileEditor
 			finals.push_back(arr);
 		}
 
-		std::vector<uint8_t> final_data = std::vector<uint8_t>(total_size);
+		std::vector<IndexColor> final_data = std::vector<IndexColor>(total_size);
 		int pos = 0;
 		for (size_t i = 0; i < finals.size(); i++)
 		{
-			std::vector<uint8_t>& arr = finals[i];
+			std::vector<IndexColor>& arr = finals[i];
 			for (size_t j = 0; j < arr.size(); j++)
 			{
 				final_data[pos] = finals[i][j];
@@ -194,16 +203,19 @@ namespace HumongousFileEditor
 
 		info.width = width;
 		info.height = height;
-		info.data = final_data;
 		info.size = total_size;
 		info.channels = 4;
 
 		std::vector<uint8_t> newOut;
 		for (size_t i = 0; i < info.size; i++)
 		{
-			newOut.push_back(apal_chunk.data[info.data[i] * 3]);
-			newOut.push_back(apal_chunk.data[info.data[i] * 3 + 1]);
-			newOut.push_back(apal_chunk.data[info.data[i] * 3 + 2]);
+			newOut.push_back(apal_chunk.data[final_data[i].index * 3]);
+			newOut.push_back(apal_chunk.data[final_data[i].index * 3 + 1]);
+			newOut.push_back(apal_chunk.data[final_data[i].index * 3 + 2]);
+			if (final_data[i].index == final_data[i].trans_color)
+				newOut.push_back(0);
+			else
+				newOut.push_back(255);
 		}
 
 		info.size = newOut.size();

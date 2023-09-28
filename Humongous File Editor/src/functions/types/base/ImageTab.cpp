@@ -38,10 +38,6 @@ namespace HumongousFileEditor
 		info.width = width;
 		info.height = height;
 
-		info.channels = 3;
-		if (transparent)
-			info.channels = 4;
-
 		unsigned char color = fill_color;
 
 		size_t num_pixels = info.width * info.height;

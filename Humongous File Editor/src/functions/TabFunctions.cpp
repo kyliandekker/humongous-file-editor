@@ -773,10 +773,7 @@ namespace HumongousFileEditor
 		{
 			int y = cur / static_cast<int>(info.width);
 			int x = cur % static_cast<int>(info.width);
-			if (info.channels < 4)
-				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, info.data[i], info.data[i + 1], info.data[i + 2]));
-			else
-				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data[i + 3], info.data[i], info.data[i + 1], info.data[i + 2]));
+			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data[i + 3], info.data[i], info.data[i + 1], info.data[i + 2]));
 		}
 
 		System::Windows::Forms::PictureBox^ pictureBox;
@@ -841,10 +838,7 @@ namespace HumongousFileEditor
 		{
 			int y = cur / static_cast<int>(background_info.width);
 			int x = cur % static_cast<int>(background_info.width);
-			if (background_info.channels < 4)
-				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(55, background_info.data[i], background_info.data[i + 1], background_info.data[i + 2]));
-			else
-				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(55, background_info.data[i], background_info.data[i + 1], background_info.data[i + 2]));
+			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(55, background_info.data[i], background_info.data[i + 1], background_info.data[i + 2]));
 		}
 
 		cur = 0;
@@ -852,10 +846,8 @@ namespace HumongousFileEditor
 		{
 			int y = cur / static_cast<int>(image_info.width);
 			int x = cur % static_cast<int>(image_info.width);
-			if (image_info.channels < 4)
-				bmp->SetPixel(x + image_info.x, y + image_info.y, System::Drawing::Color::FromArgb(255, image_info.data[i], image_info.data[i + 1], image_info.data[i + 2]));
-			else
-				bmp->SetPixel(x + image_info.x, y + image_info.y, System::Drawing::Color::FromArgb(255, image_info.data[i], image_info.data[i + 1], image_info.data[i + 2]));
+			if (image_info.data[i + 3] != 0)
+				bmp->SetPixel(x + image_info.x, y + image_info.y, System::Drawing::Color::FromArgb(image_info.data[i + 3], image_info.data[i], image_info.data[i + 1], image_info.data[i + 2]));
 		}
 
 		System::Windows::Forms::PictureBox^ pictureBox;
