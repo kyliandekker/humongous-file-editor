@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "file/FileType.h"
+#include "file/ResourceType.h"
 
 namespace HumongousFileEditor
 {
@@ -11,7 +12,8 @@ namespace HumongousFileEditor
 	{
 	public:
 		size_t offset = 0;
-		size_t lflf = 0;
+		bool special = false;
 		files::FileType fileType;
+		files::ResourceType resourceType;
 	};
 }

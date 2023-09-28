@@ -23,7 +23,7 @@ namespace HumongousFileEditor
 		class ChunkFunctions
 		{
 		public:
-			static void SetProgressBar(System::Windows::Forms::ToolStripProgressBar^ progressBar, size_t value);
+			static void SetProgressBar(System::Windows::Forms::ToolStripProgressBar^ progressBar, size_t fvalue);
 		};
 	};
 };

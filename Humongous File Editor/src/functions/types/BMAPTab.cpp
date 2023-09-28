@@ -22,6 +22,12 @@ namespace HumongousFileEditor
 
 	bool BMAPTab::GetDataBMAP(chunk_reader::FileContainer*& fc, chunk_reader::BMAP_Chunk& bmap_chunk, chunk_reader::APAL_Chunk& apal_chunk, uint8_t fill_color, size_t width, size_t height, img_info& info)
 	{
+		if (utils::chunkcmp(bmap_chunk.chunk_id, chunk_reader::BMAP_CHUNK_ID) != 0)
+			return false;
+
+		if (utils::chunkcmp(apal_chunk.chunk_id, chunk_reader::APAL_CHUNK_ID) != 0)
+			return false;
+
 		size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
 		size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
 
@@ -97,7 +103,6 @@ namespace HumongousFileEditor
 				horizontal = false;
 
 			bool he_transparent = code >= 0x22 && code <= 0x30 || code >= 0x54 && code <= 0x80 || code >= 0x8F;
-
 
 			uint8_t transparency = 0;
 			if (he_transparent)
@@ -199,7 +204,6 @@ namespace HumongousFileEditor
 			newOut.push_back(apal_chunk.data[info.data[i] * 3]);
 			newOut.push_back(apal_chunk.data[info.data[i] * 3 + 1]);
 			newOut.push_back(apal_chunk.data[info.data[i] * 3 + 2]);
-			newOut.push_back(255);
 		}
 
 		info.size = newOut.size();

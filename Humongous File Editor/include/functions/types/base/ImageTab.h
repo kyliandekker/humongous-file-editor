@@ -12,6 +12,7 @@ namespace HumongousFileEditor
 		uint16_t channels = 0;
 		size_t size = 0;
 		size_t width = 0, height = 0;
+		size_t x = 0, y = 0;
 	};
 
 	class ImageTab

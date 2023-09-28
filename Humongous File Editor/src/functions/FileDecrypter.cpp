@@ -59,9 +59,7 @@ namespace HumongousFileEditor
 					const auto save_path = new char[wcslen(ofn.lpstrFile) + 1];
 					wsprintfA(save_path, "%S", ofn.lpstrFile);
 
-					files::FileType ft = files::getFileTypeByExtension(path);
-
-					std::string extension = files::getExtensionByFileType(ft);
+					std::string extension = files::getExtensionByFileType(fc.fileType);
 
 					std::string save_path_s = std::string(save_path);
 					
