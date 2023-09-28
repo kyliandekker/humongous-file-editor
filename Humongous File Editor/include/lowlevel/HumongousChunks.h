@@ -102,9 +102,50 @@ namespace HumongousFileEditor
 			RMIH_CHUNK() = default;
 		};
 
+		// Global script apparently.
 		struct SCRP_Chunk : HumongousHeader
 		{
 			SCRP_Chunk() = default;
+
+			unsigned char* data = nullptr;
+		};
+
+		// Global script apparently.
+		struct ENCD_Chunk : HumongousHeader
+		{
+			ENCD_Chunk() = default;
+
+			unsigned char* data = nullptr;
+		};
+
+		// Global script apparently.
+		struct EXCD_Chunk : HumongousHeader
+		{
+			EXCD_Chunk() = default;
+
+			unsigned char* data = nullptr;
+		};
+
+		// Local script apparently. For versions < 7.
+		struct LSCR_Chunk : HumongousHeader
+		{
+			LSCR_Chunk() = default;
+
+			unsigned char* data = nullptr;
+		};
+
+		// Local script apparently.
+		struct LSC2_Chunk : HumongousHeader
+		{
+			LSC2_Chunk() = default;
+
+			unsigned char* data = nullptr;
+		};
+
+		// Verb script apparently.
+		struct VERB_Chunk : HumongousHeader
+		{
+			VERB_Chunk() = default;
 
 			unsigned char* data = nullptr;
 		};
@@ -154,6 +195,7 @@ namespace HumongousFileEditor
 		{
 			TRNS_Chunk() = default;
 
+			// This seems to be the room transparency.
 			uint8_t trns_val = 0;
 		};
 
@@ -183,6 +225,27 @@ namespace HumongousFileEditor
 		struct OBIM_Chunk : HumongousHeader
 		{
 			OBIM_Chunk() = default;
+		};
+
+		struct DLFL_Chunk : HumongousHeader
+		{
+			DLFL_Chunk() = default;
+			uint16_t num_lflfs = 0;
+
+			// The rest is the position of every RMIM in every LFLF. These positions are all 32bit unsigned integers.
+			unsigned char* data = nullptr;
+		};
+
+		struct DIRN_Chunk : HumongousHeader
+		{
+			DIRN_Chunk() = default;
+			uint16_t num_sound_files = 0;
+
+			// The rest consists of:
+			// Indexes of the LFLF. These indexes are all 8bit unsigned integers.
+			// Afterwards, the byte position from the RMIM of the LFLF. These positions are all 32bit unsigned integers.
+			unsigned char* data = nullptr;
+			// Quick note: First two seem to be 0,0 in this case. No idea why.
 		};
 #pragma pack(pop)
 	}

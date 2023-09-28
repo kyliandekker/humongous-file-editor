@@ -14,10 +14,10 @@ namespace HumongousFileEditor
 			Song,
 			RoomBackground,
 			RoomImage,
-			Script,
+			Local_Script,
+			Global_Script,
+			Verb_Script,
 			Room
 		};
-
-		ResourceType GetResourceTypeByChunkName(unsigned char* chunk_id);
 	}
 }

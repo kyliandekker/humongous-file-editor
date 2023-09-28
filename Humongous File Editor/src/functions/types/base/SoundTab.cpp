@@ -28,7 +28,16 @@ namespace HumongousFileEditor
 		ofn.lpstrInitialDir = nullptr;
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
-		return GetOpenFileNameW(&ofn);
+		bool opened = GetOpenFileNameW(&ofn);
+
+		const auto path = new char[wcslen(ofn.lpstrFile) + 1];
+		wsprintfA(path, "%S", ofn.lpstrFile);
+
+		file_path = std::string(path);
+
+		delete[] path;
+
+		return opened;
     }
 
 	bool SoundTab::SaveSound(chunk_reader::HSHD_Chunk& hshd_chunk, chunk_reader::SDAT_Chunk& sdat_chunk)

@@ -41,9 +41,17 @@ namespace HumongousFileEditor
 				{
 					return "Room Images";
 				}
-				case files::ResourceType::Script:
+				case files::ResourceType::Local_Script:
 				{
-					return "Scripts";
+					return "Local Scripts";
+				}
+				case files::ResourceType::Global_Script:
+				{
+					return "Global Scripts";
+				}
+				case files::ResourceType::Verb_Script:
+				{
+					return "Verb Scripts";
 				}
 			}
 			return "";
@@ -179,7 +187,12 @@ namespace HumongousFileEditor
 			{
 				{ TALK_CHUNK_ID, files::ResourceType::Talkie },
 				{ SGEN_CHUNK_ID, files::ResourceType::Song },
-				{ SCRP_CHUNK_ID, files::ResourceType::Script },
+				{ SCRP_CHUNK_ID, files::ResourceType::Global_Script },
+				{ LSCR_CHUNK_ID, files::ResourceType::Local_Script },
+				{ LSC2_CHUNK_ID, files::ResourceType::Local_Script },
+				{ VERB_CHUNK_ID, files::ResourceType::Verb_Script },
+				{ ENCD_CHUNK_ID, files::ResourceType::Global_Script },
+				{ EXCD_CHUNK_ID, files::ResourceType::Global_Script },
 				{ IM00_CHUNK_ID, files::ResourceType::RoomBackground },
 				{ IM01_CHUNK_ID, files::ResourceType::RoomImage },
 				{ IM02_CHUNK_ID, files::ResourceType::RoomImage },
@@ -308,6 +321,7 @@ namespace HumongousFileEditor
 				node = (gcnew HumongousNode);
 				node->offset = offsets[i].offset;
 				node->fileType = fc->fileType;
+				node->resourceType = files::ResourceType::Talkie;
 				node->Name = gcnew System::String(offsets[i].name.c_str());
 				node->Text = gcnew System::String(offsets[i].name.c_str());
 				categoryNode->Nodes->Add(node);
@@ -356,6 +370,7 @@ namespace HumongousFileEditor
 				node = (gcnew HumongousNode);
 				node->offset = offsets[i].offset;
 				node->fileType = fc->fileType;
+				node->resourceType = files::ResourceType::Song;
 				node->Name = gcnew System::String(offsets[i].name.c_str()) + gcnew System::String(std::to_string(i).c_str());
 				node->Text = gcnew System::String(offsets[i].name.c_str());
 				categoryNode->Nodes->Add(node);

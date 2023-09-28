@@ -89,9 +89,7 @@ namespace HumongousFileEditor
 		if (fc == nullptr)
 			return;
 
-		chunk_reader::ChunkInfo chunk = fc->GetChunkInfo(btn->offset);
-		files::ResourceType type = files::GetResourceTypeByChunkName(chunk.chunk_id);
-		switch (type)
+		switch (btn->resourceType)
 		{
 			case files::ResourceType::Song:
 			case files::ResourceType::Talkie:
@@ -121,7 +119,9 @@ namespace HumongousFileEditor
 				}
 				break;
 			}
-			case files::ResourceType::Script:
+			case files::ResourceType::Local_Script:
+			case files::ResourceType::Global_Script:
+			case files::ResourceType::Verb_Script:
 			{
 				break;
 			}
@@ -237,146 +237,40 @@ namespace HumongousFileEditor
 			}
 		}
 	}
-	// Callback for the export button.
-	System::Void TabFunctions::ReplaceSongButton_Click(System::Object^ sender, System::EventArgs^ e)
+	System::Void TabFunctions::ReplaceButton_Click(System::Object^ sender, System::EventArgs^ e)
 	{
-		//HumongousButton^ btn = (HumongousButton^)sender;
+		HumongousButton^ btn = (HumongousButton^)sender;
 
-		//chunk_reader::FileContainer* fc = files::FILES.getFile(btn->fileType);
+		chunk_reader::FileContainer* fc = files::FILES.getFile(btn->fileType);
 
-		//if (fc == nullptr)
-		//	return;
+		if (fc == nullptr)
+			return;
 
-		//OPENFILENAME ofn;
-		//TCHAR sz_file[260] = { 0 };
+		bool success = false;
+		switch (btn->resourceType)
+		{
+			case files::ResourceType::Song:
+			{
+				success = SONGTab::ReplaceResource(fc, btn->offset);
+				break;
+			}
+		}
 
-		//ZeroMemory(&ofn, sizeof(ofn));
-		//ofn.lStructSize = sizeof(ofn);
-		//ofn.lpstrFile = sz_file;
-		//ofn.nMaxFile = sizeof(sz_file);
-		//ofn.lpstrFilter = L"\
-		//				WAVE file (*.wav)\
-		//				\0*.WAV;*.wav\0";
-		//ofn.lpstrFileTitle = nullptr;
-		//ofn.nMaxFileTitle = 0;
-		//ofn.lpstrInitialDir = nullptr;
-		//ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+		if (!success)
+		{
+			System::Windows::Forms::MessageBox::Show("Could not replace resource.", "Replacing failed", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+			return;
+		}
 
-		//if (GetOpenFileNameW(&ofn))
-		//{
-		//	const auto path = new char[wcslen(ofn.lpstrFile) + 1];
-		//	wsprintfA(path, "%S", ofn.lpstrFile);
+		HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+		form->entryView->Nodes->Clear();
+		form->tabControl1->Controls->Clear();
 
-		//	std::string save_path_s = std::string(path);
+		HumongousFileEditor::chunk_reader::ResourceGatherer rg;
+		rg.ReadHE4(fc);
 
-		//	if (!utils::ends_with(save_path_s, ".wav"))
-		//		save_path_s += ".wav";
-
-		//	size_t wave_size = 0;
-		//	if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::FTell(save_path_s.c_str(), wave_size)))
-		//		return;
-
-		//	uaudio::wave_reader::ChunkCollection chunkCollection(malloc(wave_size), wave_size);
-		//	if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::LoadWave(save_path_s.c_str(), chunkCollection)))
-		//		return;
-
-		//	uaudio::wave_reader::DATA_Chunk data_chunk;
-		//	if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
-		//		return;
-
-		//	uaudio::wave_reader::FMT_Chunk fmt_chunk;
-		//	if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
-		//		return;
-
-		//	if (fmt_chunk.byteRate != 11025)
-		//		return;
-
-		//	if (fmt_chunk.sampleRate != 11025)
-		//		return;
-
-		//	if (fmt_chunk.bitsPerSample != uaudio::wave_reader::WAVE_BITS_PER_SAMPLE_8)
-		//		return;
-
-		//	if (fmt_chunk.numChannels != uaudio::wave_reader::WAVE_CHANNELS_MONO)
-		//		return;
-
-		//	// Get SGEN chunk first (tells us the position of the SONG).
-		//	chunk_reader::SGEN_Chunk sgen_chunk;
-		//	memcpy(&sgen_chunk, utils::add(fc->data, btn->offset), sizeof(chunk_reader::SGEN_Chunk));
-
-		//	// Get DIGI chunk for the raw audio data.
-		//	size_t digi_offset = sgen_chunk.song_pos;
-
-		//	chunk_reader::DIGI_Chunk digi_chunk;
-		//	memcpy(&digi_chunk, utils::add(fc->data, digi_offset), sizeof(chunk_reader::DIGI_Chunk));
-
-		//	chunk_reader::HSHD_Chunk hshd_chunk;
-
-		//	size_t hshd_offset = GetOffsetChunk(fc, sgen_chunk.song_pos, { chunk_reader::HSHD_CHUNK_ID });
-		//	if (hshd_offset == -1)
-		//		return;
-
-		//	memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
-
-		//	size_t sdat_offset = GetOffsetChunk(fc, sgen_chunk.song_pos, { chunk_reader::SDAT_CHUNK_ID });
-		//	if (hshd_offset == -1)
-		//		return;
-		//	chunk_reader::SDAT_Chunk sdat_chunk;
-		//	size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
-		//	memcpy(&sdat_chunk, utils::add(fc->data, sdat_offset), header_size);
-		//	sdat_chunk.SetChunkSize(data_chunk.chunkSize + header_size);
-
-		//	digi_chunk.SetChunkSize(
-		//		sizeof(chunk_reader::HumongousHeader) + // DIGI chunk itself.
-		//		hshd_chunk.ChunkSize() + // HSHD chunk.
-		//		sdat_chunk.ChunkSize() // SDAT chunk.
-		//	);
-
-		//	unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(digi_chunk.ChunkSize()));
-		//	memcpy(new_data, &digi_chunk, header_size);
-		//	memcpy(utils::add(new_data, sizeof(digi_chunk)), &hshd_chunk, hshd_chunk.ChunkSize());
-		//	memcpy(utils::add(new_data, sizeof(digi_chunk) + hshd_chunk.ChunkSize()), &sdat_chunk, sizeof(chunk_reader::HumongousHeader));
-		//	memcpy(utils::add(new_data, sizeof(digi_chunk) + hshd_chunk.ChunkSize() + sizeof(chunk_reader::HumongousHeader)), data_chunk.data, data_chunk.chunkSize);
-
-		//	fc->Replace(digi_offset, new_data, digi_chunk.ChunkSize());
-
-		//	uint32_t dif_size = digi_chunk.ChunkSize() - sgen_chunk.song_size;
-
-		//	HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
-
-		//	chunk_reader::ChunkInfo next_chunk = fc->GetChunkInfo(sizeof(chunk_reader::HumongousHeader));
-		//	while (next_chunk.offset < fc->size)
-		//	{
-		//		if (utils::chunkcmp(next_chunk.chunk_id, chunk_reader::SGEN_CHUNK_ID) == 0)
-		//		{
-		//			if (next_chunk.offset >= btn->offset)
-		//			{
-		//				chunk_reader::SGEN_Chunk new_sgen_chunk;
-		//				memcpy(&new_sgen_chunk, utils::add(fc->data, next_chunk.offset), sizeof(chunk_reader::SGEN_Chunk));
-
-		//				if (next_chunk.offset == btn->offset)
-		//					new_sgen_chunk.song_size = digi_chunk.ChunkSize();
-		//				else
-		//					new_sgen_chunk.song_pos += dif_size;
-
-		//				fc->Replace(next_chunk.offset, reinterpret_cast<unsigned char*>(&new_sgen_chunk), sizeof(chunk_reader::SGEN_Chunk));
-		//			}
-		//		}
-		//		next_chunk = fc->GetNextChunk(next_chunk.offset);
-
-		//		setProgressBar(form->toolProgressBar, 100.0f / fc->size * next_chunk.offset);
-		//	}
-		//	
-		//	form->entryView->Nodes->Clear();
-
-		//	HumongousFileEditor::chunk_reader::ResourceGatherer rg;
-		//	rg.ReadHE4(fc);
-
-		//	free(new_data);
-
-		//	System::Windows::Forms::MessageBox::Show("Successfully replaced resource.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
-		//	form->toolProgressBar->Value = 0;
-		//}
+		System::Windows::Forms::MessageBox::Show("Successfully replaced resource.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+		form->toolProgressBar->Value = 0;
 	}
 	void TabFunctions::AddTab(HumongousNode^ node, System::Windows::Forms::TabControl^ tabControl)
 	{
@@ -455,9 +349,19 @@ namespace HumongousFileEditor
 				GetDigi(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
 				break;
 			}
-			case files::ResourceType::Script:
+			case files::ResourceType::Global_Script:
 			{
-				GetScrp(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				GetGlobalScript(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				break;
+			}
+			case files::ResourceType::Local_Script:
+			{
+				//GetGlobalScript(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				break;
+			}
+			case files::ResourceType::Verb_Script:
+			{
+				//GetGlobalScript(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
 				break;
 			}
 			case files::ResourceType::RoomBackground:
@@ -481,6 +385,23 @@ namespace HumongousFileEditor
 			default:
 				return;
 		}
+
+		HumongousButton^ replaceButton;
+		replaceButton = (gcnew HumongousButton());
+
+		replaceButton->Location = System::Drawing::Point(232, 53);
+		replaceButton->Name = gcnew System::String("ReplaceSong_") + gcnew System::String(newTab->Name);
+		replaceButton->Size = System::Drawing::Size(75, 23);
+		replaceButton->TabIndex = 2;
+		replaceButton->Text = L"Replace";
+		replaceButton->offset = node->offset;
+		replaceButton->fileType = fc->fileType;
+		replaceButton->resourceType = node->resourceType;
+		replaceButton->UseVisualStyleBackColor = true;
+		replaceButton->Click += gcnew System::EventHandler(this, &TabFunctions::ReplaceButton_Click);
+
+		replaceButton->ResumeLayout(false);
+		actionPanel->Controls->Add(replaceButton);
 
 		// Construct export button.
 		HumongousButton^ exportButton;
@@ -546,32 +467,34 @@ namespace HumongousFileEditor
 		AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str()), propertyGrid, posX, posY);
 
 		AddSoundButtons(tab, offset, fc->fileType, panel);
-
-		HumongousButton^ replaceButton;
-		replaceButton = (gcnew HumongousButton());
-
-		replaceButton->Location = System::Drawing::Point(232, 53);
-		replaceButton->Name = gcnew System::String("ReplaceSong_") + gcnew System::String(tab->Name);
-		replaceButton->Size = System::Drawing::Size(75, 23);
-		replaceButton->TabIndex = 2;
-		replaceButton->Text = L"Replace";
-		replaceButton->offset = offset;
-		replaceButton->fileType = fc->fileType;
-		replaceButton->UseVisualStyleBackColor = true;
-		replaceButton->Click += gcnew System::EventHandler(this, &TabFunctions::ReplaceSongButton_Click);
-
-		replaceButton->ResumeLayout(false);
-		panel->Controls->Add(replaceButton);
 	}
-	void TabFunctions::GetScrp(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetGlobalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
 		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
+
+		chunk_reader::ChunkInfo chunkInfo = fc->GetChunkInfo(offset);
+		if (utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::SCRP_CHUNK_ID) == 0 ||
+			utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::ENCD_CHUNK_ID) == 0 ||
+			utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::EXCD_CHUNK_ID) == 0
+			)
+			AddInfoRow("Script Type", gcnew System::String("Global"), propertyGrid, posX, posY);
+		else if (
+			utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::LSCR_CHUNK_ID) == 0 ||
+			utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::LSC2_CHUNK_ID) == 0
+			)
+			AddInfoRow("Script Type", gcnew System::String("Local"), propertyGrid, posX, posY);
+		else if (
+			utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::VERB_CHUNK_ID) == 0
+			)
+			AddInfoRow("Script Type", gcnew System::String("Verb"), propertyGrid, posX, posY);
 
 		chunk_reader::SCRP_Chunk scrp_chunk;
 		memcpy(&scrp_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::SCRP_Chunk) - sizeof(scrp_chunk.data));
 		scrp_chunk.data = utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader));
 
-		std::string t = std::string(reinterpret_cast<char*>(scrp_chunk.data));
+		std::string t;
+		for (size_t i = 0; i < scrp_chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader); i++)
+			t += scrp_chunk.data[i];
 		AddInfoRow("Script", gcnew System::String(t.c_str()), propertyGrid, posX, posY);
 	}
 	bool TabFunctions::GetRoomBackgroundData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
