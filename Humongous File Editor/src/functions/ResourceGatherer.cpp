@@ -278,7 +278,7 @@ namespace HumongousFileEditor
 
 					lflf++;
 				}
-				ChunkFunctions::SetProgressBar(form->toolProgressBar, 100.0f / fc->size* header.offset);
+				ChunkFunctions::SetProgressBar(form->toolProgressBar, static_cast<double>(100.0f / fc->size* header.offset));
 
 				header = a->GetNextChunk(header.offset);
 			}
@@ -314,7 +314,7 @@ namespace HumongousFileEditor
 				}
 				header = fc->GetNextChunk(header.offset);
 
-				ChunkFunctions::SetProgressBar(form->toolProgressBar, 100.0f / fc->size * header.offset);
+				ChunkFunctions::SetProgressBar(form->toolProgressBar, static_cast<double>(100.0f / fc->size * header.offset));
 			}
 
 			System::Windows::Forms::TreeNode^ baseNode = form->GetBaseNode(gcnew System::String("HE2"));
@@ -363,7 +363,7 @@ namespace HumongousFileEditor
 				}
 				header = fc->GetNextChunk(header.offset);
 
-				ChunkFunctions::SetProgressBar(form->toolProgressBar, 100.0f / fc->size * header.offset);
+				ChunkFunctions::SetProgressBar(form->toolProgressBar, static_cast<double>(100.0f / fc->size * header.offset));
 			}
 
 			System::Windows::Forms::TreeNode^ baseNode = form->GetBaseNode(gcnew System::String("HE4"));

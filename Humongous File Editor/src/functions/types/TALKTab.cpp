@@ -77,7 +77,7 @@ namespace HumongousFileEditor
 			chunk_reader::SDAT_Chunk sdat_chunk;
 			size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
 			memcpy(&sdat_chunk, utils::add(fc->data, sdat_offset), header_size);
-			sdat_chunk.SetChunkSize(data_chunk.chunkSize + header_size);
+			sdat_chunk.SetChunkSize(data_chunk.chunkSize + static_cast<uint32_t>(header_size));
 
 			talk_chunk.SetChunkSize(
 				sizeof(chunk_reader::HumongousHeader) + // DIGI chunk itself.
