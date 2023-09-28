@@ -261,11 +261,13 @@ namespace HumongousFileEditor
 			}
 			case files::ResourceType::Talkie:
 			{
+				System::Windows::Forms::MessageBox::Show("WARNING: Replacing voice files does not fully work yet. It will only work in the program itself, but will cause the game to crash.", "WARNING", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Warning);
 				success = TALKTab::ReplaceResource(fc, btn->offset);
 				break;
 			}
 			case files::ResourceType::SFX:
 			{
+				System::Windows::Forms::MessageBox::Show("WARNING: Replacing sound effects does not fully work yet. It will only work in the program itself, but will cause the game to crash.", "WARNING", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Warning);
 				success = DIGITab::ReplaceResource(fc, btn->offset);
 				break;
 			}
@@ -273,7 +275,7 @@ namespace HumongousFileEditor
 
 		if (!success)
 		{
-			System::Windows::Forms::MessageBox::Show("Could not replace resource.", "Replacing failed", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+			System::Windows::Forms::MessageBox::Show("Could not replace resource.", "Replacing failed", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
 			return;
 		}
 
