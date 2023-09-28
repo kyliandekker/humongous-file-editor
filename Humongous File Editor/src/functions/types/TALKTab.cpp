@@ -3,6 +3,7 @@
 #include <uaudio_wave_reader/WaveReader.h>
 #include <uaudio_wave_reader/UAUDIO_WAVE_READER_RESULT.h>
 #include <uaudio_wave_reader/WaveChunks.h>
+#include <uaudio_wave_reader/ChunkCollection.h>
 
 #include "lowlevel/HumongousChunkDefinitions.h"
 #include "lowlevel/HumongousChunks.h"
@@ -76,9 +77,14 @@ namespace HumongousFileEditor
 
 			chunk_reader::SBNG_Chunk sbng_chunk;
 			if (sbng_offset == -1)
+			{
 				sbng_chunk.SetChunkSize(0);
+			}
 			else
-				memcpy(&sbng_chunk, utils::add(fc->data, sbng_offset), sizeof(chunk_reader::SBNG_Chunk));
+			{
+				memcpy(&sbng_chunk, utils::add(fc->data, sbng_offset), sizeof(chunk_reader::HumongousHeader));
+				sbng_chunk.data = utils::add(fc->data, sbng_offset + sizeof(chunk_reader::HumongousHeader)), sbng_chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader);
+			}
 
 			chunk_reader::HSHD_Chunk hshd_chunk;
 			memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
@@ -96,14 +102,22 @@ namespace HumongousFileEditor
 			);
 
 			unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(talk_chunk.ChunkSize()));
+			size_t pos = 0;
 			memcpy(new_data, &talk_chunk, header_size);
-			memcpy(utils::add(new_data, sizeof(talk_chunk)), &hshd_chunk, hshd_chunk.ChunkSize());
+			pos += sizeof(talk_chunk);
+			memcpy(utils::add(new_data, pos), &hshd_chunk, hshd_chunk.ChunkSize());
+			pos += hshd_chunk.ChunkSize();
 			if (sbng_chunk.ChunkSize() > 0)
 			{
-				memcpy(utils::add(new_data, sizeof(talk_chunk) + hshd_chunk.ChunkSize()), &sbng_chunk, sbng_chunk.ChunkSize());
+				memcpy(utils::add(new_data, pos), &sbng_chunk, sizeof(chunk_reader::HumongousHeader));
+				pos += sizeof(chunk_reader::HumongousHeader);
+				memcpy(utils::add(new_data, pos), sbng_chunk.data, sbng_chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader));
+				pos += sbng_chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader);
 			}
-			memcpy(utils::add(new_data, sizeof(talk_chunk) + hshd_chunk.ChunkSize() + sbng_chunk.ChunkSize()), &sdat_chunk, sizeof(chunk_reader::HumongousHeader));
-			memcpy(utils::add(new_data, sizeof(talk_chunk) + hshd_chunk.ChunkSize() + sbng_chunk.ChunkSize() + sizeof(chunk_reader::HumongousHeader)), data_chunk.data, data_chunk.chunkSize);
+			memcpy(utils::add(new_data, pos), &sdat_chunk, sizeof(chunk_reader::HumongousHeader));
+			pos += sizeof(chunk_reader::HumongousHeader);
+			memcpy(utils::add(new_data, pos), data_chunk.data, data_chunk.chunkSize);
+			pos += data_chunk.chunkSize;
 
 			fc->Replace(talk_offset, new_data, talk_chunk.ChunkSize());
 

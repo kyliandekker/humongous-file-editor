@@ -83,7 +83,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>Main</EntryPointSymbol>
       <AdditionalLibraryDirectories>$(ProjectDir)external\uaudio_wave_reader\$(PlatformShortname)</AdditionalLibraryDirectories>
@@ -97,7 +97,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>Main</EntryPointSymbol>
       <AdditionalLibraryDirectories>$(ProjectDir)external\uaudio_wave_reader\$(PlatformShortname)</AdditionalLibraryDirectories>
@@ -111,7 +111,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>Main</EntryPointSymbol>
       <AdditionalLibraryDirectories>$(ProjectDir)external\uaudio_wave_reader\$(PlatformShortname)</AdditionalLibraryDirectories>
@@ -125,7 +125,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>Main</EntryPointSymbol>
       <AdditionalLibraryDirectories>$(ProjectDir)external\uaudio_wave_reader\$(PlatformShortname)</AdditionalLibraryDirectories>

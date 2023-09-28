@@ -1,9 +1,10 @@
 #include "functions/types/base/SoundTab.h"
 
 #include <wtypes.h>
-#include <uaudio_wave_reader/WaveChunks.h>
 #include <commdlg.h>
+#include <uaudio_wave_reader/WaveChunks.h>
 #include <uaudio_wave_reader/WaveReader.h>
+#include <uaudio_wave_reader/ChunkCollection.h>
 
 #include "lowlevel/utils.h"
 #include "systems/Logger.h"

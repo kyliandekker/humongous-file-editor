@@ -16,6 +16,8 @@ namespace HumongousFileEditor
 		{
 		public:
 			chunk_reader::FileContainer* Read(const char* path);
+			bool SaveAs();
+			bool Save();
 			chunk_reader::FileContainer* getFile(FileType fileType);
 
 			chunk_reader::FileContainer* he2 = nullptr;
