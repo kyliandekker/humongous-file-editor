@@ -176,7 +176,8 @@ namespace HumongousFileEditor
 		{
 			APAL_Chunk() = default;
 
-			unsigned char* data = nullptr;
+			// Color palette with 256 colors * rgb.
+			unsigned char data[256 * 3];
 		};
 
 		struct OBIM_Chunk : HumongousHeader

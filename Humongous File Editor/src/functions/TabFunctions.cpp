@@ -619,10 +619,9 @@ namespace HumongousFileEditor
 			return false;
 
 		chunk_reader::APAL_Chunk apal_chunk;
-		header_size = sizeof(chunk_reader::APAL_Chunk) - sizeof(apal_chunk.data);
+		header_size = sizeof(chunk_reader::APAL_Chunk);
 		memcpy(&apal_chunk, utils::add(fc->data, apal_offset), header_size);
 		size_t apal_size = apal_chunk.ChunkSize() - header_size;
-		apal_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, apal_offset + header_size));
 
 		return BMAPTab::GetDataBMAP(fc, bmap_chunk, apal_chunk, bmap_chunk.data[0], rmhd_chunk.width, rmhd_chunk.height, info);
 	}
@@ -725,10 +724,9 @@ namespace HumongousFileEditor
 			return false;
 
 		chunk_reader::APAL_Chunk apal_chunk;
-		size_t header_size = sizeof(chunk_reader::APAL_Chunk) - sizeof(apal_chunk.data);
+		size_t header_size = sizeof(chunk_reader::APAL_Chunk);
 		memcpy(&apal_chunk, utils::add(fc->data, apal_offset), header_size);
 		size_t apal_size = apal_chunk.ChunkSize() - header_size;
-		apal_chunk.data = reinterpret_cast<unsigned char*>(utils::add(fc->data, apal_offset + header_size));
 
 		chunk_reader::ChunkInfo bsmap = fc->GetChunkInfo(bsmap_offset);
 
