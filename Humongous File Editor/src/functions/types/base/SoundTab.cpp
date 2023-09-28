@@ -42,7 +42,6 @@ namespace HumongousFileEditor
 
 	bool SoundTab::SaveSound(chunk_reader::HSHD_Chunk& hshd_chunk, chunk_reader::SDAT_Chunk& sdat_chunk)
 	{
-
 		unsigned char* data = sdat_chunk.data;
 		size_t chunk_size = sdat_chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader) - sizeof(sdat_chunk.data);
 
@@ -112,7 +111,6 @@ namespace HumongousFileEditor
 
 			fclose(file);
 
-			delete[] path;
 			return true;
 		}
 

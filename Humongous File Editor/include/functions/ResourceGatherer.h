@@ -11,6 +11,7 @@ namespace HumongousFileEditor
 		class ResourceGatherer
 		{
 		public:
+			bool Read(FileContainer*& path);
 			bool Read(const char* path);
 			bool ReadResourceFile(FileContainer*& fc);
 			bool ReadHE2(FileContainer*& fc);

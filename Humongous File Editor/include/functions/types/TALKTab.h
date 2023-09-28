@@ -14,6 +14,7 @@ namespace HumongousFileEditor
 	class TALKTab : public SoundTab
 	{
 	public:
+		static bool ReplaceResource(chunk_reader::FileContainer*& fc, size_t offset);
 		static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk);
 	};
 };

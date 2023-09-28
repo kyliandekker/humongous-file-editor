@@ -74,11 +74,13 @@ namespace HumongousFileEditor
 		audioSystem.Stop();
 		audioSystem.Play(sdat_chunk.data, sdat_chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader) - sizeof(sdat_chunk.data));
 	}
+
 	// Callback for the stop button.
 	System::Void TabFunctions::StopButton_Click(System::Object^ sender, System::EventArgs^ e)
 	{
 		audioSystem.Stop();
 	}
+
 	// Callback for the export button.
 	System::Void TabFunctions::ExportButton_Click(System::Object^ sender, System::EventArgs^ e)
 	{
@@ -237,6 +239,7 @@ namespace HumongousFileEditor
 			}
 		}
 	}
+
 	System::Void TabFunctions::ReplaceButton_Click(System::Object^ sender, System::EventArgs^ e)
 	{
 		HumongousButton^ btn = (HumongousButton^)sender;
@@ -254,6 +257,11 @@ namespace HumongousFileEditor
 				success = SONGTab::ReplaceResource(fc, btn->offset);
 				break;
 			}
+			case files::ResourceType::Talkie:
+			{
+				success = TALKTab::ReplaceResource(fc, btn->offset);
+				break;
+			}
 		}
 
 		if (!success)
@@ -267,11 +275,12 @@ namespace HumongousFileEditor
 		form->tabControl1->Controls->Clear();
 
 		HumongousFileEditor::chunk_reader::ResourceGatherer rg;
-		rg.ReadHE4(fc);
+		rg.Read(fc);
 
 		System::Windows::Forms::MessageBox::Show("Successfully replaced resource.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
 		form->toolProgressBar->Value = 0;
 	}
+
 	void TabFunctions::AddTab(HumongousNode^ node, System::Windows::Forms::TabControl^ tabControl)
 	{
 		chunk_reader::FileContainer* fc = files::FILES.getFile(node->fileType);
@@ -414,6 +423,7 @@ namespace HumongousFileEditor
 		exportButton->offset = node->offset;
 		exportButton->special = node->special;
 		exportButton->fileType = node->fileType;
+		exportButton->resourceType = node->resourceType;
 		exportButton->Text = L"Export";
 		exportButton->UseVisualStyleBackColor = true;
 		exportButton->Click += gcnew System::EventHandler(this, &TabFunctions::ExportButton_Click);
@@ -426,6 +436,7 @@ namespace HumongousFileEditor
 		newTab->Controls->Add(actionPanel);
 		tabControl->Controls->Add(newTab);
 	}
+
 	void TabFunctions::GetTalk(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
 		AddInfoRow("Type", gcnew System::String("Talk"), propertyGrid, posX, posY);
@@ -440,6 +451,7 @@ namespace HumongousFileEditor
 
 		AddSoundButtons(tab, offset, fc->fileType, panel);
 	}
+
 	void TabFunctions::GetDigi(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
 		AddInfoRow("Type", gcnew System::String("Sfx"), propertyGrid, posX, posY);
@@ -454,6 +466,7 @@ namespace HumongousFileEditor
 
 		AddSoundButtons(tab, offset, fc->fileType, panel);
 	}
+
 	void TabFunctions::GetSong(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
 		AddInfoRow("Type", gcnew System::String("Song"), propertyGrid, posX, posY);
@@ -468,6 +481,7 @@ namespace HumongousFileEditor
 
 		AddSoundButtons(tab, offset, fc->fileType, panel);
 	}
+
 	void TabFunctions::GetGlobalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
 		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
@@ -497,6 +511,7 @@ namespace HumongousFileEditor
 			t += scrp_chunk.data[i];
 		AddInfoRow("Script", gcnew System::String(t.c_str()), propertyGrid, posX, posY);
 	}
+
 	bool TabFunctions::GetRoomBackgroundData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
 	{
 		std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(offset);
@@ -548,6 +563,7 @@ namespace HumongousFileEditor
 
 		return BMAPTab::GetDataBMAP(fc, bmap_chunk, apal_chunk, bmap_chunk.data[0], rmhd_chunk.width, rmhd_chunk.height, info);
 	}
+
 	void TabFunctions::GetRoomBackground(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
 	{
 		img_info info;
@@ -717,6 +733,7 @@ namespace HumongousFileEditor
 
 		propertyPanel->Controls->Add(pictureBox);
 	}
+
 	bool TabFunctions::GetRoomImageLayerData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
 	{
 		img_info image_info;
@@ -786,6 +803,7 @@ namespace HumongousFileEditor
 
 		return true;
 	}
+
 	void TabFunctions::GetRoomImageLayer(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
 	{
 		img_info info;
@@ -824,6 +842,7 @@ namespace HumongousFileEditor
 
 		propertyPanel->Controls->Add(pictureBox);
 	}
+
 	void TabFunctions::GetRNAM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
 		AddInfoRow("Type", gcnew System::String("Rooms"), propertyGrid, posX, posY);
@@ -854,6 +873,7 @@ namespace HumongousFileEditor
 		for (size_t i = 0; i < room_names.size(); i++)
 			AddInfoRow(gcnew System::String(std::to_string(i).c_str()), gcnew System::String(room_names[i].c_str()), propertyGrid, posX, posY);
 	}
+
 	void TabFunctions::AddSoundButtons(System::Windows::Forms::TabPage^ tab, size_t offset, files::FileType fileType, System::Windows::Forms::Panel^ panel)
 	{
 		HumongousButton^ playButton;

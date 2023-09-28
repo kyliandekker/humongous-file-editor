@@ -57,37 +57,42 @@ namespace HumongousFileEditor
 			return "";
 		}
 
-		bool ResourceGatherer::Read(const char* path)
+		bool ResourceGatherer::Read(FileContainer*& file)
 		{
-			FileContainer* fc = files::FILES.Read(path);
-			if (fc == nullptr)
+			if (file == nullptr)
 			{
-				LOGF(logger::LOGSEVERITY_ERROR, "Could not open file \"%s\".", path);
+				LOGF(logger::LOGSEVERITY_ERROR, "Could not open file.");
 				return false;
 			}
 
-			switch (fc->fileType)
+			switch (file->fileType)
 			{
 				case files::FileType::FileType_HE0:
 				case files::FileType::FileType_A:
 				{
-					return ReadResourceFile(fc);
+					return ReadResourceFile(file);
 					break;
 				}
 				case files::FileType::FileType_HE2:
 				{
-					return ReadHE2(fc);
+					return ReadHE2(file);
 					break;
 				}
 				case files::FileType::FileType_HE4:
 				{
-					return ReadHE4(fc);
+					return ReadHE4(file);
 					break;
 				}
 				default:
 					break;
 			}
 			return false;
+		}
+
+		bool ResourceGatherer::Read(const char* path)
+		{
+			FileContainer* fc = files::FILES.Read(path);
+			return Read(fc);
 		}
 
 		bool ResourceGatherer::ReadResourceFile(FileContainer*& fc)
