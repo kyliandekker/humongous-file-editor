@@ -165,6 +165,7 @@
     <ClInclude Include="include\lowlevel\HumongousChunkDefinitions.h" />
     <ClInclude Include="include\lowlevel\HumongousChunks.h" />
     <ClInclude Include="include\lowlevel\HumongousHeader.h" />
+    <ClInclude Include="include\lowlevel\OPCodes.h" />
     <ClInclude Include="include\lowlevel\utils.h" />
     <ClInclude Include="include\systems\AudioSystem.h" />
     <ClInclude Include="include\systems\Logger.h" />

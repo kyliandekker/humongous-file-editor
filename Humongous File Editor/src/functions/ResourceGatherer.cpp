@@ -95,6 +95,23 @@ namespace HumongousFileEditor
 			return Read(fc);
 		}
 
+		struct version_key
+		{
+			std::string ext = 0;
+			uint32_t size = 0;
+
+			bool operator <(const version_key& rhs) const
+			{
+				return size < rhs.size;
+			}
+		};
+
+		struct version_value
+		{
+			uint8_t version = 0;
+			uint8_t he_version = 0;
+		};
+
 		bool ResourceGatherer::ReadResourceFile(FileContainer*& fc)
 		{
 			FileContainer* a = nullptr;
@@ -110,6 +127,28 @@ namespace HumongousFileEditor
 					LOGF(logger::LOGSEVERITY_ERROR, "Could not open file \"%s\".", he0path.c_str());
 					return false;
 				}
+
+				std::map<version_key, version_value> versions =
+				{
+					{ { ".LA0", 138 }, { 7, 0 } },
+					{ { ".LA0", 176 }, { 8, 0 } },
+					{ { ".000", 138 }, { 8, 0 } },
+					{ { ".HE0", 52 }, { 6, 99 } },
+					{ { ".HE0", 46 }, { 6, 90 } },
+					{ { ".HE0", 40 }, { 6, 80 } },
+					{ { ".HE0", 38 }, { 6, 71 } },
+					{ { ".HE0", 38 }, { 6, 71 } },
+					{ { ".000", 38 }, { 6, 0 } },
+					{ { ".SM0", 38 }, { 6, 0 } },
+					{ { ".000", 26 }, { 5, 0 } },
+					{ { ".LFL", 26 }, { 5, 0 } }
+				};
+
+				version_key key = { files::getExtensionFromPath(he0->path), he0->GetChunkInfo(0).ChunkSize() };
+				version_value values = versions[key];
+
+				he0->version = values.version;
+				he0->he_version = values.he_version;
 			}
 			else if (fc->fileType == files::FileType_HE0)
 			{

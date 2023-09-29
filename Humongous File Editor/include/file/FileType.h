@@ -15,9 +15,14 @@ namespace HumongousFileEditor
 			FileType_HE0
 		};
 
+		inline std::string getExtensionFromPath(std::string path, bool include_dot = false)
+		{
+			return path.substr(path.find_last_of(".") + (include_dot ? 0 : 1));
+		}
+
 		inline FileType getFileTypeByExtension(std::string path)
 		{
-			std::string extension = path.substr(path.find_last_of(".") + 1);
+			std::string extension = getExtensionFromPath(path);
 
 			if (extension == "(A)" || extension == "(a)")
 				return FileType_A;

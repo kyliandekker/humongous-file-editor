@@ -28,6 +28,9 @@ namespace HumongousFileEditor
 			size_t size = 0;
 			std::string path;
 			unsigned char* data = nullptr;
+
+			uint8_t he_version = 0;
+			uint8_t version = 0;
 		};
 	}
 }
