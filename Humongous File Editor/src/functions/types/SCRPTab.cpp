@@ -1,16 +1,10 @@
 #include "functions/types/SCRPTab.h"
 
-#include <uaudio_wave_reader/WaveReader.h>
-#include <uaudio_wave_reader/UAUDIO_WAVE_READER_RESULT.h>
-#include <uaudio_wave_reader/WaveChunks.h>
-#include <uaudio_wave_reader/ChunkCollection.h>
-
 #include "lowlevel/HumongousChunkDefinitions.h"
 #include "lowlevel/HumongousChunks.h"
 #include "lowlevel/FileContainer.h"
 #include "lowlevel/utils.h"
 #include "lowlevel/OPCodes.h"
-#include "functions/ChunkFunctions.h"
 
 namespace HumongousFileEditor
 {

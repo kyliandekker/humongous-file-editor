@@ -205,6 +205,7 @@
     <ClCompile Include="src\lowlevel\HumongousChunkDefinitions.cpp" />
     <ClCompile Include="src\lowlevel\HumongousChunks.cpp" />
     <ClCompile Include="src\lowlevel\HumongousHeader.cpp" />
+    <ClCompile Include="src\lowlevel\OPCodes.cpp" />
     <ClCompile Include="src\lowlevel\utils.cpp" />
     <ClCompile Include="src\systems\AudioSystem.cpp" />
     <ClCompile Include="src\systems\Logger.cpp" />

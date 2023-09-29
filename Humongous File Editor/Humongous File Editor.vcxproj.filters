@@ -196,5 +196,8 @@
     <ClCompile Include="src\functions\types\SCRPTab.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\lowlevel\OPCodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
