@@ -160,6 +160,7 @@
     <ClInclude Include="include\functions\types\SCRPTab.h" />
     <ClInclude Include="include\functions\types\SONGTab.h" />
     <ClInclude Include="include\functions\types\TALKTab.h" />
+    <ClInclude Include="include\lowlevel\bytecode_data.h" />
     <ClInclude Include="include\lowlevel\ChunkInfo.h" />
     <ClInclude Include="include\lowlevel\Defines.h" />
     <ClInclude Include="include\lowlevel\FileContainer.h" />
