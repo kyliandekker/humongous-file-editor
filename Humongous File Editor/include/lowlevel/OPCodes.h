@@ -9,55 +9,142 @@ namespace HumongousFileEditor
 {
     namespace chunk_reader
     {
-        inline  uint32_t extended_b_op(unsigned char* data)
-        { return 1; }
-        inline uint32_t extended_w_op(unsigned char* data)
-        { return 0; }
-        inline  uint32_t jump_cmd(unsigned char* data)
-        { return 0; }
-        inline  uint32_t msg_cmd(unsigned char* data)
-        { return 0; }
-        inline   uint32_t msg_op(unsigned char* data)
-        { return 0; }
-        inline  uint32_t actor_ops_v6(unsigned char* data)
-        { return 0; }
-        inline   uint32_t verb_ops_v6(unsigned char* data)
-        { return 0; }
-        inline  uint32_t array_ops_v6(unsigned char* data)
-        { return 0; }
-        inline  uint32_t wait_ops(unsigned char* data)
-        { return 0; }
-        inline  uint32_t extended_bw_op(unsigned char* data)
-        { return 0; }
+#define WordValue sizeof(uint16_t)
 
-        inline uint32_t room_ops_he60(unsigned char* data)
-        { return 0; }
-        inline  uint32_t actor_ops_he60(unsigned char* data)
-        { return 0; }
-        inline uint32_t dmsg_op(unsigned char* data)
-        { return 0; }
+        inline  uint32_t extended_b_op(unsigned char* data, size_t data_size)
+        { return sizeof(uint8_t); }
+        inline uint32_t extended_w_op(unsigned char* data, size_t data_size)
+        { return sizeof(uint16_t); }
+        inline  uint32_t jump_cmd(unsigned char* data, size_t data_size)
+        { return 0; } // TODO: Wtf is een RefOffset?
+        inline  uint32_t msg_cmd(unsigned char* data, size_t data_size)
+        {
+            size_t size = 0;
+            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
+            size += sizeof(uint8_t);
+            if (cmd == 75 || cmd == 194)
+                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
+            return size;
+        }
+        inline uint32_t msg_op(unsigned char* data, size_t data_size)
+        {
+            std::string message = std::string(reinterpret_cast<char*>(data));
+            return message.size() + 1; // Add one for the null terminated character.
+        }
+        inline  uint32_t actor_ops_v6(unsigned char* data, size_t data_size)
+        {
+            size_t size = 0;
+            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
+            size += sizeof(uint8_t);
+            if (cmd == 0x58)
+                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
+            return size;
+        }
+        inline uint32_t verb_ops_v6(unsigned char* data, size_t data_size)
+        {
+            size_t size = 0;
+            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
+            size += sizeof(uint8_t);
+            if (cmd == 0x7D)
+                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
+            return size;
+        }
+        inline uint32_t array_ops_v6(unsigned char* data, size_t data_size)
+        {
+            size_t size = 0;
+            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
+            size++;
+            uint16_t cmd = *reinterpret_cast<uint16_t*>(data);
+            size += sizeof(uint16_t);
+            if (cmd == 205)
+                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
+            return size;
+        }
+        inline uint32_t wait_ops(unsigned char* data, size_t data_size)
+        {
+            size_t size = 0;
+            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
+            size += sizeof(uint8_t);
+            if (cmd == 168 || cmd == 226 || cmd == 232)
+                size += 0;  // TODO: Wtf is een RefOffset?
+            return size;
+        }
+        inline uint32_t extended_bw_op(unsigned char* data, size_t data_size)
+        { return sizeof(uint8_t) + sizeof(uint16_t); }
 
-        inline uint32_t sys_msg(unsigned char* data)
-        { return 0; }
+        inline uint32_t room_ops_he60(unsigned char* data, size_t data_size)
+        {
+            size_t size = 0;
+            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
+            size += sizeof(uint8_t);
+            if (cmd == 221)
+                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
+            return size;
+        }
+        inline uint32_t actor_ops_he60(unsigned char* data, size_t data_size)
+        {
+            size_t size = 0;
+            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
+            size += sizeof(uint8_t);
+            if (cmd == 225)
+                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
+            return size;
+        }
+        inline uint32_t dmsg_op(unsigned char* data, size_t data_size)
+        {
+            size_t size = 0;
+            size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
+            size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
+            return size;
+        }
 
-        inline uint32_t ini_op_v71(unsigned char* data)
-        { return 0; }
-        inline uint32_t array_ops(unsigned char* data)
-        { return 0; }
+        inline uint32_t sys_msg(unsigned char* data, size_t data_size)
+        {
+            size_t size = sizeof(uint8_t);
+            size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
+            return size;
+        }
 
-        inline uint32_t extended_dw_op(unsigned char* data)
+        // Wat de fuck is dit?
+        inline uint32_t ini_op_v71(unsigned char* data, size_t data_size)
         { return 0; }
+        inline uint32_t array_ops(unsigned char* data, size_t data_size)
+        {
+            size_t size = 0;
+            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
+            size++;
+            uint16_t cmd = *reinterpret_cast<uint16_t*>(data);
+            size += sizeof(uint16_t);
+            if (cmd == 127)
+                size += sizeof(uint16_t);
+            else if (cmd == 138)
+                size += sizeof(uint16_t) + sizeof(uint16_t);
+            return size;
+        }
 
-        inline uint32_t file_op(unsigned char* data)
-        { return 0; }
+        inline uint32_t extended_dw_op(unsigned char* data, size_t data_size)
+        { return sizeof(uint32_t); }
 
-        inline uint32_t extended_ww_op(unsigned char* data)
+        inline uint32_t file_op(unsigned char* data, size_t data_size)
+        {
+            size_t size = 0;
+            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
+            size += sizeof(uint8_t);
+            if (cmd == 8)
+                size += sizeof(uint8_t);
+            return size;
+        }
+
+        inline uint32_t extended_ww_op(unsigned char* data, size_t data_size)
+        { return sizeof(uint16_t) + sizeof(uint16_t); }
+
+        inline uint32_t default_func(unsigned char* data, size_t data_size)
         { return 0; }
 
         struct bytecode
         {
             std::string name;
-            std::function<uint32_t(unsigned char*)> func;
+            std::function<uint32_t(unsigned char*, size_t)> func = default_func;
         };
 
         inline std::map<uint8_t, bytecode> OPCODES_HE90 =

@@ -22,6 +22,8 @@ namespace HumongousFileEditor
 		size_t scrp_size = scrp_chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader);
 
 		int pos = 0;
+
+		std::vector<std::string> instructions;
 		while (pos < scrp_size)
 		{
 			uint8_t b = scrp_chunk.data[pos];
@@ -30,8 +32,9 @@ namespace HumongousFileEditor
 			std::string bc = bytecode.name;
 			pos++;
 
-			uint32_t bytecode_size = bytecode.func(utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader) + pos));
+			uint32_t bytecode_size = bytecode.func(utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader) + pos), scrp_size - pos);
 			pos += bytecode_size;
+			instructions.push_back(bc);
 		}
 
 		return false;
