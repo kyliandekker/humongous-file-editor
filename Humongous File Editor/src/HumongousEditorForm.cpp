@@ -17,6 +17,7 @@ void Main(array<String^>^ args)
 
 	HumongousFileEditor::HumongousEditorForm form;
 	Application::Run(% form);
+
 #ifdef _DEBUG
 	fclose(fConsole);
 #endif

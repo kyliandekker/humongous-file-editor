@@ -1744,7 +1744,7 @@
         SCQSiUQikUgkEolEIpFIJIo+/dmf/R++dnq6nFIm/AAAAABJRU5ErkJggg==
 </value>
   </data>
-  <data name="encryptButton.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="decryptButton.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAW
         JQAAFiUBSVIk8AAAFtFJREFUeF7t2ndwFHeWB/D2HTY2GIQCcNhgOeCIvTinBUSwzdq7Ltd5t853Pl+5

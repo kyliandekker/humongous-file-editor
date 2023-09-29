@@ -34,7 +34,10 @@ namespace HumongousFileEditor
 		System::Windows::Forms::ToolStripMenuItem^ optionOpen;
 		System::Windows::Forms::ToolStripMenuItem^ optionSaveAs;
 		System::Windows::Forms::ToolStripSeparator^ toolStripSeparator2;
+		System::Windows::Forms::ToolStripMenuItem^ optionDecrypt;
+		System::Windows::Forms::ToolStripMenuItem^ optionIndex;
 		System::Windows::Forms::ToolStripMenuItem^ optionQuit;
+		System::Windows::Forms::ToolStripSeparator^ toolStripSeparator3;
 
 		System::Windows::Forms::ToolStripMenuItem^ helpMenu;
 		System::Windows::Forms::ToolStripMenuItem^ optionAbout;
@@ -46,12 +49,11 @@ namespace HumongousFileEditor
 		System::Windows::Forms::TreeView^ entryView;
 		System::Windows::Forms::Panel^ treeActionPanel;
 
-		System::Windows::Forms::Button^ exportSelected;
-		System::Windows::Forms::Button^ unselectAll;
-		System::Windows::Forms::Button^ selectAllButton;
-
+		System::Windows::Forms::ToolTip^ tooltipOpen = gcnew System::Windows::Forms::ToolTip();
+		System::Windows::Forms::ToolTip^ tooltipSave = gcnew System::Windows::Forms::ToolTip();
+		System::Windows::Forms::ToolTip^ tooltipSaveAs = gcnew System::Windows::Forms::ToolTip();
 		System::Windows::Forms::ToolTip^ tooltipAbout = gcnew System::Windows::Forms::ToolTip();
-		System::Windows::Forms::ToolTip^ tooltipEncrypt = gcnew System::Windows::Forms::ToolTip();
+		System::Windows::Forms::ToolTip^ tooltipDecrypt = gcnew System::Windows::Forms::ToolTip();
 		System::Windows::Forms::ToolTip^ tooltipIndex = gcnew System::Windows::Forms::ToolTip();
 
 		System::Windows::Forms::ToolStripMenuItem^ optionSave;
@@ -62,13 +64,13 @@ namespace HumongousFileEditor
     public: System::Windows::Forms::Button^ openButton;
     public: System::Windows::Forms::Button^ saveButton;
     public: System::Windows::Forms::Button^ aboutButton;
-    public: System::Windows::Forms::Panel^ panel2;
     public: System::Windows::Forms::Button^ saveAsButton;
+	public: System::Windows::Forms::Button^ decryptButton;
+	public: System::Windows::Forms::Button^ indexButton;
+	public: System::Windows::Forms::Panel^ panel2;
     public: System::Windows::Forms::Panel^ panel3;
     public: System::Windows::Forms::Panel^ panel4;
-    public: System::Windows::Forms::Button^ encryptButton;
 	public: System::Windows::Forms::Panel^ actionPanel;
-	public: System::Windows::Forms::Button^ indexButton;
 	public: System::Windows::Forms::TabPage^ tabWelcome;
 		  System::Windows::Forms::TabControl^ tabControl1;
 	protected:
@@ -99,9 +101,6 @@ namespace HumongousFileEditor
 			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(HumongousEditorForm::typeid));
 			this->splitContainer = (gcnew System::Windows::Forms::SplitContainer());
 			this->treeActionPanel = (gcnew System::Windows::Forms::Panel());
-			this->exportSelected = (gcnew System::Windows::Forms::Button());
-			this->unselectAll = (gcnew System::Windows::Forms::Button());
-			this->selectAllButton = (gcnew System::Windows::Forms::Button());
 			this->entryView = (gcnew System::Windows::Forms::TreeView());
 			this->tabControl1 = (gcnew System::Windows::Forms::TabControl());
 			this->tabWelcome = (gcnew System::Windows::Forms::TabPage());
@@ -111,6 +110,9 @@ namespace HumongousFileEditor
 			this->optionSave = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->optionSaveAs = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->toolStripSeparator2 = (gcnew System::Windows::Forms::ToolStripSeparator());
+			this->optionIndex = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->optionDecrypt = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->toolStripSeparator3 = (gcnew System::Windows::Forms::ToolStripSeparator());
 			this->optionQuit = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->helpMenu = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->optionAbout = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -124,14 +126,13 @@ namespace HumongousFileEditor
 			this->saveAsButton = (gcnew System::Windows::Forms::Button());
 			this->panel3 = (gcnew System::Windows::Forms::Panel());
 			this->panel4 = (gcnew System::Windows::Forms::Panel());
-			this->encryptButton = (gcnew System::Windows::Forms::Button());
+			this->decryptButton = (gcnew System::Windows::Forms::Button());
 			this->actionPanel = (gcnew System::Windows::Forms::Panel());
 			this->indexButton = (gcnew System::Windows::Forms::Button());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->splitContainer))->BeginInit();
 			this->splitContainer->Panel1->SuspendLayout();
 			this->splitContainer->Panel2->SuspendLayout();
 			this->splitContainer->SuspendLayout();
-			this->treeActionPanel->SuspendLayout();
 			this->tabControl1->SuspendLayout();
 			this->topMenu->SuspendLayout();
 			this->statusStrip2->SuspendLayout();
@@ -166,43 +167,11 @@ namespace HumongousFileEditor
 			// 
 			// treeActionPanel
 			// 
-			this->treeActionPanel->Controls->Add(this->exportSelected);
-			this->treeActionPanel->Controls->Add(this->unselectAll);
-			this->treeActionPanel->Controls->Add(this->selectAllButton);
 			this->treeActionPanel->Dock = System::Windows::Forms::DockStyle::Top;
 			this->treeActionPanel->Location = System::Drawing::Point(10, 10);
 			this->treeActionPanel->Name = L"treeActionPanel";
 			this->treeActionPanel->Size = System::Drawing::Size(541, 29);
 			this->treeActionPanel->TabIndex = 1;
-			// 
-			// exportSelected
-			// 
-			this->exportSelected->Enabled = false;
-			this->exportSelected->Location = System::Drawing::Point(165, 3);
-			this->exportSelected->Name = L"exportSelected";
-			this->exportSelected->Size = System::Drawing::Size(102, 23);
-			this->exportSelected->TabIndex = 2;
-			this->exportSelected->Text = L"Export Selected";
-			this->exportSelected->UseVisualStyleBackColor = true;
-			// 
-			// unselectAll
-			// 
-			this->unselectAll->Location = System::Drawing::Point(84, 3);
-			this->unselectAll->Name = L"unselectAll";
-			this->unselectAll->Size = System::Drawing::Size(75, 23);
-			this->unselectAll->TabIndex = 1;
-			this->unselectAll->Text = L"Select None";
-			this->unselectAll->UseVisualStyleBackColor = true;
-			// 
-			// selectAllButton
-			// 
-			this->selectAllButton->Location = System::Drawing::Point(3, 3);
-			this->selectAllButton->Name = L"selectAllButton";
-			this->selectAllButton->Size = System::Drawing::Size(75, 23);
-			this->selectAllButton->TabIndex = 0;
-			this->selectAllButton->Text = L"Select All";
-			this->selectAllButton->UseVisualStyleBackColor = true;
-			this->selectAllButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::selectAllButton_Click);
 			// 
 			// entryView
 			// 
@@ -235,43 +204,46 @@ namespace HumongousFileEditor
 			// 
 			// tabWelcome
 			// 
-			this->tabWelcome->Location = System::Drawing::Point(4, 29);
+			this->tabWelcome->Location = System::Drawing::Point(4, 22);
 			this->tabWelcome->Name = L"tabWelcome";
-			this->tabWelcome->Size = System::Drawing::Size(398, 413);
+			this->tabWelcome->Size = System::Drawing::Size(398, 420);
 			this->tabWelcome->TabIndex = 0;
 			this->tabWelcome->Text = L"Welcome!";
 			this->tabWelcome->UseVisualStyleBackColor = true;
 			// 
 			// optionSeperator1
 			// 
-			this->optionSeperator1->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(6) {
+			this->optionSeperator1->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(9) {
 				this->optionOpen,
-					this->toolStripSeparator1, this->optionSave, this->optionSaveAs, this->toolStripSeparator2, this->optionQuit
+					this->toolStripSeparator1, this->optionSave, this->optionSaveAs, this->toolStripSeparator2, this->optionIndex, this->optionDecrypt,
+					this->toolStripSeparator3, this->optionQuit
 			});
 			this->optionSeperator1->Name = L"optionSeperator1";
-			this->optionSeperator1->Size = System::Drawing::Size(54, 29);
+			this->optionSeperator1->Size = System::Drawing::Size(37, 20);
 			this->optionSeperator1->Text = L"File";
 			// 
 			// optionOpen
 			// 
 			this->optionOpen->Name = L"optionOpen";
 			this->optionOpen->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::O));
-			this->optionOpen->Size = System::Drawing::Size(285, 34);
+			this->optionOpen->Size = System::Drawing::Size(186, 22);
 			this->optionOpen->Text = L"Open";
+			this->optionOpen->ToolTipText = L"Open file";
 			this->optionOpen->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionOpen_Click);
 			// 
 			// toolStripSeparator1
 			// 
 			this->toolStripSeparator1->Name = L"toolStripSeparator1";
-			this->toolStripSeparator1->Size = System::Drawing::Size(282, 6);
+			this->toolStripSeparator1->Size = System::Drawing::Size(183, 6);
 			// 
 			// optionSave
 			// 
 			this->optionSave->Enabled = false;
 			this->optionSave->Name = L"optionSave";
 			this->optionSave->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::S));
-			this->optionSave->Size = System::Drawing::Size(285, 34);
+			this->optionSave->Size = System::Drawing::Size(186, 22);
 			this->optionSave->Text = L"Save";
+			this->optionSave->ToolTipText = L"Save file(s)";
 			this->optionSave->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionSave_Click);
 			// 
 			// optionSaveAs
@@ -280,45 +252,71 @@ namespace HumongousFileEditor
 			this->optionSaveAs->Name = L"optionSaveAs";
 			this->optionSaveAs->ShortcutKeys = static_cast<System::Windows::Forms::Keys>(((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::Shift)
 				| System::Windows::Forms::Keys::S));
-			this->optionSaveAs->Size = System::Drawing::Size(285, 34);
+			this->optionSaveAs->Size = System::Drawing::Size(186, 22);
 			this->optionSaveAs->Text = L"Save As";
+			this->optionSaveAs->ToolTipText = L"Save file(s) as";
 			this->optionSaveAs->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionSaveAs_Click);
 			// 
 			// toolStripSeparator2
 			// 
 			this->toolStripSeparator2->Name = L"toolStripSeparator2";
-			this->toolStripSeparator2->Size = System::Drawing::Size(282, 6);
+			this->toolStripSeparator2->Size = System::Drawing::Size(183, 6);
+			// 
+			// optionIndex
+			// 
+			this->optionIndex->Name = L"optionIndex";
+			this->optionIndex->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::I));
+			this->optionIndex->Size = System::Drawing::Size(186, 22);
+			this->optionIndex->Text = L"Index";
+			this->optionIndex->ToolTipText = L"Create index of file";
+			this->optionIndex->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionIndex_Click);
+			// 
+			// optionDecrypt
+			// 
+			this->optionDecrypt->Name = L"optionDecrypt";
+			this->optionDecrypt->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::D));
+			this->optionDecrypt->Size = System::Drawing::Size(186, 22);
+			this->optionDecrypt->Text = L"Decrypt";
+			this->optionDecrypt->ToolTipText = L"Encrypt/Decrypt file";
+			this->optionDecrypt->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionDecrypt_Click);
+			// 
+			// toolStripSeparator3
+			// 
+			this->toolStripSeparator3->Name = L"toolStripSeparator3";
+			this->toolStripSeparator3->Size = System::Drawing::Size(183, 6);
 			// 
 			// optionQuit
 			// 
 			this->optionQuit->Name = L"optionQuit";
 			this->optionQuit->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::Q));
-			this->optionQuit->Size = System::Drawing::Size(285, 34);
+			this->optionQuit->Size = System::Drawing::Size(186, 22);
 			this->optionQuit->Text = L"Exit";
+			this->optionQuit->ToolTipText = L"Quit";
 			// 
 			// helpMenu
 			// 
 			this->helpMenu->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->optionAbout });
 			this->helpMenu->Name = L"helpMenu";
-			this->helpMenu->Size = System::Drawing::Size(65, 29);
+			this->helpMenu->Size = System::Drawing::Size(44, 20);
 			this->helpMenu->Text = L"Help";
 			// 
 			// optionAbout
 			// 
 			this->optionAbout->Name = L"optionAbout";
-			this->optionAbout->Size = System::Drawing::Size(164, 34);
+			this->optionAbout->ShortcutKeys = System::Windows::Forms::Keys::F1;
+			this->optionAbout->Size = System::Drawing::Size(126, 22);
 			this->optionAbout->Text = L"About";
+			this->optionAbout->ToolTipText = L"About this program";
 			this->optionAbout->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionAbout_Click);
 			// 
 			// topMenu
 			// 
 			this->topMenu->BackColor = System::Drawing::SystemColors::Window;
-			this->topMenu->GripMargin = System::Windows::Forms::Padding(2, 2, 0, 2);
 			this->topMenu->ImageScalingSize = System::Drawing::Size(22, 22);
 			this->topMenu->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) { this->optionSeperator1, this->helpMenu });
 			this->topMenu->Location = System::Drawing::Point(0, 0);
 			this->topMenu->Name = L"topMenu";
-			this->topMenu->Size = System::Drawing::Size(991, 33);
+			this->topMenu->Size = System::Drawing::Size(991, 24);
 			this->topMenu->TabIndex = 0;
 			this->topMenu->Text = L"menuStrip2";
 			// 
@@ -326,10 +324,10 @@ namespace HumongousFileEditor
 			// 
 			this->statusStrip2->ImageScalingSize = System::Drawing::Size(22, 22);
 			this->statusStrip2->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->toolProgressBar });
-			this->statusStrip2->Location = System::Drawing::Point(0, 534);
+			this->statusStrip2->Location = System::Drawing::Point(0, 536);
 			this->statusStrip2->Margin = System::Windows::Forms::Padding(5);
 			this->statusStrip2->Name = L"statusStrip2";
-			this->statusStrip2->Size = System::Drawing::Size(991, 27);
+			this->statusStrip2->Size = System::Drawing::Size(991, 25);
 			this->statusStrip2->TabIndex = 2;
 			this->statusStrip2->Text = L"statusStrip2";
 			// 
@@ -345,7 +343,7 @@ namespace HumongousFileEditor
 			this->openButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
 			this->openButton->FlatAppearance->BorderSize = 0;
 			this->openButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
-			this->openButton->Location = System::Drawing::Point(6, 2);
+			this->openButton->Location = System::Drawing::Point(7, 2);
 			this->openButton->Name = L"openButton";
 			this->openButton->Size = System::Drawing::Size(40, 40);
 			this->openButton->TabIndex = 4;
@@ -362,7 +360,7 @@ namespace HumongousFileEditor
 			this->saveButton->Enabled = false;
 			this->saveButton->FlatAppearance->BorderSize = 0;
 			this->saveButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
-			this->saveButton->Location = System::Drawing::Point(59, 2);
+			this->saveButton->Location = System::Drawing::Point(62, 2);
 			this->saveButton->Name = L"saveButton";
 			this->saveButton->Size = System::Drawing::Size(40, 40);
 			this->saveButton->TabIndex = 5;
@@ -379,7 +377,7 @@ namespace HumongousFileEditor
 			this->aboutButton->FlatAppearance->BorderSize = 0;
 			this->aboutButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
 			this->aboutButton->ForeColor = System::Drawing::Color::Transparent;
-			this->aboutButton->Location = System::Drawing::Point(255, 3);
+			this->aboutButton->Location = System::Drawing::Point(266, 3);
 			this->aboutButton->Name = L"aboutButton";
 			this->aboutButton->Size = System::Drawing::Size(40, 40);
 			this->aboutButton->TabIndex = 6;
@@ -391,7 +389,7 @@ namespace HumongousFileEditor
 			// panel2
 			// 
 			this->panel2->BackColor = System::Drawing::SystemColors::ButtonShadow;
-			this->panel2->Location = System::Drawing::Point(52, 4);
+			this->panel2->Location = System::Drawing::Point(54, 4);
 			this->panel2->Name = L"panel2";
 			this->panel2->Size = System::Drawing::Size(1, 36);
 			this->panel2->TabIndex = 7;
@@ -404,19 +402,19 @@ namespace HumongousFileEditor
 			this->saveAsButton->Enabled = false;
 			this->saveAsButton->FlatAppearance->BorderSize = 0;
 			this->saveAsButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
-			this->saveAsButton->Location = System::Drawing::Point(104, 2);
+			this->saveAsButton->Location = System::Drawing::Point(109, 2);
 			this->saveAsButton->Name = L"saveAsButton";
 			this->saveAsButton->Size = System::Drawing::Size(40, 40);
 			this->saveAsButton->TabIndex = 8;
 			this->saveAsButton->UseVisualStyleBackColor = false;
+			this->saveAsButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionSaveAs_Click);
 			this->saveAsButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
 			this->saveAsButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
-			this->saveAsButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionSaveAs_Click);
 			// 
 			// panel3
 			// 
 			this->panel3->BackColor = System::Drawing::SystemColors::ButtonShadow;
-			this->panel3->Location = System::Drawing::Point(195, 4);
+			this->panel3->Location = System::Drawing::Point(156, 4);
 			this->panel3->Name = L"panel3";
 			this->panel3->Size = System::Drawing::Size(1, 36);
 			this->panel3->TabIndex = 9;
@@ -424,34 +422,34 @@ namespace HumongousFileEditor
 			// panel4
 			// 
 			this->panel4->BackColor = System::Drawing::SystemColors::ButtonShadow;
-			this->panel4->Location = System::Drawing::Point(248, 4);
+			this->panel4->Location = System::Drawing::Point(258, 4);
 			this->panel4->Name = L"panel4";
 			this->panel4->Size = System::Drawing::Size(1, 36);
 			this->panel4->TabIndex = 9;
 			// 
-			// encryptButton
+			// decryptButton
 			// 
-			this->encryptButton->BackColor = System::Drawing::Color::Transparent;
-			this->encryptButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"encryptButton.BackgroundImage")));
-			this->encryptButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
-			this->encryptButton->FlatAppearance->BorderSize = 0;
-			this->encryptButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
-			this->encryptButton->ForeColor = System::Drawing::Color::Transparent;
-			this->encryptButton->Location = System::Drawing::Point(202, 2);
-			this->encryptButton->Name = L"encryptButton";
-			this->encryptButton->Size = System::Drawing::Size(40, 40);
-			this->encryptButton->TabIndex = 10;
-			this->encryptButton->TabStop = false;
-			this->encryptButton->UseVisualStyleBackColor = false;
-			this->encryptButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::encryptButton_Click);
-			this->encryptButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
-			this->encryptButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
+			this->decryptButton->BackColor = System::Drawing::Color::Transparent;
+			this->decryptButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"decryptButton.BackgroundImage")));
+			this->decryptButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+			this->decryptButton->FlatAppearance->BorderSize = 0;
+			this->decryptButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->decryptButton->ForeColor = System::Drawing::Color::Transparent;
+			this->decryptButton->Location = System::Drawing::Point(211, 2);
+			this->decryptButton->Name = L"decryptButton";
+			this->decryptButton->Size = System::Drawing::Size(40, 40);
+			this->decryptButton->TabIndex = 10;
+			this->decryptButton->TabStop = false;
+			this->decryptButton->UseVisualStyleBackColor = false;
+			this->decryptButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionDecrypt_Click);
+			this->decryptButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
+			this->decryptButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
 			// 
 			// actionPanel
 			// 
 			this->actionPanel->BackColor = System::Drawing::SystemColors::GradientInactiveCaption;
 			this->actionPanel->Controls->Add(this->indexButton);
-			this->actionPanel->Controls->Add(this->encryptButton);
+			this->actionPanel->Controls->Add(this->decryptButton);
 			this->actionPanel->Controls->Add(this->panel3);
 			this->actionPanel->Controls->Add(this->panel4);
 			this->actionPanel->Controls->Add(this->saveAsButton);
@@ -460,7 +458,7 @@ namespace HumongousFileEditor
 			this->actionPanel->Controls->Add(this->saveButton);
 			this->actionPanel->Controls->Add(this->openButton);
 			this->actionPanel->Dock = System::Windows::Forms::DockStyle::Top;
-			this->actionPanel->Location = System::Drawing::Point(0, 33);
+			this->actionPanel->Location = System::Drawing::Point(0, 24);
 			this->actionPanel->Name = L"actionPanel";
 			this->actionPanel->Padding = System::Windows::Forms::Padding(10);
 			this->actionPanel->Size = System::Drawing::Size(991, 44);
@@ -474,7 +472,7 @@ namespace HumongousFileEditor
 			this->indexButton->FlatAppearance->BorderSize = 0;
 			this->indexButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
 			this->indexButton->ForeColor = System::Drawing::Color::Transparent;
-			this->indexButton->Location = System::Drawing::Point(149, 2);
+			this->indexButton->Location = System::Drawing::Point(164, 2);
 			this->indexButton->Name = L"indexButton";
 			this->indexButton->Size = System::Drawing::Size(40, 40);
 			this->indexButton->TabIndex = 11;
@@ -493,11 +491,11 @@ namespace HumongousFileEditor
 			this->Controls->Add(this->topMenu);
 			this->MainMenuStrip = this->topMenu;
 			this->Name = L"HumongousEditorForm";
+			this->Load += gcnew System::EventHandler(this, &HumongousEditorForm::Form1_Load);
 			this->splitContainer->Panel1->ResumeLayout(false);
 			this->splitContainer->Panel2->ResumeLayout(false);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->splitContainer))->EndInit();
 			this->splitContainer->ResumeLayout(false);
-			this->treeActionPanel->ResumeLayout(false);
 			this->tabControl1->ResumeLayout(false);
 			this->topMenu->ResumeLayout(false);
 			this->topMenu->PerformLayout();
@@ -509,6 +507,15 @@ namespace HumongousFileEditor
 
 		}
 #pragma endregion
+		System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e)
+		{
+			tooltipAbout->SetToolTip(this->aboutButton, "About this program");
+			tooltipOpen->SetToolTip(this->openButton, "Open file");
+			tooltipSave->SetToolTip(this->saveButton, "Save file(s)");
+			tooltipSaveAs->SetToolTip(this->saveAsButton, "Save file(s) as");
+			tooltipDecrypt->SetToolTip(this->decryptButton, "Encrypt/Decrypt file");
+			tooltipIndex->SetToolTip(this->indexButton, "Create index of file");
+		}
 		// Opens a window with info about the application (via the top menu or info button).
 		System::Void optionAbout_Click(System::Object^ sender, System::EventArgs^ e)
 		{
@@ -545,30 +552,6 @@ namespace HumongousFileEditor
 						Humongous Song Files (*.HE4)\
 						\0*.HE4;*.he4\0";
 		}
-
-#pragma region entryview
-		/*
-			* Entry view functions.
-		*/
-		// Checks all entry nodes in the EntryView.
-		System::Void selectAllButton_Click(System::Object^ sender, System::EventArgs^ e)
-		{
-			for (size_t i = 0; i < entryView->Nodes->Count; i++)
-			{
-				entryView->Nodes[i]->Checked = true;
-				exportSelected->Enabled = true;
-			}
-		}
-		// Unchecks all entry nodes in the EntryView.
-		System::Void unselectAllButton_Click(System::Object^ sender, System::EventArgs^ e)
-		{
-			for (size_t i = 0; i < entryView->Nodes->Count; i++)
-				entryView->Nodes[i]->Checked = false;
-
-			exportSelected->Enabled = false;
-		}
-#pragma endregion
-
 		// Opens a window with info about the application (via the top menu or info button).
 		System::Void optionIndex_Click(System::Object^ sender, System::EventArgs^ e)
 		{
@@ -734,7 +717,7 @@ namespace HumongousFileEditor
 			System::Drawing::PointF pointF = System::Drawing::PointF(static_cast<float>(r->X + 5), static_cast<float>(r->Y));
 			e->Graphics->DrawString(titel, f, b, pointF);
 		}
-		System::Void encryptButton_Click(System::Object^ sender, System::EventArgs^ e)
+		System::Void optionDecrypt_Click(System::Object^ sender, System::EventArgs^ e)
 		{
 			chunk_reader::FileDecrypter fileDecrypter;
 			if (fileDecrypter.Read())
