@@ -16,7 +16,10 @@ namespace HumongousFileEditor
         inline uint32_t extended_w_op(unsigned char* data, size_t data_size)
         { return sizeof(uint16_t); }
         inline  uint32_t jump_cmd(unsigned char* data, size_t data_size)
-        { return 0; } // TODO: Wtf is een RefOffset?
+        {
+            uint16_t rel = *reinterpret_cast<uint16_t*>(data);
+            return sizeof(uint16_t);
+        }
         inline  uint32_t msg_cmd(unsigned char* data, size_t data_size)
         {
             size_t size = 0;
@@ -54,7 +57,7 @@ namespace HumongousFileEditor
             size_t size = 0;
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
             size++;
-            uint16_t cmd = *reinterpret_cast<uint16_t*>(data);
+            uint16_t arr = *reinterpret_cast<uint16_t*>(utils::add(data, size));
             size += sizeof(uint16_t);
             if (cmd == 205)
                 size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
@@ -66,7 +69,10 @@ namespace HumongousFileEditor
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
             size += sizeof(uint8_t);
             if (cmd == 168 || cmd == 226 || cmd == 232)
-                size += 0;  // TODO: Wtf is een RefOffset?
+            {
+                uint16_t rel = *reinterpret_cast<uint16_t*>(utils::add(data, size));
+                size += sizeof(uint16_t); 
+            }
             return size;
         }
         inline uint32_t extended_bw_op(unsigned char* data, size_t data_size)
@@ -113,7 +119,7 @@ namespace HumongousFileEditor
             size_t size = 0;
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
             size++;
-            uint16_t cmd = *reinterpret_cast<uint16_t*>(data);
+            uint16_t arr = *reinterpret_cast<uint16_t*>(utils::add(data, size));
             size += sizeof(uint16_t);
             if (cmd == 127)
                 size += sizeof(uint16_t);
