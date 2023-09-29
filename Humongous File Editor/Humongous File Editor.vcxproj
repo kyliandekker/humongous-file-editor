@@ -157,6 +157,7 @@
     <ClInclude Include="include\functions\types\base\SoundTab.h" />
     <ClInclude Include="include\functions\types\BMAPTab.h" />
     <ClInclude Include="include\functions\types\DIGITab.h" />
+    <ClInclude Include="include\functions\types\SCRPTab.h" />
     <ClInclude Include="include\functions\types\SONGTab.h" />
     <ClInclude Include="include\functions\types\TALKTab.h" />
     <ClInclude Include="include\lowlevel\ChunkInfo.h" />
@@ -186,6 +187,7 @@
     <ClCompile Include="src\functions\ChunkFunctions.cpp" />
     <ClCompile Include="src\functions\types\BMAPTab.cpp" />
     <ClCompile Include="src\functions\types\base\ImageTab.cpp" />
+    <ClCompile Include="src\functions\types\SCRPTab.cpp" />
     <ClCompile Include="src\functions\types\SONGTab.cpp" />
     <ClCompile Include="src\file\Files.cpp" />
     <ClCompile Include="src\file\ResourceType.cpp" />

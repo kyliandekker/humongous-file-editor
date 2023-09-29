@@ -114,6 +114,9 @@
     <ClInclude Include="include\lowlevel\OPCodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\functions\types\SCRPTab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">
@@ -188,6 +191,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\functions\ChunkFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\functions\types\SCRPTab.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

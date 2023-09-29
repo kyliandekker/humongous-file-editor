@@ -33,6 +33,7 @@
 #include "functions/types/DIGITab.h"
 #include "functions/types/SONGTab.h"
 #include "functions/types/TALKTab.h"
+#include "functions/types/SCRPTab.h"
 #include "functions/ChunkFunctions.h"
 
 namespace HumongousFileEditor
@@ -495,30 +496,8 @@ namespace HumongousFileEditor
 	{
 		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
 
-		chunk_reader::ChunkInfo chunkInfo = fc->GetChunkInfo(offset);
-		if (utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::SCRP_CHUNK_ID) == 0 ||
-			utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::ENCD_CHUNK_ID) == 0 ||
-			utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::EXCD_CHUNK_ID) == 0
-			)
-			AddInfoRow("Script Type", gcnew System::String("Global"), propertyGrid, posX, posY);
-		else if (
-			utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::LSCR_CHUNK_ID) == 0 ||
-			utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::LSC2_CHUNK_ID) == 0
-			)
-			AddInfoRow("Script Type", gcnew System::String("Local"), propertyGrid, posX, posY);
-		else if (
-			utils::chunkcmp(chunkInfo.chunk_id, chunk_reader::VERB_CHUNK_ID) == 0
-			)
-			AddInfoRow("Script Type", gcnew System::String("Verb"), propertyGrid, posX, posY);
-
-		chunk_reader::SCRP_Chunk scrp_chunk;
-		memcpy(&scrp_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::SCRP_Chunk) - sizeof(scrp_chunk.data));
-		scrp_chunk.data = utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader));
-
-		std::string t;
-		for (size_t i = 0; i < scrp_chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader); i++)
-			t += scrp_chunk.data[i];
-		AddInfoRow("Script", gcnew System::String(t.c_str()), propertyGrid, posX, posY);
+		if (!SCRPTab::GetData(fc, offset))
+			return;
 	}
 
 	bool TabFunctions::GetRoomBackgroundData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
