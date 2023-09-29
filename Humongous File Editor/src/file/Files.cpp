@@ -136,7 +136,7 @@ namespace HumongousFileEditor
 					{
 						std::wstring wpath(&path[0]);
 						std::string name = getFileName(he4->path);
-						std::string path_name = std::string(wpath.begin(), wpath.end()) + + "\\" + name;
+						std::string path_name = std::string(wpath.begin(), wpath.end()) + "\\" + name;
 						
 						FILE* file = nullptr;
 						fopen_s(&file, path_name.c_str(), "wb");
@@ -147,7 +147,7 @@ namespace HumongousFileEditor
 					{
 						std::wstring wpath(&path[0]);
 						std::string name = getFileName(he2->path);
-						std::string path_name = std::string(wpath.begin(), wpath.end()) + + "\\" + name;
+						std::string path_name = std::string(wpath.begin(), wpath.end()) + "\\" + name;
 						
 						FILE* file = nullptr;
 						fopen_s(&file, path_name.c_str(), "wb");
@@ -158,7 +158,7 @@ namespace HumongousFileEditor
 					{
 						std::wstring wpath(&path[0]);
 						std::string name = getFileName(he0->path);
-						std::string path_name = std::string(wpath.begin(), wpath.end()) + + "\\" + name;
+						std::string path_name = std::string(wpath.begin(), wpath.end()) + "\\" + name;
 						
 						FILE* file = nullptr;
 						fopen_s(&file, path_name.c_str(), "wb");
@@ -169,7 +169,7 @@ namespace HumongousFileEditor
 					{
 						std::wstring wpath(&path[0]);
 						std::string name = getFileName(a->path);
-						std::string path_name = std::string(wpath.begin(), wpath.end()) + + "\\" + name;
+						std::string path_name = std::string(wpath.begin(), wpath.end()) + "\\" + name;
 						
 						FILE* file = nullptr;
 						fopen_s(&file, path_name.c_str(), "wb");

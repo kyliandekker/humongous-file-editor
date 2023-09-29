@@ -9,18 +9,16 @@ namespace HumongousFileEditor
 {
     namespace chunk_reader
     {
-#define WordValue sizeof(uint16_t)
-
-        inline  uint32_t extended_b_op(unsigned char* data, size_t data_size)
+        inline  size_t extended_b_op(unsigned char* data, size_t data_size)
         { return sizeof(uint8_t); }
-        inline uint32_t extended_w_op(unsigned char* data, size_t data_size)
+        inline size_t extended_w_op(unsigned char* data, size_t data_size)
         { return sizeof(uint16_t); }
-        inline  uint32_t jump_cmd(unsigned char* data, size_t data_size)
+        inline  size_t jump_cmd(unsigned char* data, size_t data_size)
         {
             uint16_t rel = *reinterpret_cast<uint16_t*>(data);
             return sizeof(uint16_t);
         }
-        inline  uint32_t msg_cmd(unsigned char* data, size_t data_size)
+        inline size_t msg_cmd(unsigned char* data, size_t data_size)
         {
             size_t size = 0;
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
@@ -29,12 +27,12 @@ namespace HumongousFileEditor
                 size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
             return size;
         }
-        inline uint32_t msg_op(unsigned char* data, size_t data_size)
+        inline size_t msg_op(unsigned char* data, size_t data_size)
         {
             std::string message = std::string(reinterpret_cast<char*>(data));
             return message.size() + 1; // Add one for the null terminated character.
         }
-        inline  uint32_t actor_ops_v6(unsigned char* data, size_t data_size)
+        inline size_t actor_ops_v6(unsigned char* data, size_t data_size)
         {
             size_t size = 0;
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
@@ -43,7 +41,7 @@ namespace HumongousFileEditor
                 size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
             return size;
         }
-        inline uint32_t verb_ops_v6(unsigned char* data, size_t data_size)
+        inline size_t verb_ops_v6(unsigned char* data, size_t data_size)
         {
             size_t size = 0;
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
@@ -52,7 +50,7 @@ namespace HumongousFileEditor
                 size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
             return size;
         }
-        inline uint32_t array_ops_v6(unsigned char* data, size_t data_size)
+        inline size_t array_ops_v6(unsigned char* data, size_t data_size)
         {
             size_t size = 0;
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
@@ -63,7 +61,7 @@ namespace HumongousFileEditor
                 size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
             return size;
         }
-        inline uint32_t wait_ops(unsigned char* data, size_t data_size)
+        inline size_t wait_ops(unsigned char* data, size_t data_size)
         {
             size_t size = 0;
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
@@ -75,10 +73,10 @@ namespace HumongousFileEditor
             }
             return size;
         }
-        inline uint32_t extended_bw_op(unsigned char* data, size_t data_size)
+        inline size_t extended_bw_op(unsigned char* data, size_t data_size)
         { return sizeof(uint8_t) + sizeof(uint16_t); }
 
-        inline uint32_t room_ops_he60(unsigned char* data, size_t data_size)
+        inline size_t room_ops_he60(unsigned char* data, size_t data_size)
         {
             size_t size = 0;
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
@@ -87,7 +85,7 @@ namespace HumongousFileEditor
                 size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
             return size;
         }
-        inline uint32_t actor_ops_he60(unsigned char* data, size_t data_size)
+        inline size_t actor_ops_he60(unsigned char* data, size_t data_size)
         {
             size_t size = 0;
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
@@ -96,7 +94,7 @@ namespace HumongousFileEditor
                 size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
             return size;
         }
-        inline uint32_t dmsg_op(unsigned char* data, size_t data_size)
+        inline size_t dmsg_op(unsigned char* data, size_t data_size)
         {
             size_t size = 0;
             size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
@@ -104,17 +102,17 @@ namespace HumongousFileEditor
             return size;
         }
 
-        inline uint32_t sys_msg(unsigned char* data, size_t data_size)
+        inline size_t sys_msg(unsigned char* data, size_t data_size)
         {
             size_t size = sizeof(uint8_t);
             size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
             return size;
         }
 
-        // Wat de fuck is dit?
-        inline uint32_t ini_op_v71(unsigned char* data, size_t data_size)
+        // TODO: Figure out what this does.
+        inline size_t ini_op_v71(unsigned char* data, size_t data_size)
         { return 0; }
-        inline uint32_t array_ops(unsigned char* data, size_t data_size)
+        inline size_t array_ops(unsigned char* data, size_t data_size)
         {
             size_t size = 0;
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
@@ -128,10 +126,10 @@ namespace HumongousFileEditor
             return size;
         }
 
-        inline uint32_t extended_dw_op(unsigned char* data, size_t data_size)
+        inline size_t extended_dw_op(unsigned char* data, size_t data_size)
         { return sizeof(uint32_t); }
 
-        inline uint32_t file_op(unsigned char* data, size_t data_size)
+        inline size_t file_op(unsigned char* data, size_t data_size)
         {
             size_t size = 0;
             uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
@@ -141,16 +139,16 @@ namespace HumongousFileEditor
             return size;
         }
 
-        inline uint32_t extended_ww_op(unsigned char* data, size_t data_size)
+        inline size_t extended_ww_op(unsigned char* data, size_t data_size)
         { return sizeof(uint16_t) + sizeof(uint16_t); }
 
-        inline uint32_t default_func(unsigned char* data, size_t data_size)
+        inline size_t default_func(unsigned char* data, size_t data_size)
         { return 0; }
 
         struct bytecode
         {
             std::string name;
-            std::function<uint32_t(unsigned char*, size_t)> func = default_func;
+            std::function<size_t(unsigned char*, size_t)> func = default_func;
         };
 
         inline std::map<uint8_t, bytecode> OPCODES_HE90 =
