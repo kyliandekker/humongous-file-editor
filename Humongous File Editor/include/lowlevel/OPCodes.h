@@ -4,154 +4,47 @@
 #include <stdint.h>
 #include <string>
 #include <functional>
-#include <lowlevel/bytecode_data.h>
-#include <lowlevel/utils.h>
+#include <vector>
 
 namespace HumongousFileEditor
 {
     namespace chunk_reader
     {
-        inline size_t extended_b_op(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        { return sizeof(uint8_t); }
-        inline size_t extended_w_op(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        { return sizeof(uint16_t); }
-        inline  size_t jump_cmd(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            uint16_t rel = *reinterpret_cast<uint16_t*>(data);
-            return sizeof(uint16_t);
-        }
-        inline size_t msg_cmd(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            size_t size = 0;
-            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
-            size += sizeof(uint8_t);
-            if (cmd == 75 || cmd == 194)
-                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
-            return size;
-        }
-        inline size_t msg_op(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            std::string message = std::string(reinterpret_cast<char*>(data));
-            return_data.data_str.push_back(message);
-            return message.size() + 1; // Add one for the null terminated character.
-        }
-        inline size_t actor_ops_v6(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            size_t size = 0;
-            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
-            size += sizeof(uint8_t);
-            if (cmd == 0x58)
-                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
-            return size;
-        }
-        inline size_t verb_ops_v6(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            size_t size = 0;
-            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
-            size += sizeof(uint8_t);
-            if (cmd == 0x7D)
-                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
-            return size;
-        }
-        inline size_t array_ops_v6(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            size_t size = 0;
-            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
-            size++;
-            uint16_t arr = *reinterpret_cast<uint16_t*>(utils::add(data, size));
-            size += sizeof(uint16_t);
-            if (cmd == 205)
-                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
-            return size;
-        }
-        inline size_t wait_ops(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            size_t size = 0;
-            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
-            size += sizeof(uint8_t);
-            if (cmd == 168 || cmd == 226 || cmd == 232)
-            {
-                uint16_t rel = *reinterpret_cast<uint16_t*>(utils::add(data, size));
-                size += sizeof(uint16_t); 
-            }
-            return size;
-        }
-        inline size_t extended_bw_op(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        { return sizeof(uint8_t) + sizeof(uint16_t); }
+        struct bytecode_data;
 
-        inline size_t room_ops_he60(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            size_t size = 0;
-            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
-            size += sizeof(uint8_t);
-            if (cmd == 221)
-                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
-            return size;
-        }
-        inline size_t actor_ops_he60(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            size_t size = 0;
-            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
-            size += sizeof(uint8_t);
-            if (cmd == 225)
-                size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
-            return size;
-        }
-        inline size_t dmsg_op(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            size_t size = 0;
-            size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
-            size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
-            return size;
-        }
+        size_t extended_b_op(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t extended_w_op(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t jump_cmd(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t msg_cmd(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t msg_op(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t actor_ops_v6(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t verb_ops_v6(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t array_ops_v6(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t wait_ops(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t extended_bw_op(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
 
-        inline size_t sys_msg(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            size_t size = sizeof(uint8_t);
-            size += std::string(reinterpret_cast<char*>(utils::add(data, size))).size() + 1; // Add one for the null terminated character.
-            return size;
-        }
+        size_t room_ops_he60(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t actor_ops_he60(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t dmsg_op(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+
+        size_t sys_msg(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
 
         // TODO: Figure out what this does.
-        inline size_t ini_op_v71(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        { return 0; }
-        inline size_t array_ops(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            size_t size = 0;
-            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
-            size++;
-            uint16_t arr = *reinterpret_cast<uint16_t*>(utils::add(data, size));
-            size += sizeof(uint16_t);
-            if (cmd == 127)
-                size += sizeof(uint16_t);
-            else if (cmd == 138)
-                size += sizeof(uint16_t) + sizeof(uint16_t);
-            return size;
-        }
+        size_t ini_op_v71(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
+        size_t array_ops(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
 
-        inline size_t extended_dw_op(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        { return sizeof(uint32_t); }
+        size_t extended_dw_op(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
 
-        inline size_t file_op(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        {
-            size_t size = 0;
-            uint8_t cmd = *reinterpret_cast<uint8_t*>(data);
-            size += sizeof(uint8_t);
-            if (cmd == 8)
-                size += sizeof(uint8_t);
-            return size;
-        }
+        size_t file_op(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
 
-        inline size_t extended_ww_op(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        { return sizeof(uint16_t) + sizeof(uint16_t); }
+        size_t extended_ww_op(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
 
-        inline size_t default_func(unsigned char* data, size_t data_size, bytecode_data& return_data)
-        { return 0; }
+        size_t default_func(unsigned char* data, size_t data_size, std::vector<std::string>& return_data);
 
         struct bytecode
         {
             std::string name;
-            std::function<size_t(unsigned char*, size_t, bytecode_data&)> func = default_func;
+            std::function<size_t(unsigned char*, size_t, std::vector<std::string>&)> func = default_func;
         };
 
         inline std::map<uint8_t, bytecode> OPCODES_HE90 =

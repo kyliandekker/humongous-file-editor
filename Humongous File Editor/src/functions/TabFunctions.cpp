@@ -39,10 +39,11 @@
 namespace HumongousFileEditor
 {
 	// Adds a row of info to the info tab.
-	void AddInfoRow(System::String^ key, System::String^ value, System::Windows::Forms::DataGridView^ propertyGrid, float& posX, float& posY)
+	void AddInfoRow(System::String^ key, System::String^ value, System::Windows::Forms::DataGridView^ propertyGrid, float& posX, float& posY, bool readOnly = true)
 	{
 		int i = propertyGrid->Rows->Add(key, value);
-		propertyGrid->Rows[i]->ReadOnly = true;
+		propertyGrid->Rows[i]->Cells[0]->ReadOnly = true;
+		propertyGrid->Rows[i]->Cells[1]->ReadOnly = readOnly;
 	}
 
 	// Callback for the play button.
@@ -334,7 +335,6 @@ namespace HumongousFileEditor
 		propertyGrid->Columns->Add(gcnew System::String("Value"), gcnew System::String("Value"));
 		propertyGrid->Columns[0]->AutoSizeMode = System::Windows::Forms::DataGridViewAutoSizeColumnMode::Fill;
 		propertyGrid->Columns[1]->AutoSizeMode = System::Windows::Forms::DataGridViewAutoSizeColumnMode::Fill;
-		propertyGrid->ReadOnly = true;
 		propertyGrid->ColumnHeadersVisible = false;
 		propertyGrid->RowHeadersVisible = false;
 
@@ -375,7 +375,7 @@ namespace HumongousFileEditor
 			}
 			case files::ResourceType::Local_Script:
 			{
-				//GetGlobalScript(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				GetLocalScript(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
 				break;
 			}
 			case files::ResourceType::Verb_Script:
@@ -495,9 +495,35 @@ namespace HumongousFileEditor
 	void TabFunctions::GetGlobalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
 		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
-
-		if (!SCRPTab::GetData(fc, offset))
+		
+		std::vector<instruction> instructions;
+		if (!SCRPTab::GetData(fc, offset, instructions))
 			return;
+
+		for (size_t i = 0; i < instructions.size(); i++)
+		{
+			if (instructions[i].data_str.size() > 0)
+			{
+				AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(instructions[i].data_str[0].c_str()), propertyGrid, posX, posY, false);
+			}
+		}
+	}
+
+	void TabFunctions::GetLocalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	{
+		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
+		
+		std::vector<instruction> instructions;
+		if (!SCRPTab::GetData(fc, offset, instructions))
+			return;
+
+		for (size_t i = 0; i < instructions.size(); i++)
+		{
+			if (instructions[i].data_str.size() > 0)
+			{
+				AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(instructions[i].data_str[0].c_str()), propertyGrid, posX, posY, false);
+			}
+		}
 	}
 
 	bool TabFunctions::GetRoomBackgroundData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
