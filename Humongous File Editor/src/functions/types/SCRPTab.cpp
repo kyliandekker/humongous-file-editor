@@ -16,7 +16,7 @@ namespace HumongousFileEditor
 		unsigned char* data = nullptr;
 	};
 
-	bool SCRPTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<instruction>& instructions)
+	bool SCRPTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<talk_instruction>& instructions)
 	{
 		size_t scrp_size = 0;
 		size_t pos = 0;
@@ -43,19 +43,47 @@ namespace HumongousFileEditor
 			size_t bc_offset = pos;
 			uint8_t b = chunk.data[pos];
 
-			instruction instruction;
+			talk_instruction instruction;
 			instruction.code = b;
-
-			chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[b];
-			instruction.name = bytecode.name;
 			pos++;
 
-			size_t bytecode_size = bytecode.func(utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader) + pos), scrp_size - pos, instruction.data_str);
-			pos += bytecode_size;
+			chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[b];
+			unsigned char* data_str = {};
+			size_t bytecode_size = bytecode.func(utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader) + pos), scrp_size - pos, data_str);
 
-			instruction.offset = bc_offset;
-			instruction.size = bytecode_size + 1;
-			instructions.push_back(instruction);
+			if (b == 0x04 || b == 0xBA)
+			{
+				instruction.name = bytecode.name;
+
+				if (data_str != nullptr)
+				{
+					if (data_str[0] == 0x7F && data_str[1] == 'T')
+					{
+						instruction.full_str = std::string(reinterpret_cast<char*>(data_str));
+
+						instruction.scrp_offset = offset;
+						instruction.scrp_size = chunk.ChunkSize();
+						instruction.offset_in_scrp_chunk = sizeof(chunk_reader::HumongousHeader) + pos;
+						instruction.abs_offset = offset + sizeof(chunk_reader::HumongousHeader) + pos;
+
+						size_t byte_pos_pos = instruction.full_str.find_first_of("T") + 1;
+						size_t comma_pos = instruction.full_str.find_first_of(",");
+						std::string talk_offset = instruction.full_str.substr(byte_pos_pos, comma_pos - byte_pos_pos);
+
+						instruction.talk_offset = std::stoi(talk_offset);
+						instruction.talk_offset_pos = byte_pos_pos + instruction.abs_offset;
+
+						size_t bracket_pos = instruction.full_str.find_first_of("[");
+						std::string talk_size = instruction.full_str.substr(comma_pos + 1, (bracket_pos - 1) - (comma_pos + 1));
+						instruction.talk_size_pos = comma_pos + 1 + instruction.abs_offset;
+
+						instruction.talk_size = std::stoi(talk_size);
+
+						instructions.push_back(instruction);
+					}
+				}
+			}
+			pos += bytecode_size;
 		}
 
 		return true;

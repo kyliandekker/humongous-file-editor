@@ -14,6 +14,8 @@ namespace System
 			ref class TabPage;
 			ref class DataGridView;
 			ref class Panel;
+			ref class MouseEventArgs;
+			ref class Void;
 		};
 	};
 };
@@ -38,9 +40,11 @@ namespace HumongousFileEditor
 	public:
 		System::Void PlayButton_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void StopButton_Click(System::Object^ sender, System::EventArgs^ e);
+		System::Void NextButton_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void ExportButton_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void ReplaceButton_Click(System::Object^ sender, System::EventArgs^ e);
 		void AddTab(HumongousNode^ node, System::Windows::Forms::TabControl^ tabControl);
+		System::Void DoubleClick(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e);
 	private:
 		void GetTalk(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY);
 		void GetSong(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY);

@@ -156,6 +156,8 @@ namespace HumongousFileEditor
 		constexpr auto INIB_CHUNK_ID = "INIB";
 		constexpr auto NOTE_CHUNK_ID = "NOTE";
 
+		constexpr auto TMSK_CHUNK_ID = "TMSK";
+
 #define NO_CHILD {}
 #define IMXX { SMAP_CHUNK_ID, BMAP_CHUNK_ID, BOMP_CHUNK_ID, ZP00_CHUNK_ID, ZP01_CHUNK_ID, ZP02_CHUNK_ID, ZP03_CHUNK_ID, ZP04_CHUNK_ID, ZP05_CHUNK_ID }
 
@@ -497,6 +499,7 @@ namespace HumongousFileEditor
 					SMAP_CHUNK_ID,
 				}
 			},
+			{ TMSK_CHUNK_ID, {} },
 		};
 	}
 }

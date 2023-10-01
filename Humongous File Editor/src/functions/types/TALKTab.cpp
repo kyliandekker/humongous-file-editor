@@ -4,12 +4,18 @@
 #include <uaudio_wave_reader/UAUDIO_WAVE_READER_RESULT.h>
 #include <uaudio_wave_reader/WaveChunks.h>
 #include <uaudio_wave_reader/ChunkCollection.h>
+#include <wtypes.h>
+#include <commdlg.h>
+#include <HumongousEditorForm.h>
 
 #include "lowlevel/HumongousChunkDefinitions.h"
 #include "lowlevel/HumongousChunks.h"
 #include "lowlevel/FileContainer.h"
 #include "lowlevel/utils.h"
 #include "functions/ChunkFunctions.h"
+#include "functions/ResourceGatherer.h"
+#include "functions/types/SCRPTab.h"
+#include <cassert>
 
 namespace HumongousFileEditor
 {
@@ -20,6 +26,46 @@ namespace HumongousFileEditor
 		uaudio::wave_reader::FMT_Chunk fmt_chunk;
 		if (SoundTab::ReplaceResource(path, fmt_chunk, data_chunk))
 		{
+			if (files::FILES.he0 == nullptr)
+			{
+				OPENFILENAME ofn;
+				TCHAR sz_file[260] = { 0 };
+
+				ZeroMemory(&ofn, sizeof(ofn));
+				ofn.lStructSize = sizeof(ofn);
+				ofn.lpstrFile = sz_file;
+				ofn.nMaxFile = sizeof(sz_file);
+
+				ofn.lpstrFilter = L"Humongous Talkie Files (*.HE2)\
+						\0*.HE2;*.he2\0";
+				ofn.nFilterIndex = 1;
+				ofn.lpstrFileTitle = nullptr;
+				ofn.nMaxFileTitle = 0;
+				ofn.lpstrInitialDir = nullptr;
+				ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+				HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+				if (GetOpenFileNameW(&ofn))
+				{
+					const auto path = new char[wcslen(ofn.lpstrFile) + 1];
+					wsprintfA(path, "%S", ofn.lpstrFile);
+
+					chunk_reader::ResourceGatherer f = chunk_reader::ResourceGatherer();
+					if (f.Read(path))
+					{
+						System::Windows::Forms::MessageBox::Show("Successfully opened file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+						form->toolProgressBar->Value = 0;
+						return false;
+					}
+
+					delete[] path;
+				}
+				else
+				{
+					return false;
+				}
+			}
+
 			if (!utils::ends_with(path, ".wav"))
 				path += ".wav";
 
@@ -27,7 +73,8 @@ namespace HumongousFileEditor
 			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::FTell(path.c_str(), wave_size)))
 				return false;
 
-			uaudio::wave_reader::ChunkCollection chunkCollection(malloc(wave_size), wave_size);
+			void* chunk_alloc = malloc(wave_size);
+			uaudio::wave_reader::ChunkCollection chunkCollection(chunk_alloc, wave_size);
 			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::LoadWave(path.c_str(), chunkCollection)))
 				return false;
 
@@ -59,27 +106,31 @@ namespace HumongousFileEditor
 			size_t hshd_offset = -1;
 			size_t sdat_offset = -1;
 			size_t sbng_offset = -1;
-			for (size_t i = 0; i < children.size(); i++)
+			for (size_t j = 0; j < children.size(); j++)
 			{
-				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
-					hshd_offset = children[i].offset;
-				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
-					sdat_offset = children[i].offset;
-				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::SBNG_CHUNK_ID) == 0)
-					sbng_offset = children[i].offset;
+				if (utils::chunkcmp(children[j].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
+					hshd_offset = children[j].offset;
+				if (utils::chunkcmp(children[j].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
+					sdat_offset = children[j].offset;
+				if (utils::chunkcmp(children[j].chunk_id, chunk_reader::SBNG_CHUNK_ID) == 0)
+					sbng_offset = children[j].offset;
 			}
 
 			if (hshd_offset == -1)
+			{
+				free(chunk_alloc);
 				return false;
+			}
 
 			if (hshd_offset == -1)
+			{
+				free(chunk_alloc);
 				return false;
+			}
 
 			chunk_reader::SBNG_Chunk sbng_chunk;
 			if (sbng_offset == -1)
-			{
 				sbng_chunk.SetChunkSize(0);
-			}
 			else
 			{
 				memcpy(&sbng_chunk, utils::add(fc->data, sbng_offset), sizeof(chunk_reader::HumongousHeader));
@@ -119,11 +170,69 @@ namespace HumongousFileEditor
 			memcpy(utils::add(new_data, pos), data_chunk.data, data_chunk.chunkSize);
 			pos += data_chunk.chunkSize;
 
+			chunk_reader::ChunkInfo oldChunk = fc->GetChunkInfo(offset);
+			
 			fc->Replace(talk_offset, new_data, talk_chunk.ChunkSize());
 
+			int32_t dif_size = talk_chunk.ChunkSize() - oldChunk.ChunkSize();
+
+			free(chunk_alloc);
 			free(new_data);
 
-			// TODO: Scripts need to be updated.
+			std::vector<talk_instruction> total_instructions;
+
+			chunk_reader::ChunkInfo header = files::FILES.a->GetChunkInfo(0);
+			while (header.offset < files::FILES.a->size)
+			{
+				if (utils::chunkcmp(header.chunk_id, chunk_reader::LSCR_CHUNK_ID) == 0 ||
+					utils::chunkcmp(header.chunk_id, chunk_reader::LSC2_CHUNK_ID) == 0
+					)
+				{
+					std::vector<talk_instruction> instructions;
+					if (SCRPTab::GetData(files::FILES.a, header.offset, instructions))
+					{
+						for (size_t k = 0; k < instructions.size(); k++)
+						{
+							talk_instruction& instr = instructions[k];
+
+							uint32_t full_size = talk_chunk.ChunkSize();
+							size_t new_offset = instr.talk_offset - dif_size;
+							if (instr.talk_offset >= offset)
+							{
+								if (std::to_string(instr.talk_offset).size() != std::to_string(new_offset).size())
+									assert(false);
+								if (instr.talk_offset == offset &&
+									std::to_string(instr.talk_size).size() != std::to_string(full_size).size())
+									assert(false);
+								total_instructions.push_back(instr);
+							}
+						}
+					}
+				}
+				chunk_reader::ChunkInfo next = files::FILES.a->GetNextChunk(header.offset);
+				header = next;
+			}
+
+			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+			form->entryView->Nodes->Clear();
+			form->tabControl1->Controls->Clear();
+
+			unsigned char* full_data = reinterpret_cast<unsigned char*>(malloc(files::FILES.a->size));
+			memcpy(full_data, files::FILES.a->data, files::FILES.a->size);
+			for (int g = total_instructions.size(); g-- > 0; )
+			{
+				talk_instruction& instruction = total_instructions[g];
+				size_t new_offset = instruction.talk_offset + dif_size;
+				std::string offset_str = std::to_string(new_offset);
+				memcpy(utils::add(full_data, instruction.talk_offset_pos), offset_str.c_str(), offset_str.size());
+
+				std::string talk_size_str = std::to_string(talk_chunk.ChunkSize());
+				memcpy(utils::add(full_data, instruction.talk_size_pos), talk_size_str.c_str(), talk_size_str.size());
+			}
+			files::FILES.a->Replace(0, full_data, files::FILES.a->size);
+
+			HumongousFileEditor::chunk_reader::ResourceGatherer rg;
+			rg.Read(files::FILES.a);
 
 			return true;
 		}

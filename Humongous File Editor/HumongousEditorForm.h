@@ -638,7 +638,7 @@ namespace HumongousFileEditor
 				AddTab(node);
 			tabControl1->SelectedIndex = tabControl1->Controls->IndexOfKey(node->Name);
 		}
-
+	public:
 		/// <summary>
 		/// Adds a new tab to the tab control.
 		/// </summary>
@@ -649,7 +649,6 @@ namespace HumongousFileEditor
 			TabFunctions^ tf = gcnew TabFunctions();
 			tf->AddTab(node, this->tabControl1);
 		}
-	public:
 		System::Windows::Forms::TreeNode^ GetBaseNode(System::String^ name)
 		{
 			for (size_t i = 0; i < this->entryView->Nodes->Count; i++)

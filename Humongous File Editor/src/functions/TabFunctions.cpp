@@ -39,11 +39,12 @@
 namespace HumongousFileEditor
 {
 	// Adds a row of info to the info tab.
-	void AddInfoRow(System::String^ key, System::String^ value, System::Windows::Forms::DataGridView^ propertyGrid, float& posX, float& posY, bool readOnly = true)
+	int AddInfoRow(System::String^ key, System::String^ value, System::Windows::Forms::DataGridView^ propertyGrid, float& posX, float& posY, bool readOnly = true)
 	{
 		int i = propertyGrid->Rows->Add(key, value);
 		propertyGrid->Rows[i]->Cells[0]->ReadOnly = true;
 		propertyGrid->Rows[i]->Cells[1]->ReadOnly = readOnly;
+		return i;
 	}
 
 	// Callback for the play button.
@@ -84,6 +85,19 @@ namespace HumongousFileEditor
 	}
 
 	// Callback for the export button.
+	System::Void TabFunctions::NextButton_Click(System::Object^ sender, System::EventArgs^ e)
+	{
+		HumongousButton^ btn = (HumongousButton^)sender;
+
+		HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+
+		HumongousNode^ node = (HumongousNode^) btn->node->NextNode;
+
+		if (!form->tabControl1->Controls->ContainsKey(node->Name))
+			form->AddTab(node);
+		form->tabControl1->SelectedIndex = form->tabControl1->Controls->IndexOfKey(node->Name);
+	}
+
 	System::Void TabFunctions::ExportButton_Click(System::Object^ sender, System::EventArgs^ e)
 	{
 		HumongousButton^ btn = (HumongousButton^)sender;
@@ -253,6 +267,8 @@ namespace HumongousFileEditor
 
 		audioSystem.Stop();
 
+		HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+
 		bool success = false;
 		switch (btn->resourceType)
 		{
@@ -280,10 +296,6 @@ namespace HumongousFileEditor
 			System::Windows::Forms::MessageBox::Show("Could not replace resource.", "Replacing failed", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
 			return;
 		}
-
-		HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
-		form->entryView->Nodes->Clear();
-		form->tabControl1->Controls->Clear();
 
 		HumongousFileEditor::chunk_reader::ResourceGatherer rg;
 		rg.Read(fc);
@@ -441,10 +453,35 @@ namespace HumongousFileEditor
 		exportButton->ResumeLayout(false);
 		actionPanel->Controls->Add(exportButton);
 
+		// Construct export button.
+		HumongousButton^ nextButton;
+		nextButton = (gcnew HumongousButton());
+
+		nextButton->Location = System::Drawing::Point(232, 53);
+		nextButton->Name = gcnew System::String("Next_") + gcnew System::String(newTab->Name);
+		nextButton->Size = System::Drawing::Size(75, 23);
+		nextButton->TabIndex = 2;
+		nextButton->offset = node->offset;
+		nextButton->node = node;
+		nextButton->special = node->special;
+		nextButton->fileType = node->fileType;
+		nextButton->resourceType = node->resourceType;
+		nextButton->Text = L"Next";
+		nextButton->UseVisualStyleBackColor = true;
+		nextButton->Click += gcnew System::EventHandler(this, &TabFunctions::NextButton_Click);
+
+		nextButton->ResumeLayout(false);
+		actionPanel->Controls->Add(nextButton);
+
 		newTab->ResumeLayout(false);
 
 		newTab->Controls->Add(actionPanel);
 		tabControl->Controls->Add(newTab);
+	}
+
+	System::Void TabFunctions::DoubleClick(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
+	{
+		return System::Void();
 	}
 
 	void TabFunctions::GetTalk(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
@@ -496,34 +533,24 @@ namespace HumongousFileEditor
 	{
 		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
 		
-		std::vector<instruction> instructions;
+		std::vector<talk_instruction> instructions;
 		if (!SCRPTab::GetData(fc, offset, instructions))
 			return;
 
 		for (size_t i = 0; i < instructions.size(); i++)
-		{
-			if (instructions[i].data_str.size() > 0)
-			{
-				AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(instructions[i].data_str[0].c_str()), propertyGrid, posX, posY, false);
-			}
-		}
+			AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(instructions[i].full_str.c_str()), propertyGrid, posX, posY, false);
 	}
 
 	void TabFunctions::GetLocalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
 		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
 		
-		std::vector<instruction> instructions;
+		std::vector<talk_instruction> instructions;
 		if (!SCRPTab::GetData(fc, offset, instructions))
 			return;
 
 		for (size_t i = 0; i < instructions.size(); i++)
-		{
-			if (instructions[i].data_str.size() > 0)
-			{
-				AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(instructions[i].data_str[0].c_str()), propertyGrid, posX, posY, false);
-			}
-		}
+			AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(instructions[i].full_str.c_str()), propertyGrid, posX, posY, false);
 	}
 
 	bool TabFunctions::GetRoomBackgroundData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)

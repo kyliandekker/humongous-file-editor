@@ -6,11 +6,17 @@
 #include "file/FileType.h"
 #include "file/ResourceType.h"
 
-public ref class HumongousButton : public System::Windows::Forms::Button
+namespace HumongousFileEditor
 {
-public:
-	size_t offset = 0;
-	bool special = true;
-	HumongousFileEditor::files::FileType fileType;
-	HumongousFileEditor::files::ResourceType resourceType;
-};
+	ref class HumongousNode;
+
+	public ref class HumongousButton : public System::Windows::Forms::Button
+	{
+	public:
+		size_t offset = 0;
+		HumongousNode^ node;
+		bool special = true;
+		files::FileType fileType;
+		files::ResourceType resourceType;
+	};
+}
