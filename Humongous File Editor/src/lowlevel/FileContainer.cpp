@@ -135,14 +135,17 @@ namespace HumongousFileEditor
 			int32_t dif_size = static_cast<int32_t>(new_size - chunk.ChunkSize());
 
 			ChunkInfo next_chunk = GetChunkInfo(0);
-			while (next_chunk.offset < chunk.offset)
+			if (dif_size != 0)
 			{
-				if (next_chunk.offset + next_chunk.ChunkSize() >= chunk.offset + chunk.ChunkSize())
+				while (next_chunk.offset < chunk.offset)
 				{
-					HumongousHeader* header = reinterpret_cast<SGEN_Chunk*>(utils::add(data, next_chunk.offset));
-					header->SetChunkSize(header->ChunkSize() + dif_size);
+					if (next_chunk.offset + next_chunk.ChunkSize() >= chunk.offset + chunk.ChunkSize())
+					{
+						HumongousHeader* header = reinterpret_cast<SGEN_Chunk*>(utils::add(data, next_chunk.offset));
+						header->SetChunkSize(header->ChunkSize() + dif_size);
+					}
+					next_chunk = GetNextChunk(next_chunk.offset);
 				}
-				next_chunk = GetNextChunk(next_chunk.offset);
 			}
 
 			unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(size + dif_size));

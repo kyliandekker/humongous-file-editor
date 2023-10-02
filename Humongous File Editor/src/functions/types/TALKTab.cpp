@@ -179,9 +179,12 @@ namespace HumongousFileEditor
 			free(chunk_alloc);
 			free(new_data);
 
-			std::vector<talk_instruction> total_instructions;
+			unsigned char* full_data = reinterpret_cast<unsigned char*>(malloc(files::FILES.a->size));
+			memcpy(full_data, files::FILES.a->data, files::FILES.a->size);
 
-			size_t new_offset_length = std::to_string(talk_chunk.ChunkSize()).size();
+			std::string talk_size_str = std::to_string(talk_chunk.ChunkSize());
+
+			std::vector<talk_instruction> shorter_longer_instructions;
 
 			chunk_reader::ChunkInfo header = files::FILES.a->GetChunkInfo(0);
 			while (header.offset < files::FILES.a->size)
@@ -196,17 +199,35 @@ namespace HumongousFileEditor
 					{
 						for (size_t k = 0; k < instructions.size(); k++)
 						{
-							talk_instruction& instr = instructions[k];
+							talk_instruction& instruction = instructions[k];
 
-							size_t new_offset = instr.talk_offset + dif_size;
-							if (instr.talk_offset >= offset)
+							size_t new_offset = instruction.talk_offset + dif_size;
+							if (instruction.talk_offset >= offset)
 							{
-								if (std::to_string(instr.talk_offset).size() != std::to_string(new_offset).size())
-									assert(false);
-								if (instr.talk_offset == offset &&
-									std::to_string(instr.talk_size).size() != new_offset_length)
-									assert(false);
-								total_instructions.push_back(instr);
+								if (std::to_string(instruction.talk_offset).size() != std::to_string(new_offset).size())
+								{
+									shorter_longer_instructions.push_back(instruction);
+									int32_t diff = std::to_string(new_offset).size() - std::to_string(instruction.talk_offset).size();
+
+									printf("Test");
+								}
+								else if (instruction.talk_offset == offset && std::to_string(instruction.talk_size).size() != talk_size_str.size())
+								{
+									shorter_longer_instructions.push_back(instruction);
+									int32_t diff = talk_size_str.size() - std::to_string(instruction.talk_size).size();
+
+									printf("Test");
+								}
+								else
+								{
+									if (instruction.talk_offset == offset)
+										memcpy(utils::add(full_data, instruction.talk_size_pos), talk_size_str.c_str(), talk_size_str.size());
+									else
+									{
+										std::string offset_str = std::to_string(new_offset);
+										memcpy(utils::add(full_data, instruction.talk_offset_pos), offset_str.c_str(), offset_str.size());
+									}
+								}
 							}
 						}
 					}
@@ -215,30 +236,78 @@ namespace HumongousFileEditor
 				header = next;
 			}
 
+			files::FILES.a->Replace(0, full_data, files::FILES.a->size);
+			free(full_data);
+
+			for (int i = shorter_longer_instructions.size(); i-- > 0; )
+			{
+				talk_instruction& instruction = shorter_longer_instructions[i];
+
+				size_t new_size = 0;
+
+				size_t replace_on_offset = 0;
+				size_t old_replace_value = 0;
+				size_t replace_value = 0;
+
+				int32_t difference = 0;
+
+				size_t new_offset = instruction.talk_offset + dif_size;
+				if (std::to_string(instruction.talk_offset).size() != std::to_string(new_offset).size())
+				{
+					difference = std::to_string(new_offset).size() - std::to_string(instruction.talk_offset).size();
+
+					replace_on_offset = instruction.talk_offset_pos - instruction.scrp_offset;
+					old_replace_value = instruction.talk_offset;
+					replace_value = new_offset;
+				}
+				else if (instruction.talk_offset == offset && std::to_string(instruction.talk_size).size() != talk_size_str.size())
+				{
+					difference = talk_size_str.size() - std::to_string(instruction.talk_size).size();
+
+					replace_on_offset = instruction.talk_size_pos - instruction.scrp_offset;
+					old_replace_value = instruction.talk_size;
+					replace_value = talk_chunk.ChunkSize();
+				}
+
+				new_size = instruction.scrp_size + difference;
+				unsigned char* scrp_data = reinterpret_cast<unsigned char*>(malloc(new_size));
+				if (!scrp_data)
+					continue;
+
+				ZeroMemory(scrp_data, new_size);
+
+				memcpy(scrp_data, utils::add(files::FILES.a->data, instruction.scrp_offset), replace_on_offset);
+				std::string replace_value_str = std::to_string(replace_value);
+				memcpy(
+					utils::add(scrp_data, replace_on_offset),
+					replace_value_str.c_str(),
+					replace_value_str.size()
+				);
+				int dsa = replace_on_offset + replace_value_str.size();
+				int dssa = instruction.scrp_offset + replace_on_offset + std::to_string(old_replace_value).size();
+				int sad = instruction.scrp_size - dsa + difference;
+				memcpy(
+					utils::add(scrp_data, dsa),
+					utils::add(files::FILES.a->data, dssa),
+					sad
+				);
+
+				chunk_reader::ChunkInfo chunk = files::FILES.a->GetChunkInfo(instruction.scrp_offset);
+				chunk.SetChunkSize(new_size);
+				memcpy(
+					scrp_data,
+					&chunk,
+					sizeof(chunk)
+				);
+
+				files::FILES.a->Replace(instruction.scrp_offset, scrp_data, new_size);
+				free(scrp_data);
+			}
+
 			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 
 			form->entryView->Nodes->Clear();
 			form->tabControl1->Controls->Clear();
-
-			unsigned char* full_data = reinterpret_cast<unsigned char*>(malloc(files::FILES.a->size));
-			memcpy(full_data, files::FILES.a->data, files::FILES.a->size);
-			for (int g = total_instructions.size(); g-- > 0; )
-			{
-				talk_instruction& instruction = total_instructions[g];
-				if (instruction.talk_offset == offset)
-				{
-					std::string talk_size_str = std::to_string(talk_chunk.ChunkSize());
-					memcpy(utils::add(full_data, instruction.talk_size_pos), talk_size_str.c_str(), talk_size_str.size());
-				}
-				else
-				{
-					size_t new_offset = instruction.talk_offset + dif_size;
-					std::string offset_str = std::to_string(new_offset);
-					memcpy(utils::add(full_data, instruction.talk_offset_pos), offset_str.c_str(), offset_str.size());
-				}
-			}
-			files::FILES.a->Replace(0, full_data, files::FILES.a->size);
-			free(full_data);
 
 			HumongousFileEditor::chunk_reader::ResourceGatherer rg;
 			rg.Read(files::FILES.a);
