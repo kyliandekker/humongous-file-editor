@@ -22,7 +22,7 @@ namespace HumongousFileEditor
 			ChunkInfo GetParent(size_t offset) const;
 			std::vector<ChunkInfo> GetChildren(size_t offset) const;
 			void Replace(size_t offset, unsigned char* new_data, size_t new_size);
-			void Decrypt(char key);
+			void Decrypt(char key = 0x69);
 
 			files::FileType fileType;
 			size_t size = 0;

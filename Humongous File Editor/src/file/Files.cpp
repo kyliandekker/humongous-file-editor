@@ -162,7 +162,9 @@ namespace HumongousFileEditor
 						
 						FILE* file = nullptr;
 						fopen_s(&file, path_name.c_str(), "wb");
+						he0->Decrypt();
 						fwrite(he0->data, he0->size, 1, file);
+						he0->Decrypt();
 						fclose(file);
 					}
 					if (a != nullptr)
@@ -173,7 +175,9 @@ namespace HumongousFileEditor
 						
 						FILE* file = nullptr;
 						fopen_s(&file, path_name.c_str(), "wb");
+						a->Decrypt();
 						fwrite(a->data, a->size, 1, file);
+						a->Decrypt();
 						fclose(file);
 					}
 
@@ -202,14 +206,18 @@ namespace HumongousFileEditor
 			{
 				FILE* file = nullptr;
 				fopen_s(&file, he0->path.c_str(), "wb");
+				he0->Decrypt();
 				fwrite(he0->data, he0->size, 1, file);
+				he0->Decrypt();
 				fclose(file);
 			}
 			if (a != nullptr)
 			{
 				FILE* file = nullptr;
 				fopen_s(&file, a->path.c_str(), "wb");
+				a->Decrypt();
 				fwrite(a->data, a->size, 1, file);
+				a->Decrypt();
 				fclose(file);
 			}
 			return true;

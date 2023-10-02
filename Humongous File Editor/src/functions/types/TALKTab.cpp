@@ -36,8 +36,8 @@ namespace HumongousFileEditor
 				ofn.lpstrFile = sz_file;
 				ofn.nMaxFile = sizeof(sz_file);
 
-				ofn.lpstrFilter = L"Humongous Talkie Files (*.HE2)\
-						\0*.HE2;*.he2\0";
+				ofn.lpstrFilter = L"Humongous Index Files (*.HE0)\
+						\0*.HE0;*.he0\0";
 				ofn.nFilterIndex = 1;
 				ofn.lpstrFileTitle = nullptr;
 				ofn.nMaxFileTitle = 0;
@@ -181,11 +181,14 @@ namespace HumongousFileEditor
 
 			std::vector<talk_instruction> total_instructions;
 
+			size_t new_offset_length = std::to_string(talk_chunk.ChunkSize()).size();
+
 			chunk_reader::ChunkInfo header = files::FILES.a->GetChunkInfo(0);
 			while (header.offset < files::FILES.a->size)
 			{
 				if (utils::chunkcmp(header.chunk_id, chunk_reader::LSCR_CHUNK_ID) == 0 ||
-					utils::chunkcmp(header.chunk_id, chunk_reader::LSC2_CHUNK_ID) == 0
+					utils::chunkcmp(header.chunk_id, chunk_reader::LSC2_CHUNK_ID) == 0 ||
+					utils::chunkcmp(header.chunk_id, chunk_reader::SCRP_CHUNK_ID) == 0
 					)
 				{
 					std::vector<talk_instruction> instructions;
@@ -195,14 +198,13 @@ namespace HumongousFileEditor
 						{
 							talk_instruction& instr = instructions[k];
 
-							uint32_t full_size = talk_chunk.ChunkSize();
-							size_t new_offset = instr.talk_offset - dif_size;
+							size_t new_offset = instr.talk_offset + dif_size;
 							if (instr.talk_offset >= offset)
 							{
 								if (std::to_string(instr.talk_offset).size() != std::to_string(new_offset).size())
 									assert(false);
 								if (instr.talk_offset == offset &&
-									std::to_string(instr.talk_size).size() != std::to_string(full_size).size())
+									std::to_string(instr.talk_size).size() != new_offset_length)
 									assert(false);
 								total_instructions.push_back(instr);
 							}
@@ -214,6 +216,7 @@ namespace HumongousFileEditor
 			}
 
 			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+
 			form->entryView->Nodes->Clear();
 			form->tabControl1->Controls->Clear();
 
@@ -222,14 +225,20 @@ namespace HumongousFileEditor
 			for (int g = total_instructions.size(); g-- > 0; )
 			{
 				talk_instruction& instruction = total_instructions[g];
-				size_t new_offset = instruction.talk_offset + dif_size;
-				std::string offset_str = std::to_string(new_offset);
-				memcpy(utils::add(full_data, instruction.talk_offset_pos), offset_str.c_str(), offset_str.size());
-
-				std::string talk_size_str = std::to_string(talk_chunk.ChunkSize());
-				memcpy(utils::add(full_data, instruction.talk_size_pos), talk_size_str.c_str(), talk_size_str.size());
+				if (instruction.talk_offset == offset)
+				{
+					std::string talk_size_str = std::to_string(talk_chunk.ChunkSize());
+					memcpy(utils::add(full_data, instruction.talk_size_pos), talk_size_str.c_str(), talk_size_str.size());
+				}
+				else
+				{
+					size_t new_offset = instruction.talk_offset + dif_size;
+					std::string offset_str = std::to_string(new_offset);
+					memcpy(utils::add(full_data, instruction.talk_offset_pos), offset_str.c_str(), offset_str.size());
+				}
 			}
 			files::FILES.a->Replace(0, full_data, files::FILES.a->size);
+			free(full_data);
 
 			HumongousFileEditor::chunk_reader::ResourceGatherer rg;
 			rg.Read(files::FILES.a);
