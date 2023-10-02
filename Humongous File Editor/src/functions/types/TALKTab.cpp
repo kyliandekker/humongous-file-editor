@@ -61,9 +61,7 @@ namespace HumongousFileEditor
 					delete[] path;
 				}
 				else
-				{
 					return false;
-				}
 			}
 
 			if (!utils::ends_with(path, ".wav"))
@@ -76,25 +74,46 @@ namespace HumongousFileEditor
 			void* chunk_alloc = malloc(wave_size);
 			uaudio::wave_reader::ChunkCollection chunkCollection(chunk_alloc, wave_size);
 			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::LoadWave(path.c_str(), chunkCollection)))
+			{
+				free(chunk_alloc);
 				return false;
+			}
 
 			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
+			{
+				free(chunk_alloc);
 				return false;
+			}
 
 			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
+			{
+				free(chunk_alloc);
 				return false;
+			}
 
 			if (fmt_chunk.byteRate != 11025)
+			{
+				free(chunk_alloc);
 				return false;
+			}
 
 			if (fmt_chunk.sampleRate != 11025)
+			{
+				free(chunk_alloc);
 				return false;
+			}
 
 			if (fmt_chunk.bitsPerSample != uaudio::wave_reader::WAVE_BITS_PER_SAMPLE_8)
+			{
+				free(chunk_alloc);
 				return false;
+			}
 
 			if (fmt_chunk.numChannels != uaudio::wave_reader::WAVE_CHANNELS_MONO)
+			{
+				free(chunk_alloc);
 				return false;
+			}
 
 			// Get TALK chunk for the raw audio data.
 			size_t talk_offset = offset;
@@ -204,20 +223,13 @@ namespace HumongousFileEditor
 							size_t new_offset = instruction.talk_offset + dif_size;
 							if (instruction.talk_offset >= offset)
 							{
+								// If the new offset of this instruction is not the same as the previous one.
 								if (std::to_string(instruction.talk_offset).size() != std::to_string(new_offset).size())
-								{
 									shorter_longer_instructions.push_back(instruction);
-									int32_t diff = std::to_string(new_offset).size() - std::to_string(instruction.talk_offset).size();
-
-									printf("Test");
-								}
+								// If the size of the changed talk chunk is now shorter or longer.
 								else if (instruction.talk_offset == offset && std::to_string(instruction.talk_size).size() != talk_size_str.size())
-								{
 									shorter_longer_instructions.push_back(instruction);
-									int32_t diff = talk_size_str.size() - std::to_string(instruction.talk_size).size();
-
-									printf("Test");
-								}
+								// Else, simply replace it. No need to move things around in the (a) and HE0.
 								else
 								{
 									if (instruction.talk_offset == offset)
@@ -239,22 +251,20 @@ namespace HumongousFileEditor
 			files::FILES.a->Replace(0, full_data, files::FILES.a->size);
 			free(full_data);
 
-			for (int i = shorter_longer_instructions.size(); i-- > 0; )
+			for (size_t i = shorter_longer_instructions.size(); i-- > 0; )
 			{
 				talk_instruction& instruction = shorter_longer_instructions[i];
 
-				size_t new_size = 0;
+				int32_t difference = 0;
 
 				size_t replace_on_offset = 0;
 				size_t old_replace_value = 0;
 				size_t replace_value = 0;
 
-				int32_t difference = 0;
-
 				size_t new_offset = instruction.talk_offset + dif_size;
 				if (std::to_string(instruction.talk_offset).size() != std::to_string(new_offset).size())
 				{
-					difference = std::to_string(new_offset).size() - std::to_string(instruction.talk_offset).size();
+					difference = static_cast<int32_t>(std::to_string(new_offset).size()) - static_cast<int32_t>(std::to_string(instruction.talk_offset).size());
 
 					replace_on_offset = instruction.talk_offset_pos - instruction.scrp_offset;
 					old_replace_value = instruction.talk_offset;
@@ -262,47 +272,87 @@ namespace HumongousFileEditor
 				}
 				else if (instruction.talk_offset == offset && std::to_string(instruction.talk_size).size() != talk_size_str.size())
 				{
-					difference = talk_size_str.size() - std::to_string(instruction.talk_size).size();
+					difference = static_cast<int32_t>(talk_size_str.size()) - static_cast<int32_t>(std::to_string(instruction.talk_size).size());
 
 					replace_on_offset = instruction.talk_size_pos - instruction.scrp_offset;
 					old_replace_value = instruction.talk_size;
 					replace_value = talk_chunk.ChunkSize();
 				}
 
-				new_size = instruction.scrp_size + difference;
+				size_t new_size = instruction.scrp_size + difference;
 				unsigned char* scrp_data = reinterpret_cast<unsigned char*>(malloc(new_size));
 				if (!scrp_data)
 					continue;
 
 				ZeroMemory(scrp_data, new_size);
 
+				// Copy everything until the replace point.
 				memcpy(scrp_data, utils::add(files::FILES.a->data, instruction.scrp_offset), replace_on_offset);
+				chunk_reader::ChunkInfo chunk = files::FILES.a->GetChunkInfo(instruction.scrp_offset);
+				chunk.SetChunkSize(new_size);
+				memcpy(
+					scrp_data,
+					&chunk,
+					sizeof(chunk_reader::ChunkInfo)
+				);
+
+				// Copy the replace value.
 				std::string replace_value_str = std::to_string(replace_value);
 				memcpy(
 					utils::add(scrp_data, replace_on_offset),
 					replace_value_str.c_str(),
 					replace_value_str.size()
 				);
-				int dsa = replace_on_offset + replace_value_str.size();
-				int dssa = instruction.scrp_offset + replace_on_offset + std::to_string(old_replace_value).size();
-				int sad = instruction.scrp_size - dsa + difference;
-				memcpy(
-					utils::add(scrp_data, dsa),
-					utils::add(files::FILES.a->data, dssa),
-					sad
-				);
 
-				chunk_reader::ChunkInfo chunk = files::FILES.a->GetChunkInfo(instruction.scrp_offset);
-				chunk.SetChunkSize(new_size);
+				// Copy the rest of the data.
+				int rest_data_place_pos = replace_on_offset + replace_value_str.size();
+				int rest_data_pos = instruction.scrp_offset + replace_on_offset + std::to_string(old_replace_value).size();
+				int rest_data_size = instruction.scrp_size - rest_data_place_pos + difference;
 				memcpy(
-					scrp_data,
-					&chunk,
-					sizeof(chunk)
+					utils::add(scrp_data, rest_data_place_pos),
+					utils::add(files::FILES.a->data, rest_data_pos),
+					rest_data_size
 				);
 
 				files::FILES.a->Replace(instruction.scrp_offset, scrp_data, new_size);
 				free(scrp_data);
 			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 
