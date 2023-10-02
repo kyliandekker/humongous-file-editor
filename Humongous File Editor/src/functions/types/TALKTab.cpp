@@ -288,11 +288,11 @@ namespace HumongousFileEditor
 
 				// Copy everything until the replace point.
 				memcpy(scrp_data, utils::add(files::FILES.a->data, instruction.scrp_offset), replace_on_offset);
-				chunk_reader::ChunkInfo chunk = files::FILES.a->GetChunkInfo(instruction.scrp_offset);
-				chunk.SetChunkSize(new_size);
+				chunk_reader::ChunkInfo chunkInfo = files::FILES.a->GetChunkInfo(instruction.scrp_offset);
+				chunkInfo.SetChunkSize(new_size);
 				memcpy(
 					scrp_data,
-					&chunk,
+					&chunkInfo,
 					sizeof(chunk_reader::ChunkInfo)
 				);
 
@@ -316,6 +316,43 @@ namespace HumongousFileEditor
 
 				files::FILES.a->Replace(instruction.scrp_offset, scrp_data, new_size);
 				free(scrp_data);
+
+				header = files::FILES.he0->GetChunkInfo(0);
+				int random_number_for_unique_id = 0;
+				while (header.offset < files::FILES.he0->size)
+				{
+					if (
+						utils::chunkcmp(header.chunk_id, chunk_reader::RNAM_CHUNK_ID) == 0 ||
+						utils::chunkcmp(header.chunk_id, chunk_reader::DIRI_CHUNK_ID) == 0 ||
+						utils::chunkcmp(header.chunk_id, chunk_reader::DIRS_CHUNK_ID) == 0 ||
+						utils::chunkcmp(header.chunk_id, chunk_reader::DIRC_CHUNK_ID) == 0 ||
+						utils::chunkcmp(header.chunk_id, chunk_reader::DIRF_CHUNK_ID) == 0 ||
+						utils::chunkcmp(header.chunk_id, chunk_reader::DIRN_CHUNK_ID) == 0 ||
+						utils::chunkcmp(header.chunk_id, chunk_reader::DIRT_CHUNK_ID) == 0 ||
+						utils::chunkcmp(header.chunk_id, chunk_reader::DIRM_CHUNK_ID) == 0 ||
+						utils::chunkcmp(header.chunk_id, chunk_reader::DIRR_CHUNK_ID) == 0 ||
+						utils::chunkcmp(header.chunk_id, chunk_reader::DISK_CHUNK_ID) == 0 ||
+						utils::chunkcmp(header.chunk_id, chunk_reader::DLFL_CHUNK_ID) == 0
+						)
+					{
+						chunk_reader::GENERIC_HE0_Chunk chunk;
+						memcpy(&chunk, utils::add(files::FILES.he0->data, header.offset), sizeof(chunk_reader::HumongousHeader) + sizeof(chunk.num_files));
+						chunk.data = utils::add(files::FILES.he0->data, header.offset + sizeof(chunk_reader::HumongousHeader) + sizeof(chunk.num_files));
+
+						size_t pos = sizeof(chunk_reader::HumongousHeader) + sizeof(chunk.num_files) + chunk.num_files;
+						while (pos < chunk.ChunkSize())
+						{
+							uint32_t byte_pos = *reinterpret_cast<uint32_t*>(utils::add(files::FILES.he0->data, header.offset + pos));
+							if (byte_pos >= instruction.scrp_offset)
+							{
+								byte_pos += difference;
+								memcpy(utils::add(files::FILES.he0->data, header.offset + pos), &byte_pos, sizeof(uint32_t));
+							}
+							pos += sizeof(uint32_t);
+						}
+					}
+					header = files::FILES.he0->GetNextChunk(header.offset);
+				}
 			}
 
 
@@ -329,10 +366,7 @@ namespace HumongousFileEditor
 
 
 
-
-
-
-
+			
 
 
 
