@@ -119,7 +119,7 @@ namespace HumongousFileEditor
 			if (fc->fileType == files::FileType::FileType_A)
 			{
 				a = fc;
-				std::string he0path = files::getFileWithoutExtension(fc->path) + ".he0";
+				std::string he0path = files::getFileWithoutExtension(fc->path) + ".HE0";
 
 				he0 = files::FILES.Read(he0path.c_str());
 				if (he0 == nullptr)
@@ -127,33 +127,11 @@ namespace HumongousFileEditor
 					LOGF(logger::LOGSEVERITY_ERROR, "Could not open file \"%s\".", he0path.c_str());
 					return false;
 				}
-
-				std::map<version_key, version_value> versions =
-				{
-					{ { ".LA0", 138 }, { 7, 0 } },
-					{ { ".LA0", 176 }, { 8, 0 } },
-					{ { ".000", 138 }, { 8, 0 } },
-					{ { ".HE0", 52 }, { 6, 99 } },
-					{ { ".HE0", 46 }, { 6, 90 } },
-					{ { ".HE0", 40 }, { 6, 80 } },
-					{ { ".HE0", 38 }, { 6, 71 } },
-					{ { ".HE0", 38 }, { 6, 71 } },
-					{ { ".000", 38 }, { 6, 0 } },
-					{ { ".SM0", 38 }, { 6, 0 } },
-					{ { ".000", 26 }, { 5, 0 } },
-					{ { ".LFL", 26 }, { 5, 0 } }
-				};
-
-				version_key key = { files::getExtensionFromPath(he0->path), he0->GetChunkInfo(0).ChunkSize() };
-				version_value values = versions[key];
-
-				he0->version = values.version;
-				he0->he_version = values.he_version;
 			}
 			else if (fc->fileType == files::FileType_HE0)
 			{
 				he0 = fc;
-				std::string apath = files::getFileWithoutExtension(fc->path) + ".(a)";
+				std::string apath = files::getFileWithoutExtension(fc->path) + ".(A)";
 
 				a = files::FILES.Read(apath.c_str());
 				if (a == nullptr)
@@ -164,6 +142,28 @@ namespace HumongousFileEditor
 			}
 			else
 				return false;
+
+			std::map<version_key, version_value> versions =
+			{
+				{ { ".LA0", 138 }, { 7, 0 } },
+				{ { ".LA0", 176 }, { 8, 0 } },
+				{ { ".000", 138 }, { 8, 0 } },
+				{ { ".HE0", 52 }, { 6, 99 } },
+				{ { ".HE0", 46 }, { 6, 90 } },
+				{ { ".HE0", 40 }, { 6, 80 } },
+				{ { ".HE0", 38 }, { 6, 71 } },
+				{ { ".HE0", 38 }, { 6, 71 } },
+				{ { ".000", 38 }, { 6, 0 } },
+				{ { ".SM0", 38 }, { 6, 0 } },
+				{ { ".000", 26 }, { 5, 0 } },
+				{ { ".LFL", 26 }, { 5, 0 } }
+			};
+
+			version_key key = { files::getExtensionFromPath(he0->path), he0->GetChunkInfo(0).ChunkSize() };
+			version_value values = versions[key];
+
+			he0->version = values.version;
+			he0->he_version = values.he_version;
 
 			chunk_reader::ChunkInfo info = he0->GetChunkInfo(0);
 

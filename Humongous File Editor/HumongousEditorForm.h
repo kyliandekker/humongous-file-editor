@@ -544,15 +544,15 @@ namespace HumongousFileEditor
 		{
 			return L"\
 						Humongous Game Files (*.HE0, *.HE2, *.HE3, *.HE4, *.(A))\
-						\0*.HE0;*.he0;*.HE2;*.he2;*.HE3;*.he3;*.HE4;*.he4;*.(A);*.(a)\0\
+						\0*.HE0;*.HE2;*.HE3;*.HE4;.(A)\0\
 						Humongous Resource Files (*.(A))\
-						\0*.(A);*.(a)\0\
+						\0*.(A)\0\
 						Humongous Talkie Files (*.HE2)\
-						\0*.HE2;*.he2\0\
+						\0*.HE2\0\
 						Humongous Index Files (*.HE0)\
-						\0*.HE0;*.he0\0\
+						\0*.HE0\0\
 						Humongous Song Files (*.HE4)\
-						\0*.HE4;*.he4\0";
+						\0*.HE4\0";
 		}
 		// Opens a window with info about the application (via the top menu or info button).
 		System::Void optionIndex_Click(System::Object^ sender, System::EventArgs^ e)

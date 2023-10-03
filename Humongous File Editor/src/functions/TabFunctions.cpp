@@ -256,6 +256,73 @@ namespace HumongousFileEditor
 		}
 	}
 
+	System::Void TabFunctions::ExportPaletteButton_Click(System::Object^ sender, System::EventArgs^ e)
+	{
+		OPENFILENAME ofn;
+		TCHAR sz_file[260] = { 0 };
+
+		ZeroMemory(&ofn, sizeof(ofn));
+		ofn.lStructSize = sizeof(ofn);
+		ofn.lpstrFile = sz_file;
+		ofn.nMaxFile = sizeof(sz_file);
+		ofn.lpstrFilter = L"\
+			BMP file (*.palette)\
+			\0*.palette;*.palette\0";
+		ofn.lpstrFileTitle = nullptr;
+		ofn.nMaxFileTitle = 0;
+		ofn.lpstrInitialDir = nullptr;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+		if (GetSaveFileNameW(&ofn))
+		{
+			HumongousButton^ btn = (HumongousButton^)sender;
+
+			chunk_reader::FileContainer* fc = files::FILES.getFile(btn->fileType);
+
+			if (fc == nullptr)
+				return;
+
+			std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(btn->offset);
+			if (children.size() == 0)
+				return;
+
+			size_t bsmap_offset = -1;
+			for (size_t i = 0; i < children.size(); i++)
+				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::BMAP_CHUNK_ID) == 0 || utils::chunkcmp(children[i].chunk_id, chunk_reader::SMAP_CHUNK_ID) == 0)
+					bsmap_offset = children[i].offset;
+
+			size_t rmim_offset = fc->GetParent(btn->offset).offset;
+			chunk_reader::RMIM_Chunk rmim_chunk;
+			memcpy(&rmim_chunk, utils::add(fc->data, rmim_offset), sizeof(chunk_reader::RMIM_Chunk));
+
+			std::vector<chunk_reader::ChunkInfo> rmda_children = fc->GetChildren(fc->GetParent(rmim_offset).offset);
+			size_t apal_offset = -1;
+			for (size_t i = 0; i < rmda_children.size(); i++)
+				if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::APAL_CHUNK_ID) == 0)
+					apal_offset = rmda_children[i].offset;
+
+			if (apal_offset < 0)
+				return;
+
+			chunk_reader::APAL_Chunk apal_chunk;
+			size_t header_size = sizeof(chunk_reader::APAL_Chunk);
+			memcpy(&apal_chunk, utils::add(fc->data, apal_offset), header_size);
+			size_t apal_size = apal_chunk.ChunkSize() - header_size;
+
+			const auto path = new char[wcslen(ofn.lpstrFile) + 1];
+			wsprintfA(path, "%S", ofn.lpstrFile);
+			std::string save_path_s = std::string(path);
+
+			delete[] path;
+
+			FILE* file = nullptr;
+			fopen_s(&file, save_path_s.c_str(), "wb");
+			fwrite(&apal_chunk, header_size, 1, file);
+			fwrite(apal_chunk.data, apal_size, 1, file);
+			fclose(file);
+		}
+	}
+
 	System::Void TabFunctions::ReplaceButton_Click(System::Object^ sender, System::EventArgs^ e)
 	{
 		HumongousButton^ btn = (HumongousButton^)sender;
@@ -661,6 +728,24 @@ namespace HumongousFileEditor
 		pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
 		propertyPanel->Controls->Add(pictureBox);
+
+		// Construct export button.
+		HumongousButton^ exportPaletteButton;
+		exportPaletteButton = (gcnew HumongousButton());
+
+		exportPaletteButton->Location = System::Drawing::Point(232, 53);
+		exportPaletteButton->Name = gcnew System::String("ExportPalette_") + gcnew System::String(tab->Name);
+		exportPaletteButton->Size = System::Drawing::Size(75, 23);
+		exportPaletteButton->TabIndex = 2;
+		exportPaletteButton->offset = offset;
+		exportPaletteButton->fileType = fc->fileType;
+		exportPaletteButton->resourceType = files::ResourceType::RoomBackground;
+		exportPaletteButton->Text = L"Palette";
+		exportPaletteButton->UseVisualStyleBackColor = true;
+		exportPaletteButton->Click += gcnew System::EventHandler(this, &TabFunctions::ExportPaletteButton_Click);
+
+		exportPaletteButton->ResumeLayout(false);
+		panel->Controls->Add(exportPaletteButton);
 	}
 
 	bool TabFunctions::GetRoomImageData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)

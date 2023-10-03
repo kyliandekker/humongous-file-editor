@@ -175,9 +175,9 @@ namespace HumongousFileEditor
 						
 						FILE* file = nullptr;
 						fopen_s(&file, path_name.c_str(), "wb");
-						a->Decrypt();
+						//a->Decrypt();
 						fwrite(a->data, a->size, 1, file);
-						a->Decrypt();
+						//a->Decrypt();
 						fclose(file);
 					}
 

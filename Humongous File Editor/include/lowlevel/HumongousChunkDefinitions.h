@@ -8,6 +8,8 @@ namespace HumongousFileEditor
 {
 	namespace chunk_reader
 	{
+		constexpr auto CHUNK_ID_SIZE = 4;
+
 		// TALK .HE2
 		constexpr auto TLKB_CHUNK_ID = "TLKB";
 		constexpr auto TALK_CHUNK_ID = "TALK";
@@ -23,7 +25,7 @@ namespace HumongousFileEditor
 		// GENERAL CHUNKS
 		constexpr auto SDAT_CHUNK_ID = "SDAT";
 
-		// RESOURCE CHUNKS .(a)
+		// RESOURCE CHUNKS .(A)
 		constexpr auto IMHD_CHUNK_ID = "IMHD";
 		constexpr auto LECF_CHUNK_ID = "LECF";
 		constexpr auto LFLF_CHUNK_ID = "LFLF";

@@ -66,6 +66,13 @@ namespace HumongousFileEditor
 			return header;
 		}
 
+		HumongousHeader FileContainer::GetChunk(size_t offset) const
+		{
+			HumongousHeader header;
+			memcpy(&header, utils::add(data, offset), sizeof(HumongousHeader));
+			return header;
+		}
+
 		ChunkInfo FileContainer::GetNextChunk(size_t offset) const
 		{
 			size_t extra_offset = 0;

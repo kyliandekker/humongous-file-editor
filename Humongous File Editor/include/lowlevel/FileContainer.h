@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "ChunkInfo.h"
+#include "HumongousHeader.h"
 #include "file/FileType.h"
 
 namespace HumongousFileEditor
@@ -18,6 +19,7 @@ namespace HumongousFileEditor
 			~FileContainer();
 
 			ChunkInfo GetChunkInfo(size_t offset) const;
+			HumongousHeader GetChunk(size_t offset) const;
 			ChunkInfo GetNextChunk(size_t offset) const;
 			ChunkInfo GetParent(size_t offset) const;
 			std::vector<ChunkInfo> GetChildren(size_t offset) const;

@@ -24,13 +24,13 @@ namespace HumongousFileEditor
 		{
 			std::string extension = getExtensionFromPath(path);
 
-			if (extension == "(A)" || extension == "(a)")
+			if (extension == "(A)")
 				return FileType_A;
-			else if (extension == "HE0" || extension == "he0")
+			else if (extension == "HE0")
 				return FileType_HE0;
-			else if (extension == "HE2" || extension == "he2")
+			else if (extension == "HE2")
 				return FileType_HE2;
-			else if (extension == "HE4" || extension == "he4")
+			else if (extension == "HE4")
 				return FileType_HE4;
 			return FileType_Unknown;
 		}
@@ -50,7 +50,7 @@ namespace HumongousFileEditor
 				}
 				case FileType::FileType_A:
 				{
-					return ".(a)";
+					return ".(A)";
 				}
 				case FileType::FileType_HE4:
 				{

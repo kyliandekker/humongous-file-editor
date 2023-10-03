@@ -42,6 +42,7 @@ namespace HumongousFileEditor
 		System::Void StopButton_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void NextButton_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void ExportButton_Click(System::Object^ sender, System::EventArgs^ e);
+		System::Void ExportPaletteButton_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void ReplaceButton_Click(System::Object^ sender, System::EventArgs^ e);
 		void AddTab(HumongousNode^ node, System::Windows::Forms::TabControl^ tabControl);
 		System::Void DoubleClick(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e);

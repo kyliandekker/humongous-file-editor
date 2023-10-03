@@ -65,7 +65,7 @@ namespace HumongousFileEditor
 					
 					delete[] save_path;
 
-					if (!utils::ends_with(save_path_s, extension))
+					if (!utils::ends_with(save_path_s, extension) && !utils::ends_with(save_path_s, extension))
 						save_path_s += extension;
 
 					FILE* file = nullptr;
