@@ -62,20 +62,18 @@ namespace HumongousFileEditor
 						instruction.full_str = std::string(reinterpret_cast<char*>(data_str));
 
 						instruction.scrp_offset = offset;
-						instruction.scrp_size = chunk.ChunkSize();
 						instruction.offset_in_scrp_chunk = sizeof(chunk_reader::HumongousHeader) + pos;
-						instruction.abs_offset = offset + sizeof(chunk_reader::HumongousHeader) + pos;
 
 						size_t byte_pos_pos = instruction.full_str.find_first_of("T") + 1;
 						size_t comma_pos = instruction.full_str.find_first_of(",");
 						std::string talk_offset = instruction.full_str.substr(byte_pos_pos, comma_pos - byte_pos_pos);
 
 						instruction.talk_offset = std::stoi(talk_offset);
-						instruction.talk_offset_pos = byte_pos_pos + instruction.abs_offset;
+						instruction.talk_offset_pos = byte_pos_pos + instruction.offset_in_scrp_chunk;
 
 						size_t bracket_pos = instruction.full_str.find_first_of("[");
 						std::string talk_size = instruction.full_str.substr(comma_pos + 1, (bracket_pos - 1) - (comma_pos + 1));
-						instruction.talk_size_pos = comma_pos + 1 + instruction.abs_offset;
+						instruction.talk_size_pos = comma_pos + 1 + instruction.offset_in_scrp_chunk;
 
 						instruction.talk_size = std::stoi(talk_size);
 

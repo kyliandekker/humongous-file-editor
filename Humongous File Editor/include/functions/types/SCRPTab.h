@@ -17,9 +17,7 @@ namespace HumongousFileEditor
 		std::string name;
 
 		size_t scrp_offset;
-		size_t scrp_size;
 		size_t offset_in_scrp_chunk;
-		size_t abs_offset;
 
 		size_t talk_offset;
 		size_t talk_offset_pos;

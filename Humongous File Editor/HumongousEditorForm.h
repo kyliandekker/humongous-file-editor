@@ -543,10 +543,8 @@ namespace HumongousFileEditor
 		LPCWSTR getFilter()
 		{
 			return L"\
-						Humongous Game Files (*.HE0, *.HE2, *.HE3, *.HE4, *.(A))\
-						\0*.HE0;*.HE2;*.HE3;*.HE4;.(A)\0\
-						Humongous Resource Files (*.(A))\
-						\0*.(A)\0\
+						Humongous Game Files (*.HE0, *.HE2, *.HE3, *.HE4)\
+						\0*.HE0;*.HE2;*.HE3;*.HE4\0\
 						Humongous Talkie Files (*.HE2)\
 						\0*.HE2\0\
 						Humongous Index Files (*.HE0)\

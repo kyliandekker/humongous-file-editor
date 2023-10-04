@@ -6,8 +6,8 @@
 *.HE3
 *.HE1
 *.HE0
-*.a
-*.(a)
+*.A
+*.(A)
 
 input/
 output/
