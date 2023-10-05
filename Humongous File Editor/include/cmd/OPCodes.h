@@ -8,43 +8,45 @@
 
 namespace HumongousFileEditor
 {
+    class ArgsAllocator;
+
     namespace chunk_reader
     {
         struct bytecode_data;
 
-        size_t extended_b_op(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t extended_w_op(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t jump_cmd(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t msg_cmd(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t msg_op(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t actor_ops_v6(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t verb_ops_v6(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t array_ops_v6(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t wait_ops(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t extended_bw_op(unsigned char* data, size_t data_size, unsigned char*& return_data);
+        void extended_b_op(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void extended_w_op(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void jump_cmd(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void msg_cmd(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void msg_op(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void actor_ops_v6(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void verb_ops_v6(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void array_ops_v6(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void wait_ops(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void extended_bw_op(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
 
-        size_t room_ops_he60(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t actor_ops_he60(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t dmsg_op(unsigned char* data, size_t data_size, unsigned char*& return_data);
+        void room_ops_he60(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void actor_ops_he60(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void dmsg_op(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
 
-        size_t sys_msg(unsigned char* data, size_t data_size, unsigned char*& return_data);
+        void sys_msg(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
 
         // TODO: Figure out what this does.
-        size_t ini_op_v71(unsigned char* data, size_t data_size, unsigned char*& return_data);
-        size_t array_ops(unsigned char* data, size_t data_size, unsigned char*& return_data);
+        void ini_op_v71(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
+        void array_ops(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
 
-        size_t extended_dw_op(unsigned char* data, size_t data_size, unsigned char*& return_data);
+        void extended_dw_op(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
 
-        size_t file_op(unsigned char* data, size_t data_size, unsigned char*& return_data);
+        void file_op(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
 
-        size_t extended_ww_op(unsigned char* data, size_t data_size, unsigned char*& return_data);
+        void extended_ww_op(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
 
-        size_t default_func(unsigned char* data, size_t data_size, unsigned char*& return_data);
+        void default_func(unsigned char* data, size_t data_size, ArgsAllocator& return_data);
 
         struct bytecode
         {
             std::string name;
-            std::function<size_t(unsigned char*, size_t, unsigned char*&)> func = default_func;
+            std::function<void(unsigned char*, size_t, ArgsAllocator&)> func = default_func;
         };
 
         inline std::map<uint8_t, bytecode> OPCODES_HE90 =

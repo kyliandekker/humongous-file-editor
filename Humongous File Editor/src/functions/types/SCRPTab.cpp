@@ -4,7 +4,8 @@
 #include "lowlevel/HumongousChunks.h"
 #include "lowlevel/FileContainer.h"
 #include "lowlevel/utils.h"
-#include "lowlevel/OPCodes.h"
+#include "cmd/OPCodes.h"
+#include "cmd/ArgsAllocator.h"
 #include "lowlevel/bytecode_data.h"
 
 namespace HumongousFileEditor
@@ -34,7 +35,7 @@ namespace HumongousFileEditor
 		// Local v8.
 		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::LSC2_CHUNK_ID) == 0)
 		{
-			// For some reason we skip the first byte.
+			// For some reason we skip the first 4 bytes.
 			pos += 4;
 		}
 
@@ -45,43 +46,52 @@ namespace HumongousFileEditor
 
 			talk_instruction instruction;
 			instruction.code = b;
+			instruction.offset_in_scrp_chunk = sizeof(chunk_reader::HumongousHeader) + pos;
+			instruction.scrp_offset = offset;
 			pos++;
 
+			ArgsAllocator args;
 			chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[b];
-			unsigned char* data_str = {};
-			size_t bytecode_size = bytecode.func(utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader) + pos), scrp_size - pos, data_str);
+			bytecode.func(utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader) + pos), scrp_size - pos, args);
 
-			if (b == 0x04 || b == 0xBA)
-			{
-				instruction.name = bytecode.name;
+			instruction.name = bytecode.name;
+			instruction.args = args;
 
-				if (data_str != nullptr)
-				{
-					if (data_str[0] == 0x7F && data_str[1] == 'T')
-					{
-						instruction.full_str = std::string(reinterpret_cast<char*>(data_str));
+			instructions.push_back(instruction);
 
-						instruction.scrp_offset = offset;
-						instruction.offset_in_scrp_chunk = sizeof(chunk_reader::HumongousHeader) + pos;
+			pos += args.Size();
 
-						size_t byte_pos_pos = instruction.full_str.find_first_of("T") + 1;
-						size_t comma_pos = instruction.full_str.find_first_of(",");
-						std::string talk_offset = instruction.full_str.substr(byte_pos_pos, comma_pos - byte_pos_pos);
+			//if (b == 0x04 || b == 0xBA)
+			//{
+			//	instruction.name = bytecode.name;
 
-						instruction.talk_offset = std::stoi(talk_offset);
-						instruction.talk_offset_pos = byte_pos_pos + instruction.offset_in_scrp_chunk;
+			//	if (data_str != nullptr)
+			//	{
+			//		if (data_str[0] == 0x7F && data_str[1] == 'T')
+			//		{
+			//			instruction.full_str = std::string(reinterpret_cast<char*>(data_str));
 
-						size_t bracket_pos = instruction.full_str.find_first_of("[");
-						std::string talk_size = instruction.full_str.substr(comma_pos + 1, (bracket_pos - 1) - (comma_pos + 1));
-						instruction.talk_size_pos = comma_pos + 1 + instruction.offset_in_scrp_chunk;
+			//			instruction.scrp_offset = offset;
+			//			instruction.offset_in_scrp_chunk = sizeof(chunk_reader::HumongousHeader) + pos;
 
-						instruction.talk_size = std::stoi(talk_size);
+			//			size_t byte_pos_pos = instruction.full_str.find_first_of("T") + 1;
+			//			size_t comma_pos = instruction.full_str.find_first_of(",");
+			//			std::string talk_offset = instruction.full_str.substr(byte_pos_pos, comma_pos - byte_pos_pos);
 
-						instructions.push_back(instruction);
-					}
-				}
-			}
-			pos += bytecode_size;
+			//			instruction.talk_offset = std::stoi(talk_offset);
+			//			instruction.talk_offset_pos = byte_pos_pos + instruction.offset_in_scrp_chunk;
+
+			//			size_t bracket_pos = instruction.full_str.find_first_of("[");
+			//			std::string talk_size = instruction.full_str.substr(comma_pos + 1, (bracket_pos - 1) - (comma_pos + 1));
+			//			instruction.talk_size_pos = comma_pos + 1 + instruction.offset_in_scrp_chunk;
+
+			//			instruction.talk_size = std::stoi(talk_size);
+
+			//			instructions.push_back(instruction);
+			//		}
+			//	}
+			//}
+			//pos += bytecode_size;
 		}
 
 		return true;

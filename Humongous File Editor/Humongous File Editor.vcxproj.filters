@@ -111,13 +111,22 @@
     <ClInclude Include="include\functions\ChunkFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\lowlevel\OPCodes.h">
+    <ClInclude Include="include\cmd\OPCodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\functions\types\SCRPTab.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\lowlevel\bytecode_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmd\ArgsAllocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmd\talk_string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cmd\talk_instruction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -199,7 +208,13 @@
     <ClCompile Include="src\functions\types\SCRPTab.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\lowlevel\OPCodes.cpp">
+    <ClCompile Include="src\cmd\OPCodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmd\ArgsAllocator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmd\talk_string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -139,6 +139,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\cmd\ArgsAllocator.h" />
+    <ClInclude Include="include\cmd\talk_instruction.h" />
+    <ClInclude Include="include\cmd\talk_string.h" />
     <ClInclude Include="include\file\BMPHeader.h" />
     <ClInclude Include="include\file\Files.h" />
     <ClInclude Include="include\file\FileType.h" />
@@ -167,7 +170,7 @@
     <ClInclude Include="include\lowlevel\HumongousChunkDefinitions.h" />
     <ClInclude Include="include\lowlevel\HumongousChunks.h" />
     <ClInclude Include="include\lowlevel\HumongousHeader.h" />
-    <ClInclude Include="include\lowlevel\OPCodes.h" />
+    <ClInclude Include="include\cmd\OPCodes.h" />
     <ClInclude Include="include\lowlevel\utils.h" />
     <ClInclude Include="include\systems\AudioSystem.h" />
     <ClInclude Include="include\systems\Logger.h" />
@@ -185,6 +188,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\cmd\ArgsAllocator.cpp" />
+    <ClCompile Include="src\cmd\talk_string.cpp" />
     <ClCompile Include="src\functions\ChunkFunctions.cpp" />
     <ClCompile Include="src\functions\types\BMAPTab.cpp" />
     <ClCompile Include="src\functions\types\base\ImageTab.cpp" />
@@ -206,7 +211,7 @@
     <ClCompile Include="src\lowlevel\HumongousChunkDefinitions.cpp" />
     <ClCompile Include="src\lowlevel\HumongousChunks.cpp" />
     <ClCompile Include="src\lowlevel\HumongousHeader.cpp" />
-    <ClCompile Include="src\lowlevel\OPCodes.cpp" />
+    <ClCompile Include="src\cmd\OPCodes.cpp" />
     <ClCompile Include="src\lowlevel\utils.cpp" />
     <ClCompile Include="src\systems\AudioSystem.cpp" />
     <ClCompile Include="src\systems\Logger.cpp" />

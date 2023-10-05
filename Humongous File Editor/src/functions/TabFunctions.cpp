@@ -27,7 +27,7 @@
 #include "lowlevel/utils.h"
 #include "systems/Logger.h"
 #include "file/ResourceType.h"
-#include <HumongousEditorForm.h>
+#include "HumongousEditorForm.h"
 
 #include "functions/types/BMAPTab.h"
 #include "functions/types/DIGITab.h"
@@ -35,6 +35,7 @@
 #include "functions/types/TALKTab.h"
 #include "functions/types/SCRPTab.h"
 #include "functions/ChunkFunctions.h"
+#include "cmd/talk_string.h"
 
 namespace HumongousFileEditor
 {
@@ -346,7 +347,6 @@ namespace HumongousFileEditor
 			}
 			case files::ResourceType::Talkie:
 			{
-				System::Windows::Forms::MessageBox::Show("WARNING: Replacing voice files does not fully work yet. It will only work in the program itself, but will cause the game to crash.", "WARNING", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Warning);
 				success = TALKTab::ReplaceResource(fc, btn->offset);
 				break;
 			}
@@ -600,24 +600,42 @@ namespace HumongousFileEditor
 	{
 		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
 		
-		std::vector<talk_instruction> instructions;
-		if (!SCRPTab::GetData(fc, offset, instructions))
-			return;
+		//std::vector<talk_instruction> instructions;
+		//if (!SCRPTab::GetData(fc, offset, instructions))
+		//	return;
 
-		for (size_t i = 0; i < instructions.size(); i++)
-			AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(instructions[i].full_str.c_str()), propertyGrid, posX, posY, false);
+		//for (size_t i = 0; i < instructions.size(); i++)
+		//{
+		//	talk_instruction& instruction = instructions[i];
+
+		//	if (instruction.code == 0x04 || instruction.code == 0xBA)
+		//	{
+		//		talk_string talkie_string = instruction.args.GetArgsString<talk_string>(0);
+
+		//		AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(talkie_string.c_str()), propertyGrid, posX, posY, false);
+		//	}
+		//}
 	}
 
 	void TabFunctions::GetLocalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
 	{
 		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
 		
-		std::vector<talk_instruction> instructions;
-		if (!SCRPTab::GetData(fc, offset, instructions))
-			return;
+		//std::vector<talk_instruction> instructions;
+		//if (!SCRPTab::GetData(fc, offset, instructions))
+		//	return;
 
-		for (size_t i = 0; i < instructions.size(); i++)
-			AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(instructions[i].full_str.c_str()), propertyGrid, posX, posY, false);
+		//for (size_t i = 0; i < instructions.size(); i++)
+		//{
+		//	talk_instruction& instruction = instructions[i];
+
+		//	if (instruction.code == 0x04 || instruction.code == 0xBA)
+		//	{
+		//		talk_string talkie_string = instruction.args.GetArgsString<talk_string>(0);
+
+		//		AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(talkie_string.c_str()), propertyGrid, posX, posY, false);
+		//	}
+		//}
 	}
 
 	bool TabFunctions::GetRoomBackgroundData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)

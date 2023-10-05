@@ -3,6 +3,8 @@
 #include <vector>
 
 #include "base/SoundTab.h"
+#include "cmd/ArgsAllocator.h"
+#include "cmd/talk_instruction.h"
 
 namespace HumongousFileEditor
 {
@@ -10,22 +12,6 @@ namespace HumongousFileEditor
 	{
 		class FileContainer;
 	}
-
-	struct talk_instruction
-	{
-		uint8_t code;
-		std::string name;
-
-		size_t scrp_offset;
-		size_t offset_in_scrp_chunk;
-
-		size_t talk_offset;
-		size_t talk_offset_pos;
-		size_t talk_size;
-		size_t talk_size_pos;
-
-		std::string full_str;
-	};
 
 	class SCRPTab : public SoundTab
 	{
