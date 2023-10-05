@@ -59,6 +59,28 @@ namespace HumongousFileEditor
 
 			instructions.push_back(instruction);
 
+			// Checking jumps and seeing if they are valid.
+			if (instruction.code == 0x5C || instruction.code == 0x5D || instruction.code == 0x73)
+			{
+				int16_t offset = *reinterpret_cast<int16_t*>(utils::add(fc->data, 1 + instruction.scrp_offset + instruction.offset_in_scrp_chunk + instruction.args[0].offset));
+				int16_t relative_offset_in_scrp = instruction.offset_in_scrp_chunk + offset;
+
+				uint8_t tb = chunk.data[relative_offset_in_scrp];
+				chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[tb];
+			}
+			// Checking wait jumps.
+			if (instruction.code == 0x5C || instruction.code == 0x5D || instruction.code == 0x73)
+			{
+				if (instruction.args.args.size() == 2)
+				{
+					int16_t offset = *reinterpret_cast<int16_t*>(utils::add(fc->data, 1 + instruction.scrp_offset + instruction.offset_in_scrp_chunk + instruction.args[1].offset));
+					int16_t relative_offset_in_scrp = instruction.offset_in_scrp_chunk + offset;
+
+					uint8_t tb = chunk.data[relative_offset_in_scrp];
+					chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[tb];
+				}
+			}
+
 			pos += args.Size();
 
 			//if (b == 0x04 || b == 0xBA)
