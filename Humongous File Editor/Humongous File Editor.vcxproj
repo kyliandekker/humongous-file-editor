@@ -179,6 +179,9 @@
     <ClInclude Include="include\functions\ResourceGatherer.h" />
     <ClInclude Include="include\functions\FileDecrypter.h" />
     <ClInclude Include="include\functions\types\base\ImageTab.h" />
+    <ClInclude Include="ProgressBarForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">
@@ -187,8 +190,12 @@
       <LogicalName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
       <LogicalName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="ProgressBarForm.resx">
+      <DependentUpon>ProgressBarForm.h</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ProgressBarForm.cpp" />
     <ClCompile Include="src\allocators\TempAllocator.cpp" />
     <ClCompile Include="src\cmd\ArgsAllocator.cpp" />
     <ClCompile Include="src\cmd\talk_string.cpp" />

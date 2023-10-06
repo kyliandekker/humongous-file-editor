@@ -92,7 +92,7 @@ namespace HumongousFileEditor
 				}
 				next_chunk = fc->GetNextChunk(next_chunk.offset);
 
-				HumongousFileEditor::chunk_reader::ChunkFunctions::SetProgressBar(form->toolProgressBar, static_cast<double>(100.0f / fc->size * next_chunk.offset));
+				//HumongousFileEditor::chunk_reader::ChunkFunctions::SetProgressBar(form->toolProgressBar, static_cast<double>(100.0f / fc->size * next_chunk.offset));
 			}
 
 			free(new_data);

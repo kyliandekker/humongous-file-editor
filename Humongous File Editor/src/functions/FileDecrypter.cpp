@@ -38,9 +38,6 @@ namespace HumongousFileEditor
 
 				delete[] path;
 
-				HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
-				form->toolProgressBar->Value = 100;
-
 				OPENFILENAME ofn;
 				TCHAR sz_file[260] = { 0 };
 
