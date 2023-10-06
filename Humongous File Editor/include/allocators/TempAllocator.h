@@ -7,6 +7,7 @@ namespace HumongousFileEditor
 	public:
 		TempAllocator() = default;
 		TempAllocator(size_t size, unsigned char* data);
+		TempAllocator(size_t size);
 		TempAllocator(const TempAllocator& rhs);
 		~TempAllocator();
 

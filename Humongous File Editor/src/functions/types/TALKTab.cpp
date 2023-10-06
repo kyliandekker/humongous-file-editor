@@ -453,7 +453,6 @@ namespace HumongousFileEditor
 			};
 
 			{
-
 				chunk_reader::ChunkInfo he0_header = files::FILES.he0->GetChunkInfo(0);
 				while (he0_header.offset < files::FILES.he0->size)
 				{
@@ -587,26 +586,6 @@ namespace HumongousFileEditor
 				files::FILES.he0->Replace(he0_header.offset, dlfl_data, he0_header.ChunkSize());
 				free(dlfl_data);
 			}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 			chunk_reader::ChunkInfo he0_header = files::FILES.he0->GetChunkInfo(0);
 			while (he0_header.offset < files::FILES.he0->size)
