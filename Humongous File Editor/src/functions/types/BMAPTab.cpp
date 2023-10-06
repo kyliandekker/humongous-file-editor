@@ -213,7 +213,7 @@ namespace HumongousFileEditor
 			newOut.push_back(apal_chunk.data[final_data[i].index * 3 + 1]);
 			newOut.push_back(apal_chunk.data[final_data[i].index * 3 + 2]);
 			if (final_data[i].index == final_data[i].trans_color)
-				newOut.push_back(0);
+				newOut.push_back(255);
 			else
 				newOut.push_back(255);
 		}

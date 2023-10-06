@@ -441,17 +441,18 @@ namespace HumongousFileEditor
 				rmim_header = next;
 			}
 
+			std::map<std::string, std::vector<std::string>> chunks_in_index_pair =
 			{
-				std::map<std::string, std::vector<std::string>> chunks_in_index_pair =
-				{
-					{ chunk_reader::DIRS_CHUNK_ID, { chunk_reader::SCRP_CHUNK_ID } },
-					{ chunk_reader::DIRC_CHUNK_ID, { chunk_reader::AKOS_CHUNK_ID } },
-					{ chunk_reader::DIRF_CHUNK_ID, { chunk_reader::CHAR_CHUNK_ID } },
-					{ chunk_reader::DIRN_CHUNK_ID, { chunk_reader::SOUN_CHUNK_ID, chunk_reader::TALK_CHUNK_ID, chunk_reader::DIGI_CHUNK_ID } },
-					{ chunk_reader::DIRT_CHUNK_ID, { chunk_reader::TLKE_CHUNK_ID } },
-					{ chunk_reader::DIRM_CHUNK_ID, { chunk_reader::MULT_CHUNK_ID, chunk_reader::AWIZ_CHUNK_ID } },
-					{ chunk_reader::DIRR_CHUNK_ID, { chunk_reader::RMDA_CHUNK_ID } },
-				};
+				{ chunk_reader::DIRS_CHUNK_ID, { chunk_reader::SCRP_CHUNK_ID } },
+				{ chunk_reader::DIRC_CHUNK_ID, { chunk_reader::AKOS_CHUNK_ID } },
+				{ chunk_reader::DIRF_CHUNK_ID, { chunk_reader::CHAR_CHUNK_ID } },
+				{ chunk_reader::DIRN_CHUNK_ID, { chunk_reader::SOUN_CHUNK_ID, chunk_reader::TALK_CHUNK_ID, chunk_reader::DIGI_CHUNK_ID } },
+				{ chunk_reader::DIRT_CHUNK_ID, { chunk_reader::TLKE_CHUNK_ID } },
+				{ chunk_reader::DIRM_CHUNK_ID, { chunk_reader::MULT_CHUNK_ID, chunk_reader::AWIZ_CHUNK_ID } },
+				{ chunk_reader::DIRR_CHUNK_ID, { chunk_reader::RMDA_CHUNK_ID } },
+			};
+
+			{
 
 				chunk_reader::ChunkInfo he0_header = files::FILES.he0->GetChunkInfo(0);
 				while (he0_header.offset < files::FILES.he0->size)
@@ -495,6 +496,8 @@ namespace HumongousFileEditor
 						unsigned char* generic_data = reinterpret_cast<unsigned char*>(malloc(he0_header.ChunkSize()));
 						memcpy(generic_data, utils::add(files::FILES.he0->data, he0_header.offset), he0_header.ChunkSize());
 
+						chunk_reader::ChunkInfo mult;
+						mult.SetChunkSize(0);
 						for (size_t j = 0; j < pairs.size(); j++)
 						{
 							if (pairs[j].offset == 0)
@@ -508,7 +511,25 @@ namespace HumongousFileEditor
 							{
 								for (size_t k = 0; k < index_chunks.size(); k++)
 									if (utils::chunkcmp(a_header.chunk_id, index_chunks[k].c_str()) == 0)
-										num++;
+									{
+										if (utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRM_CHUNK_ID) != 0)
+										{
+											num++;
+										}
+										else
+										{
+											if (utils::chunkcmp(a_header.chunk_id, chunk_reader::MULT_CHUNK_ID) == 0)
+											{
+												mult = a_header;
+												num++;
+											}
+											else
+											{
+												if (a_header.offset > mult.offset && a_header.offset > mult.offset + mult.ChunkSize())
+													num++;
+											}
+										}
+									}
 								if (num != rmims[pairs[j].rmim_offset])
 									a_header = files::FILES.a->GetNextChunk(a_header.offset);
 							}
@@ -586,18 +607,6 @@ namespace HumongousFileEditor
 
 
 
-
-			// Check check double check
-			std::map<std::string, std::vector<std::string>> chunks_in_index_pair =
-			{
-				{ chunk_reader::DIRS_CHUNK_ID, { chunk_reader::SCRP_CHUNK_ID } },
-				{ chunk_reader::DIRC_CHUNK_ID, { chunk_reader::AKOS_CHUNK_ID } },
-				{ chunk_reader::DIRF_CHUNK_ID, { chunk_reader::CHAR_CHUNK_ID } },
-				{ chunk_reader::DIRN_CHUNK_ID, { chunk_reader::SOUN_CHUNK_ID, chunk_reader::TALK_CHUNK_ID, chunk_reader::DIGI_CHUNK_ID } },
-				{ chunk_reader::DIRT_CHUNK_ID, { chunk_reader::TLKE_CHUNK_ID } },
-				{ chunk_reader::DIRM_CHUNK_ID, { chunk_reader::MULT_CHUNK_ID, chunk_reader::AWIZ_CHUNK_ID } },
-				{ chunk_reader::DIRR_CHUNK_ID, { chunk_reader::RMDA_CHUNK_ID } },
-			};
 
 			chunk_reader::ChunkInfo he0_header = files::FILES.he0->GetChunkInfo(0);
 			while (he0_header.offset < files::FILES.he0->size)
