@@ -139,6 +139,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\allocators\TempAllocator.h" />
     <ClInclude Include="include\cmd\ArgsAllocator.h" />
     <ClInclude Include="include\cmd\talk_instruction.h" />
     <ClInclude Include="include\cmd\talk_string.h" />
@@ -188,6 +189,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\allocators\TempAllocator.cpp" />
     <ClCompile Include="src\cmd\ArgsAllocator.cpp" />
     <ClCompile Include="src\cmd\talk_string.cpp" />
     <ClCompile Include="src\functions\ChunkFunctions.cpp" />

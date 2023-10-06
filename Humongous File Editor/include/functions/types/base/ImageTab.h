@@ -3,12 +3,16 @@
 
 #include <string>
 #include <vector>
+#include "allocators/TempAllocator.h"
 
 namespace HumongousFileEditor
 {
+	using ImageData = TempAllocator;
+
 	struct img_info
 	{
-		std::vector<uint8_t> data;
+	public:
+		ImageData data;
 		uint16_t channels = 0;
 		size_t size = 0;
 		size_t width = 0, height = 0;

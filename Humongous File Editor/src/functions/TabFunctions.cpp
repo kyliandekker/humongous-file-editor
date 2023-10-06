@@ -179,13 +179,13 @@ namespace HumongousFileEditor
 					{
 						if (!utils::ends_with(save_path_s, ".bmp"))
 							save_path_s += ".bmp";
-						stbi_write_bmp(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data());
+						stbi_write_bmp(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data);
 					}
 					else
 					{
 						if (!utils::ends_with(save_path_s, ".png"))
 							save_path_s += ".png";
-						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data(), static_cast<int>(info.width * info.channels));
+						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data, static_cast<int>(info.width * info.channels));
 					}
 
 					System::Windows::Forms::MessageBox::Show("Successfully exported file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
@@ -235,13 +235,13 @@ namespace HumongousFileEditor
 					{
 						if (!utils::ends_with(save_path_s, ".bmp"))
 							save_path_s += ".bmp";
-						stbi_write_bmp(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data());
+						stbi_write_bmp(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data);
 					}
 					else
 					{
 						if (!utils::ends_with(save_path_s, ".png"))
 							save_path_s += ".png";
-						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data(), static_cast<int>(info.width* info.channels));
+						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data, static_cast<int>(info.width* info.channels));
 					}
 
 					System::Windows::Forms::MessageBox::Show("Successfully exported file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
@@ -730,9 +730,9 @@ namespace HumongousFileEditor
 			int y = cur / static_cast<int>(rmhd_chunk.width);
 			int x = cur % static_cast<int>(rmhd_chunk.width);
 			if (info.channels < 4)
-				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, info.data[i], info.data[i + 1], info.data[i + 2]));
+				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, info.data.data[i], info.data.data[i + 1], info.data.data[i + 2]));
 			else
-				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data[i + 3], info.data[i], info.data[i + 1], info.data[i + 2]));
+				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data.data[i + 3], info.data.data[i], info.data.data[i + 1], info.data.data[i + 2]));
 		}
 
 		System::Windows::Forms::PictureBox^ pictureBox;
@@ -862,8 +862,10 @@ namespace HumongousFileEditor
 		{
 			int y = cur / static_cast<int>(info.width);
 			int x = cur % static_cast<int>(info.width);
-			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data[i + 3], info.data[i], info.data[i + 1], info.data[i + 2]));
+			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data.data[i + 3], info.data.data[i], info.data.data[i + 1], info.data.data[i + 2]));
 		}
+
+		printf("asdsadasd\n\n\n\n\n\n");
 
 		System::Windows::Forms::PictureBox^ pictureBox;
 		pictureBox = (gcnew System::Windows::Forms::PictureBox());
@@ -927,17 +929,17 @@ namespace HumongousFileEditor
 
 				index *= 4;
 
-				if (image_info.data[index + 3] != 0)
+				if (image_info.data.data[index + 3] != 0)
 				{
-					background_info.data[i] = image_info.data[index];
-					background_info.data[i + 1] = image_info.data[index + 1];
-					background_info.data[i + 2] = image_info.data[index + 2];
-					background_info.data[i + 3] = image_info.data[index + 3];
+					background_info.data.data[i] = image_info.data.data[index];
+					background_info.data.data[i + 1] = image_info.data.data[index + 1];
+					background_info.data.data[i + 2] = image_info.data.data[index + 2];
+					background_info.data.data[i + 3] = image_info.data.data[index + 3];
 				}
 			}
 			else
 			{
-				background_info.data[i + 3] = 55;
+				background_info.data.data[i + 3] = 55;
 			}
 		}
 
@@ -971,7 +973,7 @@ namespace HumongousFileEditor
 		{
 			int y = cur / static_cast<int>(info.width);
 			int x = cur % static_cast<int>(info.width);
-			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data[i + 3], info.data[i], info.data[i + 1], info.data[i + 2]));
+			bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data.data[i + 3], info.data.data[i], info.data.data[i + 1], info.data.data[i + 2]));
 		}
 
 		System::Windows::Forms::PictureBox^ pictureBox;

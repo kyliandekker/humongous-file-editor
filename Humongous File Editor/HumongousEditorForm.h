@@ -10,6 +10,7 @@
 #include "forms/HumongousButton.h"
 #include "functions/TabFunctions.h"
 #include "file/Files.h"
+#include <allocators/TempAllocator.h>
 
 using namespace  System::Windows::Forms;
 

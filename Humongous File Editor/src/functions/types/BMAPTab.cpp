@@ -57,17 +57,17 @@ namespace HumongousFileEditor
 		std::vector<uint8_t> newOut;
 		for (size_t i = 0; i < info.size; i++)
 		{
-			newOut.push_back(apal_chunk.data[info.data[i] * 3]);
-			newOut.push_back(apal_chunk.data[info.data[i] * 3 + 1]);
-			newOut.push_back(apal_chunk.data[info.data[i] * 3 + 2]);
-			if (info.data[i] == fill_color)
+			newOut.push_back(apal_chunk.data[info.data.data[i] * 3]);
+			newOut.push_back(apal_chunk.data[info.data.data[i] * 3 + 1]);
+			newOut.push_back(apal_chunk.data[info.data.data[i] * 3 + 2]);
+			if (info.data.data[i] == fill_color)
 				newOut.push_back(0);
 			else
 				newOut.push_back(255);
 		}
 
 		info.size = newOut.size();
-		info.data = newOut;
+		info.data = ImageData(newOut.size(), newOut.data());
 		info.channels = 4;
 
 		return true;
@@ -143,7 +143,7 @@ namespace HumongousFileEditor
 					return false;
 			}
 
-			std::vector<uint8_t> new_data = strip_info.data;
+			ImageData new_data = ImageData(strip_info.data.size, strip_info.data.data);
 
 			if (!horizontal)
 			{
@@ -152,7 +152,7 @@ namespace HumongousFileEditor
 				{
 					for (uint32_t j = 0; j < height; ++j)
 					{
-						new_data[(j * strip_width) + k] = strip_info.data[dataIndex];
+						new_data.data[(j * strip_width) + k] = strip_info.data.data[dataIndex];
 						++dataIndex;
 					}
 				}
@@ -166,7 +166,7 @@ namespace HumongousFileEditor
 				std::vector<IndexColor> new_strip;
 				for (size_t j = 0; j < strip_width; j++)
 				{
-					new_strip.push_back({ strip_info.data[(k * strip_width) + j], color });
+					new_strip.push_back({ strip_info.data.data[(k * strip_width) + j], color });
 				}
 				data_new_block.push_back(new_strip);
 			}
@@ -219,7 +219,7 @@ namespace HumongousFileEditor
 		}
 
 		info.size = newOut.size();
-		info.data = newOut;
+		info.data = ImageData(newOut.size(), newOut.data());
 
 		return true;
 	}

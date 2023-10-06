@@ -75,7 +75,7 @@ namespace HumongousFileEditor
 		}
 
 		info.size = out.size();
-		info.data = out;
+		info.data = ImageData(out.size(), out.data());
 		return true;
 	}
 
@@ -120,7 +120,7 @@ namespace HumongousFileEditor
 		};
 
 		info.size = out.size();
-		info.data = out;
+		info.data = ImageData(out.size(), out.data());
 		return true;
 	}
 
@@ -170,17 +170,14 @@ namespace HumongousFileEditor
 		};
 
 		info.size = out.size();
-		info.data = out;
+		info.data = ImageData(out.size(), out.data());
 		return true;
 	}
 
 	bool ImageTab::DecodeRaw(unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
 	{
 		info.size = width * height;
-		std::vector<uint8_t> data_buf;
-		for (size_t i = 0; i < data_size; i++)
-			data_buf.push_back(data[i]);
-		info.data = data_buf;
+		info.data = ImageData(info.size, data);
 		return true;
 	}
 }
