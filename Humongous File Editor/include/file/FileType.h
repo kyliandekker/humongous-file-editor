@@ -9,10 +9,10 @@ namespace HumongousFileEditor
 		public enum FileType
 		{
 			FileType_Unknown,
+			FileType_HE0,
 			FileType_A,
 			FileType_HE2,
-			FileType_HE4,
-			FileType_HE0
+			FileType_HE4
 		};
 
 		inline std::string getExtensionFromPath(std::string path, bool include_dot = false)
@@ -24,10 +24,10 @@ namespace HumongousFileEditor
 		{
 			std::string extension = getExtensionFromPath(path);
 
-			if (extension == "(A)")
+			if (extension == "HE0")
+				return FileType_HE0; 
+			else if (extension == "(A)")
 				return FileType_A;
-			else if (extension == "HE0")
-				return FileType_HE0;
 			else if (extension == "HE2")
 				return FileType_HE2;
 			else if (extension == "HE4")

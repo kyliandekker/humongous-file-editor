@@ -15,15 +15,17 @@ namespace HumongousFileEditor
 		class Files
 		{
 		public:
+			~Files();
+
 			chunk_reader::FileContainer* Read(const char* path);
 			bool SaveAs();
 			bool Save();
 			chunk_reader::FileContainer* getFile(FileType fileType);
 
+			chunk_reader::FileContainer* he0 = nullptr;
+			chunk_reader::FileContainer* a = nullptr;
 			chunk_reader::FileContainer* he2 = nullptr;
 			chunk_reader::FileContainer* he4 = nullptr;
-			chunk_reader::FileContainer* a = nullptr;
-			chunk_reader::FileContainer* he0 = nullptr;
 		};
 		extern Files FILES;
 	}

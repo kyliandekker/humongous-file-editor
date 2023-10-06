@@ -13,6 +13,14 @@ namespace HumongousFileEditor
 {
 	namespace files
 	{
+		Files::~Files()
+		{
+			delete he0;
+			delete a;
+			delete he2;
+			delete he4;
+		}
+
 		chunk_reader::FileContainer* Files::Read(const char* path)
 		{
 			// Check if we recognize the extension. If not, do not load it at all.
@@ -30,6 +38,24 @@ namespace HumongousFileEditor
 
 			switch (fileType)
 			{
+				case files::FileType_HE0:
+				{
+					if (utils::chunkcmp(header.chunk_id, chunk_reader::MAXS_CHUNK_ID) != 0)
+					{
+						// If the first check fails, then decrypt. Maybe we already have a decrypted file, in which case it'd succeed.
+						fc->Decrypt(0x69);
+
+						// If after decryption it still does not start with a HE0 chunk, return and give an error.
+						header = fc->GetChunkInfo(0);
+						if (utils::chunkcmp(header.chunk_id, chunk_reader::MAXS_CHUNK_ID) != 0)
+							return nullptr;
+					}
+
+					if (he0 != nullptr)
+						delete he0;
+					he0 = fc;
+					break;
+				}
 				case files::FileType_A:
 				{
 					if (utils::chunkcmp(header.chunk_id, chunk_reader::LECF_CHUNK_ID) != 0)
@@ -68,24 +94,6 @@ namespace HumongousFileEditor
 					if (he4 != nullptr)
 						delete he4;
 					he4 = fc;
-					break;
-				}
-				case files::FileType_HE0:
-				{
-					if (utils::chunkcmp(header.chunk_id, chunk_reader::MAXS_CHUNK_ID) != 0)
-					{
-						// If the first check fails, then decrypt. Maybe we already have a decrypted file, in which case it'd succeed.
-						fc->Decrypt(0x69);
-
-						// If after decryption it still does not start with a HE0 chunk, return and give an error.
-						header = fc->GetChunkInfo(0);
-						if (utils::chunkcmp(header.chunk_id, chunk_reader::MAXS_CHUNK_ID) != 0)
-							return nullptr;
-					}
-
-					if (he0 != nullptr)
-						delete he0;
-					he0 = fc;
 					break;
 				}
 				default:
