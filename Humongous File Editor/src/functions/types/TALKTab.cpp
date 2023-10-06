@@ -179,9 +179,6 @@ namespace HumongousFileEditor
 	}
 	bool TALKTab::ReplaceResource(chunk_reader::FileContainer*& fc, size_t offset)
 	{
-		//unsigned char* prev_data = reinterpret_cast<unsigned char*>(malloc(fc->size));
-		//memcpy(prev_data, fc->data, fc->size);
-
 		std::string path;
 		uaudio::wave_reader::DATA_Chunk data_chunk;
 		uaudio::wave_reader::FMT_Chunk fmt_chunk;
@@ -265,16 +262,6 @@ namespace HumongousFileEditor
 			files::FILES.a->Replace(0, full_data, files::FILES.a->size);
 			free(full_data);
 
-			//if (!shorter_longer_instructions.empty())
-			//{
-			//	System::Windows::Forms::MessageBox::Show("The voice file you are trying to replace causes other voice files to shift. Fixing this has been a headache for me, so for the time being if you see this message, make the new voiceline shorter..", "ERROR", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Error);
-			//	free(fc->data);
-			//	fc->data = prev_data;
-			//	return false;
-			//}
-
-			//free(prev_data);
-
 			// Replace longer ones.
 			for (size_t t = shorter_longer_instructions.size(); t-- > 0; )
 			{
@@ -327,34 +314,34 @@ namespace HumongousFileEditor
 						{
 							int16_t offset = *reinterpret_cast<int16_t*>(utils::add(files::FILES.a->data, 1 + instruction.scrp_offset + instruction.offset_in_scrp_chunk + instruction.args[0].offset));
 
-							int16_t relative_offset_in_scrp = instruction.offset_in_scrp_chunk + offset;
+							int16_t relative_offset_in_scrp = instruction.offset_in_scrp_chunk + offset + instruction.args.Size() + 1;
 
-							if (offset > sl_instruction.offset_in_scrp_chunk && instruction.offset_in_scrp_chunk < sl_instruction.offset_in_scrp_chunk)
+							if (relative_offset_in_scrp > sl_instruction.offset_in_scrp_chunk && instruction.offset_in_scrp_chunk < sl_instruction.offset_in_scrp_chunk)
 							{
 								offset += difference;
 								memcpy(utils::add(scrp_data, instruction.offset_in_scrp_chunk + instruction.args[0].offset + 1), &offset, sizeof(int16_t));
 							}
-							if (offset < sl_instruction.offset_in_scrp_chunk && instruction.offset_in_scrp_chunk > sl_instruction.offset_in_scrp_chunk)
+							if (relative_offset_in_scrp < sl_instruction.offset_in_scrp_chunk && instruction.offset_in_scrp_chunk > sl_instruction.offset_in_scrp_chunk)
 							{
 								offset -= difference;
 								memcpy(utils::add(scrp_data, instruction.offset_in_scrp_chunk + instruction.args[0].offset + 1), &offset, sizeof(int16_t));
 							}
 						}
-						// wait.
+						// wait. 
 						else if (instruction.code == 0xA9)
 						{
 							if (instruction.args.args.size() < 2)
 								continue;
 
 							int16_t offset = instruction.offset_in_scrp_chunk + *reinterpret_cast<int16_t*>(utils::add(files::FILES.a->data, 1 + instruction.scrp_offset + instruction.offset_in_scrp_chunk + instruction.args[1].offset));
-							int16_t relative_offset_in_scrp = instruction.offset_in_scrp_chunk + offset;
+							int16_t relative_offset_in_scrp = instruction.offset_in_scrp_chunk + offset + instruction.args.Size() + 1;
 
-							if (offset > sl_instruction.offset_in_scrp_chunk && instruction.offset_in_scrp_chunk < sl_instruction.offset_in_scrp_chunk)
+							if (relative_offset_in_scrp > sl_instruction.offset_in_scrp_chunk && instruction.offset_in_scrp_chunk < sl_instruction.offset_in_scrp_chunk)
 							{
 								offset += difference;
 								memcpy(utils::add(scrp_data, instruction.offset_in_scrp_chunk + instruction.args[1].offset + 1), &offset, sizeof(int16_t));
 							}
-							if (offset < sl_instruction.offset_in_scrp_chunk && instruction.offset_in_scrp_chunk > sl_instruction.offset_in_scrp_chunk)
+							if (relative_offset_in_scrp < sl_instruction.offset_in_scrp_chunk && instruction.offset_in_scrp_chunk > sl_instruction.offset_in_scrp_chunk)
 							{
 								offset -= difference;
 								memcpy(utils::add(scrp_data, instruction.offset_in_scrp_chunk + instruction.args[1].offset + 1), &offset, sizeof(int16_t));
@@ -433,6 +420,10 @@ namespace HumongousFileEditor
 				files::FILES.a->Replace(sl_instruction.scrp_offset, scrp_data, new_size);
 				free(scrp_data);
 			}
+
+			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+			form->entryView->Nodes->Clear();
+			form->tabControl1->Controls->Clear();
 
 			HumongousFileEditor::chunk_reader::ResourceGatherer rg;
 			rg.Read(files::FILES.a);
@@ -576,11 +567,118 @@ namespace HumongousFileEditor
 				free(dlfl_data);
 			}
 
-			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
 
-			form->entryView->Nodes->Clear();
-			form->tabControl1->Controls->Clear();
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			// Check check double check
+			std::map<std::string, std::vector<std::string>> chunks_in_index_pair =
+			{
+				{ chunk_reader::DIRS_CHUNK_ID, { chunk_reader::SCRP_CHUNK_ID } },
+				{ chunk_reader::DIRC_CHUNK_ID, { chunk_reader::AKOS_CHUNK_ID } },
+				{ chunk_reader::DIRF_CHUNK_ID, { chunk_reader::CHAR_CHUNK_ID } },
+				{ chunk_reader::DIRN_CHUNK_ID, { chunk_reader::SOUN_CHUNK_ID, chunk_reader::TALK_CHUNK_ID, chunk_reader::DIGI_CHUNK_ID } },
+				{ chunk_reader::DIRT_CHUNK_ID, { chunk_reader::TLKE_CHUNK_ID } },
+				{ chunk_reader::DIRM_CHUNK_ID, { chunk_reader::MULT_CHUNK_ID, chunk_reader::AWIZ_CHUNK_ID } },
+				{ chunk_reader::DIRR_CHUNK_ID, { chunk_reader::RMDA_CHUNK_ID } },
+			};
+
+			chunk_reader::ChunkInfo he0_header = files::FILES.he0->GetChunkInfo(0);
+			while (he0_header.offset < files::FILES.he0->size)
+			{
+				if (utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRS_CHUNK_ID) == 0 ||
+					utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRC_CHUNK_ID) == 0 ||
+					utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRF_CHUNK_ID) == 0 ||
+					utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRN_CHUNK_ID) == 0 ||
+					utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRT_CHUNK_ID) == 0 ||
+					utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRM_CHUNK_ID) == 0 ||
+					utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRR_CHUNK_ID) == 0
+					)
+				{
+					std::vector<std::string> chunk_ids;
+
+					chunk_reader::GENERIC_HE0_Chunk chunk;
+					memcpy(&chunk, utils::add(files::FILES.he0->data, he0_header.offset), sizeof(chunk_reader::HumongousHeader) + sizeof(chunk.num_files));
+
+					std::vector<pair> pairs;
+
+					size_t pos = sizeof(chunk_reader::HumongousHeader) + sizeof(chunk.num_files);
+					for (size_t j = 0; j < chunk.num_files; j++)
+					{
+						uint8_t rmim_index = *reinterpret_cast<uint8_t*>(utils::add(files::FILES.he0->data, he0_header.offset + pos));
+						pairs.push_back({ rmim_index, 0, 0 });
+						pos += sizeof(uint8_t);
+					}
+
+					for (size_t j = 0; j < chunk.num_files; j++)
+					{
+						uint32_t byte_pos = *reinterpret_cast<uint32_t*>(utils::add(files::FILES.he0->data, he0_header.offset + pos));
+						pairs[j].actual_offset = pos;
+						pairs[j].offset = byte_pos;
+						pos += sizeof(uint32_t);
+					}
+
+					for (size_t j = 0; j < pairs.size(); j++)
+					{
+						if (pairs[j].offset == 0)
+							continue;
+
+						chunk_reader::ChunkInfo chunk_info = files::FILES.a->GetChunkInfo(rmim_offsets[pairs[j].rmim_offset].offset + pairs[j].offset);
+						std::vector<std::string>& index_chunks = chunks_in_index_pair[std::string(reinterpret_cast<char*>(chunk.chunk_id))];
+						bool found = false;
+						for (size_t k = 0; k < index_chunks.size(); k++)
+							if (utils::chunkcmp(chunk_info.chunk_id, index_chunks[k].c_str()) == 0)
+								found = true;
+
+						assert(found);
+					}
+				}
+				else if (utils::chunkcmp(he0_header.chunk_id, chunk_reader::DLFL_CHUNK_ID) == 0)
+				{
+					chunk_reader::DLFL_Chunk dlfl_chunk;
+					memcpy(&dlfl_chunk, utils::add(files::FILES.he0->data, he0_header.offset), sizeof(chunk_reader::HumongousHeader) + sizeof(dlfl_chunk.num_lflfs));
+
+					std::vector<dlfl_offset> pairs;
+
+					size_t pos_in_p = sizeof(chunk_reader::HumongousHeader) + sizeof(dlfl_chunk.num_lflfs);
+					for (size_t j = 0; j < dlfl_chunk.num_lflfs; j++)
+					{
+						uint32_t byte_pos = *reinterpret_cast<uint32_t*>(utils::add(files::FILES.he0->data, he0_header.offset + pos_in_p));
+						dlfl_offset p;
+						p.actual_offset = pos_in_p;
+						p.offset = byte_pos;
+
+						pairs.push_back(p);
+						pos_in_p += sizeof(uint32_t);
+					}
+
+					for (size_t j = 0; j < pairs.size(); j++)
+					{
+						if (pairs[j].offset == 0)
+							continue;
+
+						chunk_reader::ChunkInfo chunk_info = files::FILES.a->GetChunkInfo(pairs[j].offset);
+						assert(utils::chunkcmp(chunk_info.chunk_id, chunk_reader::RMIM_CHUNK_ID) == 0);
+					}
+				}
+				he0_header = files::FILES.he0->GetNextChunk(he0_header.offset);
+			}
 
 			return true;
 		}
