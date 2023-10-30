@@ -76,7 +76,11 @@ namespace HumongousFileEditor
 
 		  System::Windows::Forms::TabControl^ tabControl1;
 	public: System::Windows::Forms::TabPage^ tabWelcome;
-		  HumongousFileEditor::ProgressBarForm progressBar;
+	private: System::Windows::Forms::ColorDialog^ colorDialog1;
+	public:
+
+	public:
+		HumongousFileEditor::ProgressBarForm progressBar;
 	protected:
 		/// <summary>
 		/// Clean up any resources being used.
@@ -106,6 +110,7 @@ namespace HumongousFileEditor
 			this->splitContainer = (gcnew System::Windows::Forms::SplitContainer());
 			this->entryView = (gcnew System::Windows::Forms::TreeView());
 			this->tabControl1 = (gcnew System::Windows::Forms::TabControl());
+			this->tabWelcome = (gcnew System::Windows::Forms::TabPage());
 			this->optionSeperator1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->optionOpen = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->toolStripSeparator1 = (gcnew System::Windows::Forms::ToolStripSeparator());
@@ -129,7 +134,7 @@ namespace HumongousFileEditor
 			this->decryptButton = (gcnew System::Windows::Forms::Button());
 			this->actionPanel = (gcnew System::Windows::Forms::Panel());
 			this->indexButton = (gcnew System::Windows::Forms::Button());
-			this->tabWelcome = (gcnew System::Windows::Forms::TabPage());
+			this->colorDialog1 = (gcnew System::Windows::Forms::ColorDialog());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->splitContainer))->BeginInit();
 			this->splitContainer->Panel1->SuspendLayout();
 			this->splitContainer->Panel2->SuspendLayout();
@@ -192,6 +197,16 @@ namespace HumongousFileEditor
 			this->tabControl1->TabIndex = 0;
 			this->tabControl1->DrawItem += gcnew System::Windows::Forms::DrawItemEventHandler(this, &HumongousEditorForm::tabControl1_DrawX);
 			this->tabControl1->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &HumongousEditorForm::tabControl1_MouseDown);
+			// 
+			// tabWelcome
+			// 
+			this->tabWelcome->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->tabWelcome->Location = System::Drawing::Point(4, 29);
+			this->tabWelcome->Name = L"tabWelcome";
+			this->tabWelcome->Size = System::Drawing::Size(398, 413);
+			this->tabWelcome->TabIndex = 0;
+			this->tabWelcome->Text = L"Welcome!";
+			this->tabWelcome->UseVisualStyleBackColor = true;
 			// 
 			// optionSeperator1
 			// 
@@ -448,16 +463,6 @@ namespace HumongousFileEditor
 			this->indexButton->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionIndex_Click);
 			this->indexButton->MouseEnter += gcnew System::EventHandler(this, &HumongousEditorForm::buttonHover);
 			this->indexButton->MouseLeave += gcnew System::EventHandler(this, &HumongousEditorForm::buttonExit);
-			// 
-			// tabWelcome
-			// 
-			this->tabWelcome->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
-			this->tabWelcome->Location = System::Drawing::Point(4, 29);
-			this->tabWelcome->Name = L"tabWelcome";
-			this->tabWelcome->Size = System::Drawing::Size(398, 413);
-			this->tabWelcome->TabIndex = 0;
-			this->tabWelcome->Text = L"Welcome!";
-			this->tabWelcome->UseVisualStyleBackColor = true;
 			// 
 			// HumongousEditorForm
 			// 

@@ -322,9 +322,22 @@ namespace HumongousFileEditor
 								childNode->fileType = a->fileType;
 								childNode->special = true;
 								childNode->resourceType = it->second;
-								std::string unique_name = std::string(chunk_id_name) + "_" + std::to_string(fc->fileType) + "_" + std::to_string(i) + "_" + fc->path + "_" + std::to_string(lflf) + "_" + std::to_string(random_number_for_unique_id) + "_special";
+								std::string unique_name = std::string(chunk_id_name) + "_" + std::to_string(fc->fileType) + "_" + std::to_string(i) + "_" + fc->path + "_" + std::to_string(lflf) + "_" + std::to_string(random_number_for_unique_id) + "_special_layer";
 								childNode->Name = gcnew System::String(unique_name.c_str());
 								childNode->Text = gcnew System::String(std::string(std::to_string(i) + " layer").c_str());
+								node->Nodes->Add(childNode);
+							}
+							if (node->resourceType == files::ResourceType::RoomBackground)
+							{
+								HumongousNode^ childNode;
+								childNode = (gcnew HumongousNode);
+								childNode->offset = child_header.offset;
+								childNode->fileType = a->fileType;
+								childNode->special = true;
+								childNode->resourceType = it->second;
+								std::string unique_name = std::string(chunk_id_name) + "_" + std::to_string(fc->fileType) + "_" + std::to_string(i) + "_" + fc->path + "_" + std::to_string(lflf) + "_" + std::to_string(random_number_for_unique_id) + "_special_palette";
+								childNode->Name = gcnew System::String(unique_name.c_str());
+								childNode->Text = gcnew System::String(std::string(std::to_string(i) + " palette").c_str());
 								node->Nodes->Add(childNode);
 							}
 							i++;
