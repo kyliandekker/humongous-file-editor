@@ -59,7 +59,9 @@ namespace HumongousFileEditor
 
 				path = cpath;
 				if (choice != nullptr)
+				{
 					*choice = ofn.nFilterIndex;
+				}
 
 				delete[] cpath;
 

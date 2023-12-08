@@ -6,7 +6,6 @@
 #include "lowlevel/utils.h"
 #include "cmd/OPCodes.h"
 #include "cmd/ArgsAllocator.h"
-#include "lowlevel/bytecode_data.h"
 #include "systems/Logger.h"
 
 namespace HumongousFileEditor
@@ -14,11 +13,10 @@ namespace HumongousFileEditor
 	struct Generic_Script_Chunk : chunk_reader::HumongousHeader
 	{
 		Generic_Script_Chunk() = default;
-
 		unsigned char* data = nullptr;
 	};
 
-	bool SCRPTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<talk_instruction>& instructions)
+	bool SCRPTab::GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<instruction>& instructions)
 	{
 		size_t scrp_size = 0;
 		size_t pos = 0;
@@ -44,7 +42,7 @@ namespace HumongousFileEditor
 		{
 			uint8_t b = chunk.data[pos];
 
-			talk_instruction instruction;
+			instruction instruction;
 			instruction.code = b;
 			instruction.offset_in_scrp_chunk = sizeof(chunk_reader::HumongousHeader) + pos;
 			instruction.scrp_offset = offset;

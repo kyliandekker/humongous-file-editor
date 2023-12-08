@@ -23,33 +23,51 @@ namespace HumongousFileEditor
 						\0*.WAV;*.wav\0"))
 		{
 			if (!utils::ends_with(path, ".wav"))
+			{
 				path += ".wav";
+			}
 
 			size_t wave_size = 0;
 			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::FTell(path.c_str(), wave_size)))
+			{
 				return false;
+			}
 
 			uaudio::wave_reader::ChunkCollection chunkCollection(malloc(wave_size), wave_size);
 			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::LoadWave(path.c_str(), chunkCollection)))
+			{
 				return false;
+			}
 
 			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
+			{
 				return false;
+			}
 
 			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
+			{
 				return false;
+			}
 
 			if (fmt_chunk.byteRate != 11025)
+			{
 				return false;
+			}
 
 			if (fmt_chunk.sampleRate != 11025)
+			{
 				return false;
+			}
 
 			if (fmt_chunk.bitsPerSample != uaudio::wave_reader::WAVE_BITS_PER_SAMPLE_8)
+			{
 				return false;
+			}
 
 			if (fmt_chunk.numChannels != uaudio::wave_reader::WAVE_CHANNELS_MONO)
+			{
 				return false;
+			}
 
 			file_path = path;
 
@@ -59,6 +77,7 @@ namespace HumongousFileEditor
 		return false;
     }
 
+	// TODO: REPLACE.
 	bool SoundTab::SaveSound(chunk_reader::HSHD_Chunk& hshd_chunk, chunk_reader::SDAT_Chunk& sdat_chunk)
 	{
 		unsigned char* data = sdat_chunk.data;

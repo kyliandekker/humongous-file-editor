@@ -45,7 +45,9 @@ namespace HumongousFileEditor
         void xorShift(unsigned char*& data, size_t size, char key)
 		{
 			for (int i = 0; i < size; i++)
+			{
 				data[i] = data[i] ^ key;
+			}
 		}
 
 		bool ends_with(std::string const& value, std::string const& ending)

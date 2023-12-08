@@ -26,7 +26,9 @@ namespace HumongousFileEditor
 			uint32_t size32 = 0;
 			memcpy(&size32, &chunkSize, sizeof(uint32_t));
 			if (isBigEndian)
+			{
 				size32 = utils::reverseBytesC<uint32_t>(reinterpret_cast<unsigned char*>(&size32));
+			}
 			return size32;
 		}
 
@@ -35,7 +37,9 @@ namespace HumongousFileEditor
 			uint32_t size32 = static_cast<uint32_t>(chunk_size);
 			memcpy(chunkSize, reinterpret_cast<unsigned char*>(&size32), sizeof(uint32_t));
 			if (toBigEndian)
+			{
 				utils::reverseBytes(chunkSize, sizeof(uint32_t));
+			}
 		}
 	}
 }

@@ -10,7 +10,9 @@ namespace HumongousFileEditor
 	AudioSystem::AudioSystem()
 	{
 		if (m_Engine != nullptr)
+		{
 			return;
+		}
 
 		HRESULT hr;
 
@@ -39,10 +41,14 @@ namespace HumongousFileEditor
 		wfx.cbSize = 0;
 
 		if (FAILED(hr = m_Engine->CreateSourceVoice(&m_SourceVoice, &wfx)))
+		{
 			return;
+		}
 
 		if (FAILED(hr = m_SourceVoice->Start(0)))
+		{
 			return;
+		}
 	}
 
 	AudioSystem::~AudioSystem()
@@ -65,7 +71,9 @@ namespace HumongousFileEditor
 		xaBuffer.pAudioData = data;
 		xaBuffer.AudioBytes = static_cast<UINT32>(size);
 		if (FAILED(hr = m_SourceVoice->SubmitSourceBuffer(&xaBuffer)))
+		{
 			std::cout << "Failed to play." << std::endl;
+		}
 	}
 
 	void AudioSystem::Stop()

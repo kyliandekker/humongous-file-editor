@@ -24,7 +24,9 @@ namespace HumongousFileEditor
 
 			std::string text;
 			for (size_t j = 0; j < recursion; j++)
+			{
 				text += "\t";
+			}
 			text += "<";
 			text += chunk_id_name;
 			text += " position=\"";
@@ -37,7 +39,9 @@ namespace HumongousFileEditor
 			text += std::to_string(total_size - sizeof(HumongousHeader));
 			text += "\"";
 			if (!close)
+			{
 				text += "/";
+			}
 			text += ">\n";
 			return text;
 		};
@@ -49,7 +53,9 @@ namespace HumongousFileEditor
 
 			std::string text;
 			for (size_t j = 0; j < recursion; j++)
+			{
 				text += "\t";
+			}
 			text += "</";
 			text += chunk_id_name;
 			text += ">\n";
@@ -60,7 +66,9 @@ namespace HumongousFileEditor
 		{
 			FileContainer m_FileContainer = FileContainer(loadPath);
 			if (!utils::ends_with(savePath, ".html"))
+			{
 				savePath += ".html";
+			}
 
 			FILE* file = nullptr;
 			fopen_s(&file, savePath.c_str(), "wb");
@@ -97,15 +105,19 @@ namespace HumongousFileEditor
 				bool b = header.offset + header.ChunkSize() > next.offset;
 				text += getOpenChunkText(header.chunk_id, header.offset, header.ChunkSize(), top_chunks.size(), b);
 				if (b)
+				{
 					top_chunks.push_back(header);
+				}
 				header = next;
 				for (size_t i = top_chunks.size(); i-- > 0; )
+				{
 					if (top_chunks[i].offset + top_chunks[i].ChunkSize() == header.offset)
 					{
 						ChunkInfo closed = top_chunks[i];
 						top_chunks.erase(top_chunks.begin() + i);
 						text += getCloseChunkText(closed.chunk_id, top_chunks.size());
 					}
+				}
 
 				//ChunkFunctions::SetProgressBar(form->toolProgressBar, static_cast<double>(100.0 / m_FileContainer.size * header.offset));
 			}

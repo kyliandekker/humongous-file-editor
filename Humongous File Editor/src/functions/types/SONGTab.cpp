@@ -35,16 +35,24 @@ namespace HumongousFileEditor
 			for (size_t i = 0; i < children.size(); i++)
 			{
 				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
+				{
 					hshd_offset = static_cast<int32_t>(children[i].offset);
+				}
 				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
+				{
 					sdat_offset = static_cast<int32_t>(children[i].offset);
+				}
 			}
 
 			if (hshd_offset == -1)
+			{
 				return false;
+			}
 
 			if (hshd_offset == -1)
+			{
 				return false;
+			}
 
 			chunk_reader::HSHD_Chunk hshd_chunk;
 			memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
@@ -83,9 +91,13 @@ namespace HumongousFileEditor
 						memcpy(&new_sgen_chunk, utils::add(fc->data, next_chunk.offset), sizeof(chunk_reader::SGEN_Chunk));
 
 						if (next_chunk.offset == offset)
+						{
 							new_sgen_chunk.song_size = digi_chunk.ChunkSize();
+						}
 						else
+						{
 							new_sgen_chunk.song_pos += dif_size;
+						}
 
 						fc->Replace(next_chunk.offset, reinterpret_cast<unsigned char*>(&new_sgen_chunk), sizeof(chunk_reader::SGEN_Chunk));
 					}
@@ -113,16 +125,24 @@ namespace HumongousFileEditor
 		for (size_t i = 0; i < children.size(); i++)
 		{
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
+			{
 				hshd_offset = static_cast<int32_t>(children[i].offset);
+			}
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
+			{
 				sdat_offset = static_cast<int32_t>(children[i].offset);
+			}
 		}
 
 		if (hshd_offset == -1)
+		{
 			return false;
+		}
 
 		if (sdat_offset == -1)
+		{
 			return false;
+		}
 
 		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
 

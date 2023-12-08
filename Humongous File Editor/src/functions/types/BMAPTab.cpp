@@ -64,10 +64,14 @@ namespace HumongousFileEditor
 	bool BMAPTab::GetDataBMAP(chunk_reader::FileContainer*&, chunk_reader::BMAP_Chunk& bmap_chunk, chunk_reader::APAL_Chunk& apal_chunk, uint8_t fill_color, size_t width, size_t height, img_info& info)
 	{
 		if (utils::chunkcmp(bmap_chunk.chunk_id, chunk_reader::BMAP_CHUNK_ID) != 0)
+		{
 			return false;
+		}
 
 		if (utils::chunkcmp(apal_chunk.chunk_id, chunk_reader::APAL_CHUNK_ID) != 0)
+		{
 			return false;
+		}
 
 		size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
 		size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
@@ -77,7 +81,9 @@ namespace HumongousFileEditor
 		bool he_transparent = bmap_chunk.encoding >= 0x90 && bmap_chunk.encoding <= 0x94;
 
 		if (!DecodeHE(fill_color, bmap_chunk.data, bmap_size, width, height, palen, he_transparent, info))
+		{
 			return false;
+		}
 
 		std::vector<uint8_t> newOut;
 		for (size_t i = 0; i < info.size; i++)
@@ -86,9 +92,13 @@ namespace HumongousFileEditor
 			newOut.push_back(apal_chunk.data[info.data.data[i] * 3 + 1]);
 			newOut.push_back(apal_chunk.data[info.data.data[i] * 3 + 2]);
 			if (info.data.data[i] == fill_color)
+			{
 				newOut.push_back(0);
+			}
 			else
+			{
 				newOut.push_back(255);
+			}
 		}
 
 		info.size = newOut.size();
@@ -118,11 +128,15 @@ namespace HumongousFileEditor
 		std::vector<offset_pair> index;
 
 		for (size_t i = 0; i < offsets.size(); i++)
+		{
 			index.push_back({ offsets[i], (i + 1) == offsets.size() ? smap_size : offsets[i + 1] });
+		}
 
 		std::vector<strip> strips;
 		for (size_t i = 0; i < num_strips; i++)
+		{
 			strips.push_back({ utils::add(smap_chunk.data, index[i].start), index[i].end - index[i].start });
+		}
 
 		size_t total_size = 0;
 		std::vector< std::vector<std::vector<IndexColor>>> data_blocks;
@@ -136,7 +150,9 @@ namespace HumongousFileEditor
 
 			bool horizontal = true;
 			if (code >= 0x03 && code <= 0x12 || code >= 0x22 && code <= 0x26)
+			{
 				horizontal = false;
+			}
 
 			bool he_transparent = code >= 0x22 && code <= 0x30 || code >= 0x54 && code <= 0x80 || code >= 0x8F;
 
@@ -148,22 +164,30 @@ namespace HumongousFileEditor
 			if (code >= 0x40 && code <= 0x80)
 			{
 				if (!DecodeMajmin(color, utils::add(strip.data, 2), strip.size - 2, strip_width, height, palen, he_transparent, strip_info))
+				{
 					return false;
+				}
 			}
 			else if (code >= 0x0E && code <= 0x30)
 			{
 				if (!DecodeBasic(color, utils::add(strip.data, 2), strip.size - 2, strip_width, height, palen, he_transparent, strip_info))
+				{
 					return false;
+				}
 			}
 			else if (code >= 0x86 && code <= 0x94)
 			{
 				if (!DecodeHE(color, utils::add(strip.data, 2), strip.size - 2, strip_width, height, palen, he_transparent, strip_info))
+				{
 					return false;
+				}
 			}
 			else if (code >= 0x01 && code <= 0x95)
 			{
 				if (!DecodeRaw(strip.data, strip.size, strip_width, height, palen, he_transparent, strip_info))
+				{
 					return false;
+				}
 			}
 
 			ImageData new_data = ImageData(strip_info.data.size, strip_info.data.data);
@@ -236,9 +260,13 @@ namespace HumongousFileEditor
 			newOut.push_back(apal_chunk.data[final_data[i].index * 3 + 1]);
 			newOut.push_back(apal_chunk.data[final_data[i].index * 3 + 2]);
 			if (final_data[i].index == final_data[i].trans_color)
+			{
 				newOut.push_back(255);
+			}
 			else
+			{
 				newOut.push_back(255);
+			}
 		}
 
 		info.size = newOut.size();
@@ -247,6 +275,7 @@ namespace HumongousFileEditor
 		return true;
 	}
 
+	// TODO: REMOVE
 	bool BMAPTab::ReplacePalette(chunk_reader::FileContainer*& fc, size_t offset)
 	{
 		OPENFILENAME ofn;
@@ -286,6 +315,7 @@ namespace HumongousFileEditor
 		return false;
 	}
 
+	// TODO: REMOVE
 	bool BMAPTab::ReplaceBmap(chunk_reader::FileContainer*& fc, size_t offset)
 	{
 		OPENFILENAME ofn;

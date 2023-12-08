@@ -49,7 +49,9 @@ namespace HumongousFileEditor
 			path = rhs.path;
 			data = reinterpret_cast<unsigned char*>(malloc(size));
 			if (data != nullptr)
+			{
 				memcpy(data, rhs.data, size);
+			}
         }
 
 		FileContainer::~FileContainer()
@@ -77,7 +79,9 @@ namespace HumongousFileEditor
 		{
 			size_t extra_offset = 0;
 			while (utils::add(data, offset + extra_offset)[0] == 128)
+			{
 				extra_offset++;
+			}
 
 			offset += extra_offset;
 
@@ -88,13 +92,17 @@ namespace HumongousFileEditor
 
 			std::vector<std::string> childs = SCHEMA.at(chunk_id_name);
 			if (childs.size() == 0)
+			{
 				return GetChunkInfo(offset + header.ChunkSize());
+			}
 
 			ChunkInfo next = GetChunkInfo(offset + sizeof(HumongousHeader));
 			for (size_t i = 0; i < childs.size(); i++)
 			{
 				if (utils::chunkcmp(next.chunk_id, childs[i].c_str()) == 0)
+				{
 					return next;
+				}
 			}
 
 			assert(false);
@@ -112,7 +120,9 @@ namespace HumongousFileEditor
 				if (next_chunk.offset + next_chunk.ChunkSize() >= chunk.offset + chunk.ChunkSize())
 				{
 					if (parent.offset < next_chunk.offset)
+					{
 						parent = next_chunk;
+					}
 				}
 				next_chunk = GetNextChunk(next_chunk.offset);
 			}

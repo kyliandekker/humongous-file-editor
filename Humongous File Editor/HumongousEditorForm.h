@@ -624,16 +624,22 @@ namespace HumongousFileEditor
 		System::Void entryView_DoubleClick(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
 		{
 			if (e->Button != System::Windows::Forms::MouseButtons::Left)
+			{
 				return;
+			}
 
 			System::Windows::Forms::TreeView^ view = static_cast<System::Windows::Forms::TreeView^>(sender);
 			HumongousNode^ node = static_cast<HumongousNode^>(view->SelectedNode);
 
 			if (!view->SelectedNode)
+			{
 				return;
+			}
 
 			if (!tabControl1->Controls->ContainsKey(node->Name))
+			{
 				AddTab(node);
+			}
 
 			tabControl1->SelectedIndex = tabControl1->Controls->IndexOfKey(node->Name);
 		}
@@ -680,8 +686,12 @@ namespace HumongousFileEditor
 		System::Windows::Forms::TreeNode^ GetNode(System::Windows::Forms::TreeNode^ baseNode, System::String^ name)
 		{
 			for (size_t i = 0; i < baseNode->Nodes->Count; i++)
+			{
 				if (baseNode->Nodes[i]->Name == name)
+				{
 					return baseNode->Nodes[i];
+				}
+			}
 
 			System::Windows::Forms::TreeNode^ node;
 			node = (gcnew System::Windows::Forms::TreeNode);
@@ -699,13 +709,17 @@ namespace HumongousFileEditor
 				r->Width = 5;
 				r->Height = 5;
 				if (!r->Contains(e->Location))
+				{
 					return;
+				}
 			}
 			if (e->Button == System::Windows::Forms::MouseButtons::Middle)
 			{
 				System::Drawing::Rectangle^ r = this->tabControl1->GetTabRect(this->tabControl1->SelectedIndex);
 				if (!r->Contains(e->Location))
+				{
 					return;
+				}
 			}
 			this->tabControl1->TabPages->Remove(this->tabControl1->SelectedTab);
 		}

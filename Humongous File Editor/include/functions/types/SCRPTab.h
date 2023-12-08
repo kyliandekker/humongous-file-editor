@@ -16,6 +16,6 @@ namespace HumongousFileEditor
 	class SCRPTab : public SoundTab
 	{
 	public:
-		static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<talk_instruction>& instructions);
+		static bool GetData(chunk_reader::FileContainer*& fc, size_t offset, std::vector<instruction>& instructions);
 	};
 };

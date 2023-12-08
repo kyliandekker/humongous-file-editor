@@ -9,13 +9,11 @@
 namespace HumongousFileEditor
 {
     class ArgsAllocator;
-    class talk_instruction;
+    class instruction;
 
     namespace chunk_reader
     {
-		size_t jump(talk_instruction& args, unsigned char* data);
-
-        struct bytecode_data;
+		size_t jump(instruction& args, unsigned char* data);
 
         void extended_b_op(unsigned char* data, ArgsAllocator& return_data);
         void extended_w_op(unsigned char* data, ArgsAllocator& return_data);

@@ -169,7 +169,6 @@
     <ClInclude Include="include\functions\types\SCRPTab.h" />
     <ClInclude Include="include\functions\types\SONGTab.h" />
     <ClInclude Include="include\functions\types\TALKTab.h" />
-    <ClInclude Include="include\lowlevel\bytecode_data.h" />
     <ClInclude Include="include\lowlevel\ChunkInfo.h" />
     <ClInclude Include="include\lowlevel\Defines.h" />
     <ClInclude Include="include\lowlevel\FileContainer.h" />
@@ -180,7 +179,6 @@
     <ClInclude Include="include\lowlevel\utils.h" />
     <ClInclude Include="include\systems\AudioSystem.h" />
     <ClInclude Include="include\systems\Logger.h" />
-    <ClInclude Include="include\Temp.h" />
     <ClInclude Include="include\functions\ResourceGatherer.h" />
     <ClInclude Include="include\functions\FileDecrypter.h" />
     <ClInclude Include="include\functions\types\base\ImageTab.h" />
@@ -211,11 +209,9 @@
     <ClCompile Include="src\functions\types\SCRPTab.cpp" />
     <ClCompile Include="src\functions\types\SONGTab.cpp" />
     <ClCompile Include="src\file\Files.cpp" />
-    <ClCompile Include="src\file\ResourceType.cpp" />
     <ClCompile Include="src\functions\FileDecrypter.cpp" />
     <ClCompile Include="src\functions\FileFunction.cpp" />
     <ClCompile Include="src\functions\FileIndexer.cpp" />
-    <ClCompile Include="include\Temp.cpp" />
     <ClCompile Include="src\functions\ResourceGatherer.cpp" />
     <ClCompile Include="src\functions\TabFunctions.cpp" />
     <ClCompile Include="src\functions\types\base\SoundTab.cpp" />

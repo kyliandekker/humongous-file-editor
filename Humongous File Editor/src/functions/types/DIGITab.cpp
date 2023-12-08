@@ -28,16 +28,24 @@ namespace HumongousFileEditor
 			for (size_t i = 0; i < children.size(); i++)
 			{
 				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
+				{
 					hshd_offset = static_cast<int32_t>(children[i].offset);
+				}
 				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
+				{
 					sdat_offset = static_cast<int32_t>(children[i].offset);
+				}
 			}
 
 			if (hshd_offset == -1)
+			{
 				return false;
+			}
 
 			if (hshd_offset == -1)
+			{
 				return false;
+			}
 
 			chunk_reader::HSHD_Chunk hshd_chunk;
 			memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
@@ -69,6 +77,7 @@ namespace HumongousFileEditor
 		}
 		return false;
 	}
+
 	bool DIGITab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk)
 	{
 		std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(offset);
@@ -77,16 +86,24 @@ namespace HumongousFileEditor
 		for (size_t i = 0; i < children.size(); i++)
 		{
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
+			{
 				hshd_offset = static_cast<int32_t>(children[i].offset);
+			}
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
+			{
 				sdat_offset = static_cast<int32_t>(children[i].offset);
+			}
 		}
 
 		if (hshd_offset == -1)
+		{
 			return false;
+		}
 
 		if (sdat_offset == -1)
+		{
 			return false;
+		}
 
 		memcpy(&hshd_chunk, utils::add(fc->data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
 

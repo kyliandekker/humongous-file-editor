@@ -19,7 +19,9 @@ namespace HumongousFileEditor
 			std::string extension = files::getExtensionByFileType(fc.fileType);
 
 			if (!utils::ends_with(savePath, extension) && !utils::ends_with(savePath, extension))
+			{
 				savePath += extension;
+			}
 
 			FILE* file = nullptr;
 			fopen_s(&file, savePath.c_str(), "wb");

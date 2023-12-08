@@ -148,7 +148,9 @@ namespace HumongousFileEditor
 				}
 			}
 			else
+			{
 				return false;
+			}
 
 			// STEP 1. Read version.
 			std::map<version_key, version_value> versions =
@@ -179,15 +181,21 @@ namespace HumongousFileEditor
 			while (info.offset < he0->size)
 			{
 				if (utils::chunkcmp(info.chunk_id, chunk_reader::RNAM_CHUNK_ID) == 0)
+				{
 					break;
+				}
 				info = he0->GetNextChunk(info.offset);
 			}
 			if (utils::chunkcmp(info.chunk_id, chunk_reader::RNAM_CHUNK_ID) != 0)
+			{
 				return false;
+			}
 
 			size_t rnam_offset = info.offset;
 			if (rnam_offset == -1)
+			{
 				return false;
+			}
 
 			std::vector<std::string> room_names;
 
@@ -207,7 +215,9 @@ namespace HumongousFileEditor
 					pos += sizeof(uint16_t);
 				}
 				else
+				{
 					room_name += ch;
+				}
 				pos++;
 
 				ChunkFunctions::SetProgressBar("Reading room names", static_cast<double>(100.0f / rnam_end * pos));

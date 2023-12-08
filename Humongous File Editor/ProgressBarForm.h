@@ -113,7 +113,6 @@ namespace HumongousFileEditor
 			this->Text = L"ProgressBarForm";
 			this->ResumeLayout(false);
 			this->PerformLayout();
-
 		}
 #pragma endregion
 	};

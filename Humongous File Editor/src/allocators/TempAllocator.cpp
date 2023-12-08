@@ -29,13 +29,17 @@ namespace HumongousFileEditor
 	TempAllocator::~TempAllocator()
 	{
 		if (data && size > 0)
+		{
 			free(data);
+		}
 	}
 
 	TempAllocator& TempAllocator::operator=(TempAllocator& other)
 	{
 		if (data)
+		{
 			free(data);
+		}
 		size = other.size;
 		data = reinterpret_cast<unsigned char*>(malloc(size));
 		memcpy(this->data, other.data, size);
@@ -45,7 +49,9 @@ namespace HumongousFileEditor
 	TempAllocator& TempAllocator::operator=(const TempAllocator& other)
 	{
 		if (data)
+		{
 			free(data);
+		}
 		size = other.size;
 		data = reinterpret_cast<unsigned char*>(malloc(size));
 		memcpy(this->data, other.data, size);

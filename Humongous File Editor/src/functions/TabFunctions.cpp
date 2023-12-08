@@ -43,13 +43,18 @@ namespace HumongousFileEditor
 	int AddInfoRow(array<System::String^>^ test, System::Windows::Forms::DataGridView^ propertyGrid)
 	{
 		int i = propertyGrid->Rows->Add(test);
-		for (size_t j = 0; j < test->Length - propertyGrid->Columns->Count; j++)
+		if (propertyGrid->Columns->Count < test->Length)
 		{
-			int index = propertyGrid->Columns->Add(gcnew System::String(std::to_string(j).c_str()), gcnew System::String(""));
-			propertyGrid->Columns[index]->AutoSizeMode = System::Windows::Forms::DataGridViewAutoSizeColumnMode::Fill;
+			for (size_t j = 0; j < propertyGrid->Columns->Count - test->Length; j++)
+			{
+				int index = propertyGrid->Columns->Add(gcnew System::String(std::to_string(j).c_str()), gcnew System::String(""));
+				propertyGrid->Columns[index]->AutoSizeMode = System::Windows::Forms::DataGridViewAutoSizeColumnMode::Fill;
+			}
 		}
 		for (size_t j = 0; j < test->Length; j++)
+		{
 			propertyGrid->Rows[i]->Cells[j]->ReadOnly = true;
+		}
 		return i;
 	}
 
@@ -61,18 +66,26 @@ namespace HumongousFileEditor
 		chunk_reader::FileContainer* fc = files::FILES.getFile(btn->fileType);
 
 		if (fc == nullptr)
+		{
 			return;
+		}
 
 		chunk_reader::SDAT_Chunk sdat_chunk;
 		chunk_reader::HSHD_Chunk hshd_chunk;
 		bool has_sdat = false;
 		chunk_reader::ChunkInfo chunk = fc->GetChunkInfo(btn->offset);
 		if (utils::chunkcmp(chunk.chunk_id, chunk_reader::SGEN_CHUNK_ID) == 0)
+		{
 			has_sdat = SONGTab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+		}
 		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::TALK_CHUNK_ID) == 0)
+		{
 			has_sdat = TALKTab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+		}
 		else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::DIGI_CHUNK_ID) == 0)
+		{
 			has_sdat = DIGITab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+		}
 
 		if (!has_sdat)
 		{
@@ -99,8 +112,15 @@ namespace HumongousFileEditor
 
 		HumongousNode^ node = (HumongousNode^) btn->node->NextNode;
 
+		if (node == nullptr)
+		{
+			return;
+		}
+
 		if (!form->tabControl1->Controls->ContainsKey(node->Name))
+		{
 			form->AddTab(node);
+		}
 		form->tabControl1->SelectedIndex = form->tabControl1->Controls->IndexOfKey(node->Name);
 	}
 
@@ -111,7 +131,9 @@ namespace HumongousFileEditor
 		chunk_reader::FileContainer* fc = files::FILES.getFile(btn->fileType);
 
 		if (fc == nullptr)
+		{
 			return;
+		}
 
 		switch (btn->resourceType)
 		{
@@ -124,11 +146,17 @@ namespace HumongousFileEditor
 				bool has_sdat = false;
 				chunk_reader::ChunkInfo chunk = fc->GetChunkInfo(btn->offset);
 				if (utils::chunkcmp(chunk.chunk_id, chunk_reader::SGEN_CHUNK_ID) == 0)
+				{
 					has_sdat = SONGTab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+				}
 				else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::TALK_CHUNK_ID) == 0)
+				{
 					has_sdat = TALKTab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+				}
 				else if (utils::chunkcmp(chunk.chunk_id, chunk_reader::DIGI_CHUNK_ID) == 0)
+				{
 					has_sdat = DIGITab::GetData(fc, btn->offset, sdat_chunk, hshd_chunk);
+				}
 
 				if (!has_sdat)
 				{
@@ -153,7 +181,9 @@ namespace HumongousFileEditor
 			{
 				img_info info;
 				if (!GetRoomBackgroundData(fc, btn->offset, info))
+				{
 					return;
+				}
 
 				std::string path;
 				int choice = 1;
@@ -166,13 +196,17 @@ namespace HumongousFileEditor
 					if (choice == 1)
 					{
 						if (!utils::ends_with(path, ".bmp"))
+						{
 							path += ".bmp";
+						}
 						stbi_write_bmp(path.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data);
 					}
 					else
 					{
 						if (!utils::ends_with(path, ".png"))
+						{
 							path += ".png";
+						}
 						stbi_write_png(path.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data, static_cast<int>(info.width * info.channels));
 					}
 
@@ -188,12 +222,16 @@ namespace HumongousFileEditor
 				if (btn->special)
 				{
 					if (!GetRoomImageLayerData(fc, btn->offset, info))
+					{
 						return;
+					}
 				}
 				else
 				{
 					if (!GetRoomImageData(fc, btn->offset, info))
+					{
 						return;
+					}
 				}
 
 
@@ -208,13 +246,17 @@ namespace HumongousFileEditor
 					if (choice == 1)
 					{
 						if (!utils::ends_with(path, ".bmp"))
+						{
 							path += ".bmp";
+						}
 						stbi_write_bmp(path.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data);
 					}
 					else
 					{
 						if (!utils::ends_with(path, ".png"))
+						{
 							path += ".png";
+						}
 						stbi_write_png(path.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data, static_cast<int>(info.width * info.channels));
 					}
 
@@ -237,7 +279,9 @@ namespace HumongousFileEditor
 		chunk_reader::FileContainer* fc = files::FILES.getFile(btn->fileType);
 
 		if (fc == nullptr)
+		{
 			return;
+		}
 
 		audioSystem.Stop();
 
@@ -285,7 +329,9 @@ namespace HumongousFileEditor
 		chunk_reader::FileContainer* fc = files::FILES.getFile(node->fileType);
 
 		if (fc == nullptr)
+		{
 			return;
+		}
 
 		chunk_reader::ChunkInfo chunk = fc->GetChunkInfo(node->offset);
 
@@ -377,17 +423,25 @@ namespace HumongousFileEditor
 			case files::ResourceType::RoomBackground:
 			{
 				if (!node->special)
+				{
 					GetRoomBackground(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel);
+				}
 				else
+				{
 					GetRoomPalette(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel);
+				}
 				break;
 			}
 			case files::ResourceType::RoomImage:
 			{
 				if (!node->special)
+				{
 					GetRoomImage(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel);
+				}
 				else
+				{
 					GetRoomImageLayer(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel);
+				}
 				break;
 			}
 			case files::ResourceType::Room:
@@ -396,7 +450,9 @@ namespace HumongousFileEditor
 				break;
 			}
 			default:
+			{
 				return;
+			}
 		}
 
 		HumongousButton^ replaceButton;
@@ -477,7 +533,9 @@ namespace HumongousFileEditor
 		chunk_reader::SDAT_Chunk sdat_chunk;
 		chunk_reader::HSHD_Chunk hshd_chunk;
 		if (!TALKTab::GetData(fc, offset, sdat_chunk, hshd_chunk))
+		{
 			return;
+		}
 
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
@@ -504,7 +562,9 @@ namespace HumongousFileEditor
 		chunk_reader::SDAT_Chunk sdat_chunk;
 		chunk_reader::HSHD_Chunk hshd_chunk;
 		if (!SONGTab::GetData(fc, offset, sdat_chunk, hshd_chunk))
+		{
 			return;
+		}
 
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
@@ -530,7 +590,9 @@ namespace HumongousFileEditor
 		chunk_reader::SDAT_Chunk sdat_chunk;
 		chunk_reader::HSHD_Chunk hshd_chunk;
 		if (!DIGITab::GetData(fc, offset, sdat_chunk, hshd_chunk))
+		{
 			return;
+		}
 
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
@@ -553,32 +615,37 @@ namespace HumongousFileEditor
 			gcnew System::String("Script")
 		}, propertyGrid);
 		
-		std::vector<talk_instruction> instructions;
+		std::vector<instruction> instructions;
 		if (!SCRPTab::GetData(fc, offset, instructions))
+		{
 			return;
+		}
 
 		int amount = 0;
 		for (size_t i = 0; i < instructions.size(); i++)
 		{
-			talk_instruction& instruction = instructions[i];
+			instruction& instruction = instructions[i];
 			if (instruction.args.ArgSize() > amount)
 			{
-				int d = instruction.args.ArgSize();
-				amount = d;
+				amount = instruction.args.ArgSize();
 			}
 		}
 
 		for (size_t i = 0; i < instructions.size(); i++)
 		{
-			talk_instruction& instruction = instructions[i];
+			instruction& instruction = instructions[i];
 
 			array<System::String^>^ arr = gcnew array<System::String^>(amount + 1);
 			for (size_t j = 0; j < arr->Length; j++)
+			{
 				arr[j] = gcnew System::String("");
+			}
 			
 			arr[0] = gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str());
 			for (size_t j = 0; j < instruction.args.args.size(); j++)
+			{
 				arr[j + 1] = gcnew System::String(instruction.args[j].str.c_str());
+			}
 
 			AddInfoRow(arr, propertyGrid);
 		}
@@ -592,13 +659,15 @@ namespace HumongousFileEditor
 			gcnew System::String("Script")
 		}, propertyGrid);
 
-		std::vector<talk_instruction> instructions;
+		std::vector<instruction> instructions;
 		if (!SCRPTab::GetData(fc, offset, instructions))
+		{
 			return;
+		}
 
 		for (size_t i = 0; i < instructions.size(); i++)
 		{
-			talk_instruction& instruction = instructions[i];
+			instruction& instruction = instructions[i];
 			AddInfoRow(gcnew array<System::String^>(2)
 			{
 				gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), 
@@ -611,15 +680,23 @@ namespace HumongousFileEditor
 	{
 		std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(offset);
 		if (children.size() == 0)
+		{
 			return false;
+		}
 
 		int32_t bsmap_offset = -1;
 		for (size_t i = 0; i < children.size(); i++)
+		{
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::BMAP_CHUNK_ID) == 0 || utils::chunkcmp(children[i].chunk_id, chunk_reader::SMAP_CHUNK_ID) == 0)
+			{
 				bsmap_offset = static_cast<int32_t>(children[i].offset);
+			}
+		}
 
 		if (bsmap_offset < 0)
+		{
 			return false;
+		}
 
 		chunk_reader::BMAP_Chunk bmap_chunk;
 		size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
@@ -636,19 +713,27 @@ namespace HumongousFileEditor
 		for (size_t i = 0; i < rmda_children.size(); i++)
 		{
 			if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::APAL_CHUNK_ID) == 0)
+			{
 				apal_offset = static_cast<int32_t>(rmda_children[i].offset);
-			if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::RMHD_CHUNK_ID) == 0)
+			}
+			else if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::RMHD_CHUNK_ID) == 0)
+			{
 				rmhd_offset = static_cast<int32_t>(rmda_children[i].offset);
+			}
 		}
 
 		if (rmhd_offset < 0)
+		{
 			return false;
+		}
 
 		chunk_reader::RMHD_Chunk rmhd_chunk;
 		memcpy(&rmhd_chunk, utils::add(fc->data, rmhd_offset), sizeof(chunk_reader::RMHD_Chunk));
 
 		if (apal_offset < 0)
+		{
 			return false;
+		}
 
 		chunk_reader::APAL_Chunk apal_chunk;
 		header_size = sizeof(chunk_reader::APAL_Chunk);
@@ -661,7 +746,9 @@ namespace HumongousFileEditor
 	{
 		img_info info;
 		if (!GetRoomBackgroundData(fc, offset, info))
+		{
 			return;
+		}
 
 		size_t rmim_offset = fc->GetParent(offset).offset;
 		std::vector<chunk_reader::ChunkInfo> rmda_children = fc->GetChildren(fc->GetParent(rmim_offset).offset);
@@ -670,13 +757,19 @@ namespace HumongousFileEditor
 		for (size_t i = 0; i < rmda_children.size(); i++)
 		{
 			if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::APAL_CHUNK_ID) == 0)
+			{
 				apal_offset = static_cast<int32_t>(rmda_children[i].offset);
+			}
 			if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::RMHD_CHUNK_ID) == 0)
+			{
 				rmhd_offset = static_cast<int32_t>(rmda_children[i].offset);
+			}
 		}
 
 		if (rmhd_offset < 0)
+		{
 			return;
+		}
 
 		chunk_reader::RMHD_Chunk rmhd_chunk;
 		memcpy(&rmhd_chunk, utils::add(fc->data, rmhd_offset), sizeof(chunk_reader::RMHD_Chunk));
@@ -692,6 +785,7 @@ namespace HumongousFileEditor
 			"Width", 
 			gcnew System::String(std::to_string(rmhd_chunk.width).c_str())
 		}, propertyGrid);
+
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
 			"Height", 
@@ -709,9 +803,13 @@ namespace HumongousFileEditor
 			int y = cur / static_cast<int>(rmhd_chunk.width);
 			int x = cur % static_cast<int>(rmhd_chunk.width);
 			if (info.channels < 4)
+			{
 				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(255, info.data.data[i], info.data.data[i + 1], info.data.data[i + 2]));
+			}
 			else
+			{
 				bmp->SetPixel(x, y, System::Drawing::Color::FromArgb(info.data.data[i + 3], info.data.data[i], info.data.data[i + 1], info.data.data[i + 2]));
+			}
 		}
 
 		System::Windows::Forms::PictureBox^ pictureBox;
@@ -730,7 +828,9 @@ namespace HumongousFileEditor
 	{
 		std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(offset);
 		if (children.size() == 0)
+		{
 			return;
+		}
 
 		size_t rmim_offset = fc->GetParent(offset).offset;
 		chunk_reader::RMIM_Chunk rmim_chunk;
@@ -741,11 +841,15 @@ namespace HumongousFileEditor
 		for (size_t i = 0; i < rmda_children.size(); i++)
 		{
 			if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::APAL_CHUNK_ID) == 0)
+			{
 				apal_offset = rmda_children[i].offset;
+			}
 		}
 
 		if (apal_offset < 0)
+		{
 			return;
+		}
 
 		chunk_reader::APAL_Chunk apal_chunk;
 		size_t header_size = sizeof(chunk_reader::APAL_Chunk);
@@ -790,26 +894,40 @@ namespace HumongousFileEditor
 	{
 		std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(offset);
 		if (children.size() == 0)
+		{
 			return false;
+		}
 
 		size_t obim_offset = fc->GetParent(offset).offset;
 
 		int32_t bsmap_offset = -1;
 		for (size_t i = 0; i < children.size(); i++)
+		{
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::BMAP_CHUNK_ID) == 0 || utils::chunkcmp(children[i].chunk_id, chunk_reader::SMAP_CHUNK_ID) == 0)
+			{
 				bsmap_offset = static_cast<int32_t>(children[i].offset);
+			}
+		}
 
 		if (bsmap_offset < 0)
+		{
 			return false;
+		}
 
 		std::vector<chunk_reader::ChunkInfo> obim_children = fc->GetChildren(obim_offset);
 		int32_t imhd_offset = -1;
 		for (size_t i = 0; i < obim_children.size(); i++)
+		{
 			if (utils::chunkcmp(obim_children[i].chunk_id, chunk_reader::IMHD_CHUNK_ID) == 0)
+			{
 				imhd_offset = static_cast<int32_t>(obim_children[i].offset);
+			}
+		}
 
 		if (imhd_offset < 0)
+		{
 			return false;
+		}
 
 		chunk_reader::IMHD_Chunk imhd_chunk;
 		memcpy(&imhd_chunk, utils::add(fc->data, imhd_offset), sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data));
@@ -818,11 +936,17 @@ namespace HumongousFileEditor
 		std::vector<chunk_reader::ChunkInfo> rmda_children = fc->GetChildren(fc->GetParent(obim_offset).offset);
 		int32_t apal_offset = -1;
 		for (size_t i = 0; i < rmda_children.size(); i++)
+		{
 			if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::APAL_CHUNK_ID) == 0)
+			{
 				apal_offset = static_cast<int32_t>(rmda_children[i].offset);
+			}
+		}
 
 		if (apal_offset < 0)
+		{
 			return false;
+		}
 
 		chunk_reader::APAL_Chunk apal_chunk;
 		size_t header_size = sizeof(chunk_reader::APAL_Chunk);
@@ -859,7 +983,9 @@ namespace HumongousFileEditor
 	{
 		img_info info;
 		if (!GetRoomImageData(fc, offset, info))
+		{
 			return;
+		}
 
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
@@ -872,16 +998,19 @@ namespace HumongousFileEditor
 			"Width", 
 			gcnew System::String(std::to_string(info.width).c_str())
 		}, propertyGrid);
+
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
 			"Height", 
 			gcnew System::String(std::to_string(info.height).c_str())
 		}, propertyGrid);
+
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
 			"x", 
 			gcnew System::String(std::to_string(info.x).c_str())
 		}, propertyGrid);
+
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
 			"y", 
@@ -917,28 +1046,42 @@ namespace HumongousFileEditor
 	{
 		img_info image_info;
 		if (!GetRoomImageData(fc, offset, image_info))
+		{
 			return false;
+		}
 
 		size_t lflf_offset = fc->GetParent(fc->GetParent(fc->GetParent(offset).offset).offset).offset;
 		std::vector<chunk_reader::ChunkInfo> lflf_children = fc->GetChildren(lflf_offset);
 		int32_t im00_offset = -1;
 		for (size_t i = 0; i < lflf_children.size(); i++)
+		{
 			if (utils::chunkcmp(lflf_children[i].chunk_id, chunk_reader::IM00_CHUNK_ID) == 0)
+			{
 				im00_offset = static_cast<int32_t>(lflf_children[i].offset);
+			}
+		}
 
 		img_info background_info;
 		if (!GetRoomBackgroundData(fc, im00_offset, background_info))
+		{
 			return false;
+		}
 
 		size_t obim_offset = fc->GetParent(offset).offset;
 		std::vector<chunk_reader::ChunkInfo> obim_children = fc->GetChildren(obim_offset);
 		int32_t imhd_offset = -1;
 		for (size_t i = 0; i < obim_children.size(); i++)
+		{
 			if (utils::chunkcmp(obim_children[i].chunk_id, chunk_reader::IMHD_CHUNK_ID) == 0)
+			{
 				imhd_offset = static_cast<int32_t>(obim_children[i].offset);
+			}
+		}
 
 		if (imhd_offset < 0)
+		{
 			return false;
+		}
 
 		chunk_reader::IMHD_Chunk imhd_chunk;
 		memcpy(&imhd_chunk, utils::add(fc->data, imhd_offset), sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data));
@@ -987,7 +1130,9 @@ namespace HumongousFileEditor
 	{
 		img_info info;
 		if (!GetRoomImageLayerData(fc, offset, info))
+		{
 			return;
+		}
 
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
@@ -1062,7 +1207,9 @@ namespace HumongousFileEditor
 				pos += sizeof(uint16_t);
 			}
 			else
+			{
 				room_name += ch;
+			}
 			pos++;
 		}
 
@@ -1073,11 +1220,13 @@ namespace HumongousFileEditor
 		}, propertyGrid);
 
 		for (size_t i = 0; i < room_names.size(); i++)
+		{
 			AddInfoRow(gcnew array<System::String^>(2)
 			{
-				gcnew System::String(std::to_string(i).c_str()), 
-				gcnew System::String(room_names[i].c_str())
+				gcnew System::String(std::to_string(i).c_str()),
+					gcnew System::String(room_names[i].c_str())
 			}, propertyGrid);
+		}
 	}
 
 	void TabFunctions::AddSoundButtons(System::Windows::Forms::TabPage^ tab, size_t offset, files::FileType fileType, System::Windows::Forms::Panel^ panel)

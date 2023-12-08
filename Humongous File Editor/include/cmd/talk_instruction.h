@@ -7,7 +7,7 @@
 
 namespace HumongousFileEditor
 {
-	struct talk_instruction
+	struct instruction
 	{
 		uint8_t code;
 		std::string name;

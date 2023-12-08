@@ -57,7 +57,9 @@ namespace HumongousFileEditor
 			path += ".txt";
 			fopen_s(&m_File, path.c_str(), "w");
 			if (!m_File)
+			{
 				LOGF(logger::LOGSEVERITY_INFO, "Cannot open file %s.", path.c_str());
+			}
 		}
 
 		Logger::~Logger()
@@ -130,10 +132,14 @@ namespace HumongousFileEditor
 					);
 
 					if (lm.severity == LOGSEVERITY_ASSERT || lm.severity == LOGSEVERITY_ERROR)
+					{
 						System::Windows::Forms::MessageBox::Show(gcnew System::String(lm.message.c_str()), gcnew System::String("Error"), System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+					}
 					
 					if (lm.severity == logger::LOGSEVERITY_ASSERT)
+					{
 						assert(0 && lm.message.c_str());
+					}
 				}
 				m_MessagesMutex.unlock();
 			}

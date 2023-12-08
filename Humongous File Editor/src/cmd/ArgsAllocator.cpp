@@ -44,7 +44,9 @@ namespace HumongousFileEditor
 	{
 		size_t size = 0;
 		for (size_t i = 0; i < args.size(); i++)
+		{
 			size += args[i].size;
+		}
 		return size;
 	}
 

@@ -1,7 +1,6 @@
 #include "cmd/OPCodes.h"
 
 #include "cmd/ArgsAllocator.h"
-#include "lowlevel/bytecode_data.h"
 #include "lowlevel/utils.h"
 #include "cmd/talk_instruction.h"
 #include "systems/Logger.h"
@@ -11,7 +10,7 @@ namespace HumongousFileEditor
     namespace chunk_reader
     {
 		// According to rzil, the new position is relative from the position after the offset is read. Meaning it is scrp_pos + instruction_pos + arg_pos (of offset).
-		size_t jump(talk_instruction& instruction, unsigned char* data)
+		size_t jump(instruction& instruction, unsigned char* data)
 		{
 			// Normal wait instructions.
 			if (instruction.code == 0x5C // jump if
