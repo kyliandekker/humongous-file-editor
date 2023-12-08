@@ -135,9 +135,12 @@
     <ClInclude Include="ProgressBarForm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="include\abstractions\Abstractions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+=======
+>>>>>>> 38efcbb27e8dd25a794425ceeb01c431b85fd8e2
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">

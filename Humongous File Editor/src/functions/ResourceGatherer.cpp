@@ -112,8 +112,15 @@ namespace HumongousFileEditor
 			uint8_t he_version = 0;
 		};
 
+		void ReadResources()
+		{
+
+		}
+
 		bool ResourceGatherer::ReadResourceFile(FileContainer*& fc)
 		{
+			ChunkFunctions::SetGlobalProgressBar("Reading index file", 0.0f);
+
 			FileContainer* a = nullptr;
 			FileContainer* he0 = nullptr;
 			if (fc->fileType == files::FileType::FileType_A)
@@ -143,6 +150,7 @@ namespace HumongousFileEditor
 			else
 				return false;
 
+			// STEP 1. Read version.
 			std::map<version_key, version_value> versions =
 			{
 				{ { ".LA0", 138 }, { 7, 0 } },
@@ -158,6 +166,7 @@ namespace HumongousFileEditor
 				{ { ".000", 26 }, { 5, 0 } },
 				{ { ".LFL", 26 }, { 5, 0 } }
 			};
+			ChunkFunctions::SetGlobalProgressBar("Reading index file", 50.0f);
 
 			version_key key = { files::getExtensionFromPath(he0->path), he0->GetChunkInfo(0).ChunkSize() };
 			version_value values = versions[key];
@@ -176,7 +185,6 @@ namespace HumongousFileEditor
 			if (utils::chunkcmp(info.chunk_id, chunk_reader::RNAM_CHUNK_ID) != 0)
 				return false;
 
-			// Get HSHD chunk for the sample rate.
 			size_t rnam_offset = info.offset;
 			if (rnam_offset == -1)
 				return false;
@@ -201,6 +209,8 @@ namespace HumongousFileEditor
 				else
 					room_name += ch;
 				pos++;
+
+				ChunkFunctions::SetProgressBar("Reading room names", static_cast<double>(100.0f / rnam_end * pos));
 			}
 
 			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
@@ -216,6 +226,8 @@ namespace HumongousFileEditor
 				baseNode->Nodes->Add(node);
 			}
 
+			ChunkFunctions::SetGlobalProgressBar("Reading index file", 75.0f);
+
 			for (size_t i = 0; i < room_names.size(); i++)
 			{
 				HumongousNode^ node;
@@ -225,7 +237,11 @@ namespace HumongousFileEditor
 				node->Name = gcnew System::String(unique_name.c_str());
 				node->Text = gcnew System::String(room_names[i].c_str());
 				baseNode->Nodes->Add(node);
+
+				ChunkFunctions::SetProgressBar("Adding rooms", static_cast<double>(100.0f / rnam_end * pos));
 			}
+
+			ChunkFunctions::SetGlobalProgressBar("Reading index file", 100.0f);
 
 			std::map<std::string, files::ResourceType> RESOURCE_CHUNKS =
 			{
@@ -263,6 +279,8 @@ namespace HumongousFileEditor
 				{ IM0F_CHUNK_ID, files::ResourceType::RoomImage },
 				{ DIGI_CHUNK_ID, files::ResourceType::SFX }
 			};
+
+			ChunkFunctions::SetGlobalProgressBar("Reading resource file", 0.0f);
 
 			uint32_t lflf = 0;
 
@@ -304,23 +322,39 @@ namespace HumongousFileEditor
 								childNode->fileType = a->fileType;
 								childNode->special = true;
 								childNode->resourceType = it->second;
-								std::string unique_name_2 = std::string(chunk_id_name) + "_" + std::to_string(fc->fileType) + "_" + std::to_string(i) + "_" + fc->path + "_" + std::to_string(lflf) + "_" + std::to_string(random_number_for_unique_id) + "_special";
-								childNode->Name = gcnew System::String(unique_name_2.c_str());
+								std::string unique_name = std::string(chunk_id_name) + "_" + std::to_string(fc->fileType) + "_" + std::to_string(i) + "_" + fc->path + "_" + std::to_string(lflf) + "_" + std::to_string(random_number_for_unique_id) + "_special_layer";
+								childNode->Name = gcnew System::String(unique_name.c_str());
 								childNode->Text = gcnew System::String(std::string(std::to_string(i) + " layer").c_str());
+								node->Nodes->Add(childNode);
+							}
+							if (node->resourceType == files::ResourceType::RoomBackground)
+							{
+								HumongousNode^ childNode;
+								childNode = (gcnew HumongousNode);
+								childNode->offset = child_header.offset;
+								childNode->fileType = a->fileType;
+								childNode->special = true;
+								childNode->resourceType = it->second;
+								std::string unique_name = std::string(chunk_id_name) + "_" + std::to_string(fc->fileType) + "_" + std::to_string(i) + "_" + fc->path + "_" + std::to_string(lflf) + "_" + std::to_string(random_number_for_unique_id) + "_special_palette";
+								childNode->Name = gcnew System::String(unique_name.c_str());
+								childNode->Text = gcnew System::String(std::string(std::to_string(i) + " palette").c_str());
 								node->Nodes->Add(childNode);
 							}
 							i++;
 						}
 						child_header = a->GetNextChunk(child_header.offset);
 						random_number_for_unique_id++;
+
+						ChunkFunctions::SetGlobalProgressBar("Reading resource file", static_cast<double>(100.0f / fc->size * header.offset));
+						ChunkFunctions::SetProgressBar("Reading room chunk childs", static_cast<double>(100.0f / (header.offset + header.ChunkSize()) * child_header.offset));
 					}
 
 					lflf++;
 				}
-				ChunkFunctions::SetProgressBar(form->toolProgressBar, static_cast<double>(100.0f / fc->size* header.offset));
 
 				header = a->GetNextChunk(header.offset);
 			}
+			ChunkFunctions::SetGlobalProgressBar("Reading resource file", 100.0f);
 			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .(A) and .HE0 resources for file \"%s\".", fc->path.c_str());
 			return true;
 		}
@@ -333,6 +367,7 @@ namespace HumongousFileEditor
 			};
 
 			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+			ChunkFunctions::SetGlobalProgressBar("Reading HE4", 0.0f);
 
 			std::vector<files::Resource> offsets;
 			ChunkInfo header = fc->GetChunkInfo(0);
@@ -353,8 +388,9 @@ namespace HumongousFileEditor
 				}
 				header = fc->GetNextChunk(header.offset);
 
-				ChunkFunctions::SetProgressBar(form->toolProgressBar, static_cast<double>(100.0f / fc->size * header.offset));
+				ChunkFunctions::SetProgressBar("Reading TALK chunks", static_cast<double>(100.0f / fc->size * header.offset));
 			}
+			ChunkFunctions::SetGlobalProgressBar("Reading HE4", 50.0f);
 
 			System::Windows::Forms::TreeNode^ baseNode = form->GetBaseNode(gcnew System::String("HE2"));
 
@@ -369,7 +405,10 @@ namespace HumongousFileEditor
 				node->Name = gcnew System::String(offsets[j].name.c_str());
 				node->Text = gcnew System::String(offsets[j].name.c_str());
 				categoryNode->Nodes->Add(node);
+
+				ChunkFunctions::SetProgressBar("Adding TALK data", static_cast<double>(100.0f / offsets.size() * i));
 			}
+			ChunkFunctions::SetGlobalProgressBar("Reading HE2", 100.0f);
 			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE2 resources for file \"%s\".", fc->path.c_str());
 			return true;
 		}
@@ -382,6 +421,7 @@ namespace HumongousFileEditor
 			};
 
 			HumongousEditorForm^ form = (HumongousEditorForm^)Application::OpenForms["HumongousEditorForm"];
+			ChunkFunctions::SetGlobalProgressBar("Reading HE4", 0.0f);
 
 			std::vector<files::Resource> offsets;
 			ChunkInfo header = fc->GetChunkInfo(0);
@@ -402,8 +442,9 @@ namespace HumongousFileEditor
 				}
 				header = fc->GetNextChunk(header.offset);
 
-				ChunkFunctions::SetProgressBar(form->toolProgressBar, static_cast<double>(100.0f / fc->size * header.offset));
+				ChunkFunctions::SetProgressBar("Reading SGEN chunks", static_cast<double>(100.0f / fc->size * header.offset));
 			}
+			ChunkFunctions::SetGlobalProgressBar("Reading HE4", 50.0f);
 
 			System::Windows::Forms::TreeNode^ baseNode = form->GetBaseNode(gcnew System::String("HE4"));
 
@@ -418,7 +459,10 @@ namespace HumongousFileEditor
 				node->Name = gcnew System::String(offsets[j].name.c_str()) + gcnew System::String(std::to_string(j).c_str());
 				node->Text = gcnew System::String(offsets[j].name.c_str());
 				categoryNode->Nodes->Add(node);
+
+				ChunkFunctions::SetProgressBar("Adding SGEN data", static_cast<double>(100.0f / offsets.size() * i));
 			}
+			ChunkFunctions::SetGlobalProgressBar("Reading HE4", 100.0f);
 			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE4 resources for file \"%s\".", fc->path.c_str());
 			return true;
 		}

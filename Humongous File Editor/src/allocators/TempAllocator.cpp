@@ -14,6 +14,12 @@ namespace HumongousFileEditor
 		memcpy(this->data, data, size);
 	}
 
+	TempAllocator::TempAllocator(size_t size) : size(size)
+	{
+		assert(size > 0);
+		this->data = reinterpret_cast<unsigned char*>(malloc(size));
+	}
+
 	TempAllocator::TempAllocator(const TempAllocator& rhs)
 	{
 		size = rhs.size;

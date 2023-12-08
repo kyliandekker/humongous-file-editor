@@ -3,6 +3,7 @@
 #include <string>
 #include <windows.h>
 
+#include "ProgressBarForm.h"
 #include "functions/FileIndexer.h"
 #include "functions/FileDecrypter.h"
 #include "functions/ResourceGatherer.h"
@@ -46,10 +47,10 @@ namespace HumongousFileEditor
 
 		System::Windows::Forms::MenuStrip^ topMenu;
 
-		System::Windows::Forms::StatusStrip^ statusStrip2;
-		System::Windows::Forms::ToolStripProgressBar^ toolProgressBar;
+
+
 		System::Windows::Forms::TreeView^ entryView;
-		System::Windows::Forms::Panel^ treeActionPanel;
+
 
 		System::Windows::Forms::ToolTip^ tooltipOpen = gcnew System::Windows::Forms::ToolTip();
 		System::Windows::Forms::ToolTip^ tooltipSave = gcnew System::Windows::Forms::ToolTip();
@@ -73,8 +74,14 @@ namespace HumongousFileEditor
     public: System::Windows::Forms::Panel^ panel3;
     public: System::Windows::Forms::Panel^ panel4;
 	public: System::Windows::Forms::Panel^ actionPanel;
-	public: System::Windows::Forms::TabPage^ tabWelcome;
+
 		  System::Windows::Forms::TabControl^ tabControl1;
+	public: System::Windows::Forms::TabPage^ tabWelcome;
+	private: System::Windows::Forms::ColorDialog^ colorDialog1;
+	public:
+
+	public:
+		HumongousFileEditor::ProgressBarForm progressBar;
 	protected:
 		/// <summary>
 		/// Clean up any resources being used.
@@ -102,7 +109,6 @@ namespace HumongousFileEditor
 		{
 			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(HumongousEditorForm::typeid));
 			this->splitContainer = (gcnew System::Windows::Forms::SplitContainer());
-			this->treeActionPanel = (gcnew System::Windows::Forms::Panel());
 			this->entryView = (gcnew System::Windows::Forms::TreeView());
 			this->tabControl1 = (gcnew System::Windows::Forms::TabControl());
 			this->tabWelcome = (gcnew System::Windows::Forms::TabPage());
@@ -119,8 +125,6 @@ namespace HumongousFileEditor
 			this->helpMenu = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->optionAbout = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->topMenu = (gcnew System::Windows::Forms::MenuStrip());
-			this->statusStrip2 = (gcnew System::Windows::Forms::StatusStrip());
-			this->toolProgressBar = (gcnew System::Windows::Forms::ToolStripProgressBar());
 			this->openButton = (gcnew System::Windows::Forms::Button());
 			this->saveButton = (gcnew System::Windows::Forms::Button());
 			this->aboutButton = (gcnew System::Windows::Forms::Button());
@@ -131,13 +135,13 @@ namespace HumongousFileEditor
 			this->decryptButton = (gcnew System::Windows::Forms::Button());
 			this->actionPanel = (gcnew System::Windows::Forms::Panel());
 			this->indexButton = (gcnew System::Windows::Forms::Button());
+			this->colorDialog1 = (gcnew System::Windows::Forms::ColorDialog());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->splitContainer))->BeginInit();
 			this->splitContainer->Panel1->SuspendLayout();
 			this->splitContainer->Panel2->SuspendLayout();
 			this->splitContainer->SuspendLayout();
 			this->tabControl1->SuspendLayout();
 			this->topMenu->SuspendLayout();
-			this->statusStrip2->SuspendLayout();
 			this->actionPanel->SuspendLayout();
 			this->SuspendLayout();
 			// 
@@ -147,13 +151,12 @@ namespace HumongousFileEditor
 				| System::Windows::Forms::AnchorStyles::Left)
 				| System::Windows::Forms::AnchorStyles::Right));
 			this->splitContainer->BackColor = System::Drawing::SystemColors::ControlLight;
-			this->splitContainer->Location = System::Drawing::Point(0, 64);
+			this->splitContainer->Location = System::Drawing::Point(0, 79);
 			this->splitContainer->Name = L"splitContainer";
 			// 
 			// splitContainer.Panel1
 			// 
 			this->splitContainer->Panel1->BackColor = System::Drawing::SystemColors::Window;
-			this->splitContainer->Panel1->Controls->Add(this->treeActionPanel);
 			this->splitContainer->Panel1->Controls->Add(this->entryView);
 			this->splitContainer->Panel1->Padding = System::Windows::Forms::Padding(10);
 			// 
@@ -167,14 +170,6 @@ namespace HumongousFileEditor
 			this->splitContainer->SplitterDistance = 561;
 			this->splitContainer->TabIndex = 1;
 			// 
-			// treeActionPanel
-			// 
-			this->treeActionPanel->Dock = System::Windows::Forms::DockStyle::Top;
-			this->treeActionPanel->Location = System::Drawing::Point(10, 10);
-			this->treeActionPanel->Name = L"treeActionPanel";
-			this->treeActionPanel->Size = System::Drawing::Size(541, 29);
-			this->treeActionPanel->TabIndex = 1;
-			// 
 			// entryView
 			// 
 			this->entryView->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
@@ -183,9 +178,9 @@ namespace HumongousFileEditor
 			this->entryView->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(249)), static_cast<System::Int32>(static_cast<System::Byte>(249)),
 				static_cast<System::Int32>(static_cast<System::Byte>(249)));
 			this->entryView->ItemHeight = 20;
-			this->entryView->Location = System::Drawing::Point(10, 45);
+			this->entryView->Location = System::Drawing::Point(12, 13);
 			this->entryView->Name = L"entryView";
-			this->entryView->Size = System::Drawing::Size(541, 409);
+			this->entryView->Size = System::Drawing::Size(536, 443);
 			this->entryView->TabIndex = 0;
 			this->entryView->MouseDoubleClick += gcnew System::Windows::Forms::MouseEventHandler(this, &HumongousEditorForm::entryView_DoubleClick);
 			// 
@@ -206,9 +201,10 @@ namespace HumongousFileEditor
 			// 
 			// tabWelcome
 			// 
-			this->tabWelcome->Location = System::Drawing::Point(4, 22);
+			this->tabWelcome->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->tabWelcome->Location = System::Drawing::Point(4, 29);
 			this->tabWelcome->Name = L"tabWelcome";
-			this->tabWelcome->Size = System::Drawing::Size(398, 420);
+			this->tabWelcome->Size = System::Drawing::Size(398, 413);
 			this->tabWelcome->TabIndex = 0;
 			this->tabWelcome->Text = L"Welcome!";
 			this->tabWelcome->UseVisualStyleBackColor = true;
@@ -221,14 +217,14 @@ namespace HumongousFileEditor
 					this->toolStripSeparator3, this->optionQuit
 			});
 			this->optionSeperator1->Name = L"optionSeperator1";
-			this->optionSeperator1->Size = System::Drawing::Size(37, 20);
+			this->optionSeperator1->Size = System::Drawing::Size(54, 29);
 			this->optionSeperator1->Text = L"File";
 			// 
 			// optionOpen
 			// 
 			this->optionOpen->Name = L"optionOpen";
 			this->optionOpen->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::O));
-			this->optionOpen->Size = System::Drawing::Size(186, 22);
+			this->optionOpen->Size = System::Drawing::Size(285, 34);
 			this->optionOpen->Text = L"Open";
 			this->optionOpen->ToolTipText = L"Open file";
 			this->optionOpen->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionOpen_Click);
@@ -236,14 +232,14 @@ namespace HumongousFileEditor
 			// toolStripSeparator1
 			// 
 			this->toolStripSeparator1->Name = L"toolStripSeparator1";
-			this->toolStripSeparator1->Size = System::Drawing::Size(183, 6);
+			this->toolStripSeparator1->Size = System::Drawing::Size(282, 6);
 			// 
 			// optionSave
 			// 
 			this->optionSave->Enabled = false;
 			this->optionSave->Name = L"optionSave";
 			this->optionSave->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::S));
-			this->optionSave->Size = System::Drawing::Size(186, 22);
+			this->optionSave->Size = System::Drawing::Size(285, 34);
 			this->optionSave->Text = L"Save";
 			this->optionSave->ToolTipText = L"Save file(s)";
 			this->optionSave->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionSave_Click);
@@ -254,7 +250,7 @@ namespace HumongousFileEditor
 			this->optionSaveAs->Name = L"optionSaveAs";
 			this->optionSaveAs->ShortcutKeys = static_cast<System::Windows::Forms::Keys>(((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::Shift)
 				| System::Windows::Forms::Keys::S));
-			this->optionSaveAs->Size = System::Drawing::Size(186, 22);
+			this->optionSaveAs->Size = System::Drawing::Size(285, 34);
 			this->optionSaveAs->Text = L"Save As";
 			this->optionSaveAs->ToolTipText = L"Save file(s) as";
 			this->optionSaveAs->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionSaveAs_Click);
@@ -262,13 +258,13 @@ namespace HumongousFileEditor
 			// toolStripSeparator2
 			// 
 			this->toolStripSeparator2->Name = L"toolStripSeparator2";
-			this->toolStripSeparator2->Size = System::Drawing::Size(183, 6);
+			this->toolStripSeparator2->Size = System::Drawing::Size(282, 6);
 			// 
 			// optionIndex
 			// 
 			this->optionIndex->Name = L"optionIndex";
 			this->optionIndex->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::I));
-			this->optionIndex->Size = System::Drawing::Size(186, 22);
+			this->optionIndex->Size = System::Drawing::Size(285, 34);
 			this->optionIndex->Text = L"Index";
 			this->optionIndex->ToolTipText = L"Create index of file";
 			this->optionIndex->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionIndex_Click);
@@ -277,7 +273,7 @@ namespace HumongousFileEditor
 			// 
 			this->optionDecrypt->Name = L"optionDecrypt";
 			this->optionDecrypt->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::D));
-			this->optionDecrypt->Size = System::Drawing::Size(186, 22);
+			this->optionDecrypt->Size = System::Drawing::Size(285, 34);
 			this->optionDecrypt->Text = L"Decrypt";
 			this->optionDecrypt->ToolTipText = L"Encrypt/Decrypt file";
 			this->optionDecrypt->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionDecrypt_Click);
@@ -285,13 +281,13 @@ namespace HumongousFileEditor
 			// toolStripSeparator3
 			// 
 			this->toolStripSeparator3->Name = L"toolStripSeparator3";
-			this->toolStripSeparator3->Size = System::Drawing::Size(183, 6);
+			this->toolStripSeparator3->Size = System::Drawing::Size(282, 6);
 			// 
 			// optionQuit
 			// 
 			this->optionQuit->Name = L"optionQuit";
 			this->optionQuit->ShortcutKeys = static_cast<System::Windows::Forms::Keys>((System::Windows::Forms::Keys::Control | System::Windows::Forms::Keys::Q));
-			this->optionQuit->Size = System::Drawing::Size(186, 22);
+			this->optionQuit->Size = System::Drawing::Size(285, 34);
 			this->optionQuit->Text = L"Exit";
 			this->optionQuit->ToolTipText = L"Quit";
 			// 
@@ -299,14 +295,14 @@ namespace HumongousFileEditor
 			// 
 			this->helpMenu->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->optionAbout });
 			this->helpMenu->Name = L"helpMenu";
-			this->helpMenu->Size = System::Drawing::Size(44, 20);
+			this->helpMenu->Size = System::Drawing::Size(65, 29);
 			this->helpMenu->Text = L"Help";
 			// 
 			// optionAbout
 			// 
 			this->optionAbout->Name = L"optionAbout";
 			this->optionAbout->ShortcutKeys = System::Windows::Forms::Keys::F1;
-			this->optionAbout->Size = System::Drawing::Size(126, 22);
+			this->optionAbout->Size = System::Drawing::Size(195, 34);
 			this->optionAbout->Text = L"About";
 			this->optionAbout->ToolTipText = L"About this program";
 			this->optionAbout->Click += gcnew System::EventHandler(this, &HumongousEditorForm::optionAbout_Click);
@@ -314,29 +310,14 @@ namespace HumongousFileEditor
 			// topMenu
 			// 
 			this->topMenu->BackColor = System::Drawing::SystemColors::Window;
+			this->topMenu->GripMargin = System::Windows::Forms::Padding(2, 2, 0, 2);
 			this->topMenu->ImageScalingSize = System::Drawing::Size(22, 22);
 			this->topMenu->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) { this->optionSeperator1, this->helpMenu });
 			this->topMenu->Location = System::Drawing::Point(0, 0);
 			this->topMenu->Name = L"topMenu";
-			this->topMenu->Size = System::Drawing::Size(991, 24);
+			this->topMenu->Size = System::Drawing::Size(991, 33);
 			this->topMenu->TabIndex = 0;
 			this->topMenu->Text = L"menuStrip2";
-			// 
-			// statusStrip2
-			// 
-			this->statusStrip2->ImageScalingSize = System::Drawing::Size(22, 22);
-			this->statusStrip2->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->toolProgressBar });
-			this->statusStrip2->Location = System::Drawing::Point(0, 536);
-			this->statusStrip2->Margin = System::Windows::Forms::Padding(5);
-			this->statusStrip2->Name = L"statusStrip2";
-			this->statusStrip2->Size = System::Drawing::Size(991, 25);
-			this->statusStrip2->TabIndex = 2;
-			this->statusStrip2->Text = L"statusStrip2";
-			// 
-			// toolProgressBar
-			// 
-			this->toolProgressBar->Name = L"toolProgressBar";
-			this->toolProgressBar->Size = System::Drawing::Size(100, 19);
 			// 
 			// openButton
 			// 
@@ -460,7 +441,7 @@ namespace HumongousFileEditor
 			this->actionPanel->Controls->Add(this->saveButton);
 			this->actionPanel->Controls->Add(this->openButton);
 			this->actionPanel->Dock = System::Windows::Forms::DockStyle::Top;
-			this->actionPanel->Location = System::Drawing::Point(0, 24);
+			this->actionPanel->Location = System::Drawing::Point(0, 33);
 			this->actionPanel->Name = L"actionPanel";
 			this->actionPanel->Padding = System::Windows::Forms::Padding(10);
 			this->actionPanel->Size = System::Drawing::Size(991, 44);
@@ -486,9 +467,8 @@ namespace HumongousFileEditor
 			// 
 			// HumongousEditorForm
 			// 
-			this->ClientSize = System::Drawing::Size(991, 561);
+			this->ClientSize = System::Drawing::Size(991, 544);
 			this->Controls->Add(this->actionPanel);
-			this->Controls->Add(this->statusStrip2);
 			this->Controls->Add(this->splitContainer);
 			this->Controls->Add(this->topMenu);
 			this->MainMenuStrip = this->topMenu;
@@ -501,8 +481,6 @@ namespace HumongousFileEditor
 			this->tabControl1->ResumeLayout(false);
 			this->topMenu->ResumeLayout(false);
 			this->topMenu->PerformLayout();
-			this->statusStrip2->ResumeLayout(false);
-			this->statusStrip2->PerformLayout();
 			this->actionPanel->ResumeLayout(false);
 			this->ResumeLayout(false);
 			this->PerformLayout();
@@ -595,7 +573,6 @@ namespace HumongousFileEditor
 				if (f.Read(path.c_str()))
 				{
 					System::Windows::Forms::MessageBox::Show("Successfully opened file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
-					toolProgressBar->Value = 0;
 
 					this->optionSave->Enabled = true;
 					this->optionSaveAs->Enabled = true;
@@ -603,15 +580,14 @@ namespace HumongousFileEditor
 					this->saveAsButton->Enabled = true;
 				}
 			}
+			HideProgressBar();
 		}
 		System::Void optionSave_Click(System::Object^, System::EventArgs^)
 		{
 			System::Windows::Forms::DialogResult result = System::Windows::Forms::MessageBox::Show("Are you sure you want to overwrite the current opened files?", "Overwrite current files", System::Windows::Forms::MessageBoxButtons::YesNo, System::Windows::Forms::MessageBoxIcon::Information);
 			
 			if (result == System::Windows::Forms::DialogResult::Yes)
-			{
 				if (files::FILES.Save())
-				{
 					System::Windows::Forms::MessageBox::Show("Successfully saved files.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
 				}
 			}
@@ -662,6 +638,17 @@ namespace HumongousFileEditor
 			tabControl1->SelectedIndex = tabControl1->Controls->IndexOfKey(node->Name);
 		}
 	public:
+		System::Void ShowProgressBar()
+		{
+			progressBar.Location = Point(this->Location.X + (this->Size.Width / 2), this->Location.Y + (this->Size.Height / 2));
+			progressBar.Show();
+			progressBar.Focus();
+			progressBar.Activate();
+		}
+		System::Void HideProgressBar()
+		{
+			progressBar.Hide();
+		}
 		/// <summary>
 		/// Adds a new tab to the tab control.
 		/// </summary>

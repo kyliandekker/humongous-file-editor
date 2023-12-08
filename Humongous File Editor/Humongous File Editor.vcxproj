@@ -195,6 +195,9 @@
       <LogicalName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
       <LogicalName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HumongousFileEditor.HumongousEditorForm.resources</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="ProgressBarForm.resx">
+      <DependentUpon>ProgressBarForm.h</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ProgressBarForm.cpp" />
