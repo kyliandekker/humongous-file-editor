@@ -107,7 +107,7 @@ namespace HumongousFileEditor
 						text += getCloseChunkText(closed.chunk_id, top_chunks.size());
 					}
 
-				ChunkFunctions::SetProgressBar(form->toolProgressBar, static_cast<double>(100.0 / m_FileContainer.size * header.offset));
+				//ChunkFunctions::SetProgressBar(form->toolProgressBar, static_cast<double>(100.0 / m_FileContainer.size * header.offset));
 			}
 			for (auto i : chunks)
 			{

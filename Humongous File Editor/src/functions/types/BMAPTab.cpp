@@ -98,7 +98,7 @@ namespace HumongousFileEditor
 		return true;
 	}
 
-	bool BMAPTab::GetDataSMAP(chunk_reader::FileContainer*&, chunk_reader::OBIM_Chunk&, size_t width, size_t height, chunk_reader::SMAP_Chunk& smap_chunk, chunk_reader::APAL_Chunk& apal_chunk, img_info& info)
+	bool BMAPTab::GetDataSMAP(chunk_reader::FileContainer*&, size_t width, size_t height, chunk_reader::SMAP_Chunk& smap_chunk, chunk_reader::APAL_Chunk& apal_chunk, img_info& info)
 	{
 		size_t header_size = sizeof(chunk_reader::SMAP_Chunk) - sizeof(smap_chunk.data); // Pointer in the SMAP class is size 8 and needs to be deducted.
 		size_t smap_size = smap_chunk.ChunkSize() - header_size;

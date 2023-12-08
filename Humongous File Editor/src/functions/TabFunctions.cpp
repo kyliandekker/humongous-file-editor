@@ -230,73 +230,6 @@ namespace HumongousFileEditor
 		}
 	}
 
-	System::Void TabFunctions::ExportPaletteButton_Click(System::Object^ sender, System::EventArgs^)
-	{
-		OPENFILENAME ofn;
-		TCHAR sz_file[260] = { 0 };
-
-		ZeroMemory(&ofn, sizeof(ofn));
-		ofn.lStructSize = sizeof(ofn);
-		ofn.lpstrFile = sz_file;
-		ofn.nMaxFile = sizeof(sz_file);
-		ofn.lpstrFilter = L"\
-			BMP file (*.palette)\
-			\0*.palette;*.palette\0";
-		ofn.lpstrFileTitle = nullptr;
-		ofn.nMaxFileTitle = 0;
-		ofn.lpstrInitialDir = nullptr;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-		if (GetSaveFileNameW(&ofn))
-		{
-			HumongousButton^ btn = (HumongousButton^)sender;
-
-			chunk_reader::FileContainer* fc = files::FILES.getFile(btn->fileType);
-
-			if (fc == nullptr)
-				return;
-
-			std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(btn->offset);
-			if (children.size() == 0)
-				return;
-
-			int32_t bsmap_offset = -1;
-			for (size_t i = 0; i < children.size(); i++)
-				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::BMAP_CHUNK_ID) == 0 || utils::chunkcmp(children[i].chunk_id, chunk_reader::SMAP_CHUNK_ID) == 0)
-					bsmap_offset = static_cast<int32_t>(children[i].offset);
-
-			size_t rmim_offset = fc->GetParent(btn->offset).offset;
-			chunk_reader::RMIM_Chunk rmim_chunk;
-			memcpy(&rmim_chunk, utils::add(fc->data, rmim_offset), sizeof(chunk_reader::RMIM_Chunk));
-
-			std::vector<chunk_reader::ChunkInfo> rmda_children = fc->GetChildren(fc->GetParent(rmim_offset).offset);
-			int32_t apal_offset = -1;
-			for (size_t i = 0; i < rmda_children.size(); i++)
-				if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::APAL_CHUNK_ID) == 0)
-					apal_offset = static_cast<int32_t>(rmda_children[i].offset);
-
-			if (apal_offset < 0)
-				return;
-
-			chunk_reader::APAL_Chunk apal_chunk;
-			size_t header_size = sizeof(chunk_reader::APAL_Chunk);
-			memcpy(&apal_chunk, utils::add(fc->data, apal_offset), header_size);
-			size_t apal_size = apal_chunk.ChunkSize() - header_size;
-
-			const auto path = new char[wcslen(ofn.lpstrFile) + 1];
-			wsprintfA(path, "%S", ofn.lpstrFile);
-			std::string save_path_s = std::string(path);
-
-			delete[] path;
-
-			FILE* file = nullptr;
-			fopen_s(&file, save_path_s.c_str(), "wb");
-			fwrite(&apal_chunk, header_size, 1, file);
-			fwrite(apal_chunk.data, apal_size, 1, file);
-			fclose(file);
-		}
-	}
-
 	System::Void TabFunctions::ReplaceButton_Click(System::Object^ sender, System::EventArgs^)
 	{
 		HumongousButton^ btn = (HumongousButton^)sender;
@@ -557,6 +490,32 @@ namespace HumongousFileEditor
 		AddSoundButtons(tab, offset, fc->fileType, panel);
 	}
 
+	void TabFunctions::GetSong(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel)
+	{
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Type",
+				gcnew System::String("Song")
+		}, propertyGrid);
+
+		chunk_reader::SDAT_Chunk sdat_chunk;
+		chunk_reader::HSHD_Chunk hshd_chunk;
+		if (!SONGTab::GetData(fc, offset, sdat_chunk, hshd_chunk))
+			return;
+
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Sample Rate",
+		}, propertyGrid);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Size (in bytes)",
+				gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str())
+		}, propertyGrid);
+
+		AddSoundButtons(tab, offset, fc->fileType, panel);
+	}
+
 	void TabFunctions::GetDigi(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel)
 	{
 		AddInfoRow(gcnew array<System::String^>(2)
@@ -573,7 +532,6 @@ namespace HumongousFileEditor
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
 			"Sample Rate", 
-			gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str())
 		}, propertyGrid);
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
@@ -584,39 +542,18 @@ namespace HumongousFileEditor
 		AddSoundButtons(tab, offset, fc->fileType, panel);
 	}
 
-	void TabFunctions::GetSong(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel)
-	{
-		AddInfoRow(gcnew array<System::String^>(2)
-		{
-			"Type",
-			gcnew System::String("Song")
-		}, propertyGrid);
-
-		chunk_reader::SDAT_Chunk sdat_chunk;
-		chunk_reader::HSHD_Chunk hshd_chunk;
-		if (!SONGTab::GetData(fc, offset, sdat_chunk, hshd_chunk))
-			return;
-
-		AddInfoRow(gcnew array<System::String^>(2)
-		{
-			"Sample Rate", 
-			gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str())
-		}, propertyGrid);
-		AddInfoRow(gcnew array<System::String^>(2)
-		{
-			"Size (in bytes)", 
-			gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str())
-		}, propertyGrid);
-
-		AddSoundButtons(tab, offset, fc->fileType, panel);
-	}
-
 	void TabFunctions::GetGlobalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^)
 	{
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
+			"Type", 
 			gcnew System::String("Script")
 		}, propertyGrid);
+		
+		std::vector<talk_instruction> instructions;
+		if (!SCRPTab::GetData(fc, offset, instructions))
+			return;
+
 		int amount = 0;
 		for (size_t i = 0; i < instructions.size(); i++)
 		{
@@ -784,78 +721,6 @@ namespace HumongousFileEditor
 		pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
 		propertyPanel->Controls->Add(pictureBox);
-
-		// Construct export button.
-		HumongousButton^ exportPaletteButton;
-		exportPaletteButton = (gcnew HumongousButton());
-
-		exportPaletteButton->Location = System::Drawing::Point(232, 53);
-		exportPaletteButton->Name = gcnew System::String("ExportPalette_") + gcnew System::String(tab->Name);
-		exportPaletteButton->Size = System::Drawing::Size(125, 23);
-		exportPaletteButton->TabIndex = 2;
-		exportPaletteButton->offset = offset;
-		exportPaletteButton->fileType = fc->fileType;
-		exportPaletteButton->resourceType = files::ResourceType::RoomBackground;
-		exportPaletteButton->Text = L"Export Palette";
-		exportPaletteButton->UseVisualStyleBackColor = true;
-		exportPaletteButton->Click += gcnew System::EventHandler(this, &TabFunctions::ExportRoomPaletteButton_Click);
-
-		exportPaletteButton->ResumeLayout(false);
-		panel->Controls->Add(exportPaletteButton);
-
-		// Construct export button.
-		HumongousButton^ exportBmapButton;
-		exportBmapButton = (gcnew HumongousButton());
-
-		exportBmapButton->Location = System::Drawing::Point(232, 53);
-		exportBmapButton->Name = gcnew System::String("ExportBmap_") + gcnew System::String(tab->Name);
-		exportBmapButton->Size = System::Drawing::Size(125, 23);
-		exportBmapButton->TabIndex = 2;
-		exportBmapButton->offset = offset;
-		exportBmapButton->fileType = fc->fileType;
-		exportBmapButton->resourceType = files::ResourceType::RoomBackground;
-		exportBmapButton->Text = L"Export Bmap";
-		exportBmapButton->UseVisualStyleBackColor = true;
-		exportBmapButton->Click += gcnew System::EventHandler(this, &TabFunctions::ExportRoomBmapButton_Click);
-
-		exportBmapButton->ResumeLayout(false);
-		panel->Controls->Add(exportBmapButton);
-
-		// Construct export button.
-		HumongousButton^ importPaletteButton;
-		importPaletteButton = (gcnew HumongousButton());
-
-		importPaletteButton->Location = System::Drawing::Point(232, 53);
-		importPaletteButton->Name = gcnew System::String("ImportPalette_") + gcnew System::String(tab->Name);
-		importPaletteButton->Size = System::Drawing::Size(125, 23);
-		importPaletteButton->TabIndex = 2;
-		importPaletteButton->offset = offset;
-		importPaletteButton->fileType = fc->fileType;
-		importPaletteButton->resourceType = files::ResourceType::RoomBackground;
-		importPaletteButton->Text = L"Import Palette";
-		importPaletteButton->UseVisualStyleBackColor = true;
-		importPaletteButton->Click += gcnew System::EventHandler(this, &TabFunctions::ImportRoomPaletteButton_Click);
-
-		importPaletteButton->ResumeLayout(false);
-		panel->Controls->Add(importPaletteButton);
-
-		// Construct export button.
-		HumongousButton^ importBmapButton;
-		importBmapButton = (gcnew HumongousButton());
-
-		importBmapButton->Location = System::Drawing::Point(232, 53);
-		importBmapButton->Name = gcnew System::String("ImportBmap_") + gcnew System::String(tab->Name);
-		importBmapButton->Size = System::Drawing::Size(125, 23);
-		importBmapButton->TabIndex = 2;
-		importBmapButton->offset = offset;
-		importBmapButton->fileType = fc->fileType;
-		importBmapButton->resourceType = files::ResourceType::RoomBackground;
-		importBmapButton->Text = L"Import Bmap";
-		importBmapButton->UseVisualStyleBackColor = true;
-		importBmapButton->Click += gcnew System::EventHandler(this, &TabFunctions::ImportRoomBmapButton_Click);
-
-		importBmapButton->ResumeLayout(false);
-		panel->Controls->Add(importBmapButton);
 	}
 
 	void TabFunctions::GetRoomPalette(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel)
@@ -987,7 +852,7 @@ namespace HumongousFileEditor
 		return false;
 	}
 
-	void TabFunctions::GetRoomImage(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^, System::Windows::Forms::Panel^ propertyPanel)
+	void TabFunctions::GetRoomImage(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel)
 	{
 		img_info info;
 		if (!GetRoomImageData(fc, offset, info))
@@ -1043,42 +908,6 @@ namespace HumongousFileEditor
 		pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
 		propertyPanel->Controls->Add(pictureBox);
-
-		// Construct export button.
-		HumongousButton^ exportBmapButton;
-		exportBmapButton = (gcnew HumongousButton());
-
-		exportBmapButton->Location = System::Drawing::Point(232, 53);
-		exportBmapButton->Name = gcnew System::String("ExportBmap_") + gcnew System::String(tab->Name);
-		exportBmapButton->Size = System::Drawing::Size(125, 23);
-		exportBmapButton->TabIndex = 2;
-		exportBmapButton->offset = offset;
-		exportBmapButton->fileType = fc->fileType;
-		exportBmapButton->resourceType = files::ResourceType::RoomImage;
-		exportBmapButton->Text = L"Export Bmap";
-		exportBmapButton->UseVisualStyleBackColor = true;
-		exportBmapButton->Click += gcnew System::EventHandler(this, &TabFunctions::ExportObimButton_Click);
-
-		exportBmapButton->ResumeLayout(false);
-		panel->Controls->Add(exportBmapButton);
-
-		// Construct export button.
-		HumongousButton^ importBmapButton;
-		importBmapButton = (gcnew HumongousButton());
-
-		importBmapButton->Location = System::Drawing::Point(232, 53);
-		importBmapButton->Name = gcnew System::String("ImportBmap_") + gcnew System::String(tab->Name);
-		importBmapButton->Size = System::Drawing::Size(125, 23);
-		importBmapButton->TabIndex = 2;
-		importBmapButton->offset = offset;
-		importBmapButton->fileType = fc->fileType;
-		importBmapButton->resourceType = files::ResourceType::RoomImage;
-		importBmapButton->Text = L"Import Bmap";
-		importBmapButton->UseVisualStyleBackColor = true;
-		importBmapButton->Click += gcnew System::EventHandler(this, &TabFunctions::ImportObimButton_Click);
-
-		importBmapButton->ResumeLayout(false);
-		panel->Controls->Add(importBmapButton);
 	}
 
 	bool TabFunctions::GetRoomImageLayerData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
@@ -1160,7 +989,6 @@ namespace HumongousFileEditor
 		AddInfoRow(gcnew array<System::String^>(2)
 		{
 			"Type",
-			gcnew System::String("Room Image")
 		}, propertyGrid);
 
 		AddInfoRow(gcnew array<System::String^>(2)
@@ -1183,9 +1011,6 @@ namespace HumongousFileEditor
 			"y", 
 			gcnew System::String(std::to_string(info.y).c_str())
 		}, propertyGrid);
-
-		propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
-		propertyGrid->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
 
 		System::Drawing::Bitmap^ bmp = gcnew System::Drawing::Bitmap(static_cast<int>(info.width), static_cast<int>(info.height));
 

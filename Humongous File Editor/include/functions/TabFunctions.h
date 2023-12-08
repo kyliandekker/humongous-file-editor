@@ -43,15 +43,8 @@ namespace HumongousFileEditor
 		System::Void NextButton_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void ExportButton_Click(System::Object^ sender, System::EventArgs^ e);
 
-		System::Void ExportRoomPaletteButton_Click(System::Object^ sender, System::EventArgs^ e);
-		System::Void ExportRoomBmapButton_Click(System::Object^ sender, System::EventArgs^ e);
-		System::Void ImportRoomPaletteButton_Click(System::Object^ sender, System::EventArgs^ e);
-		System::Void ImportRoomBmapButton_Click(System::Object^ sender, System::EventArgs^ e);
+		System::Void ReplaceButton_Click(System::Object^ sender, System::EventArgs^);
 
-		System::Void ExportObimButton_Click(System::Object^ sender, System::EventArgs^ e);
-		System::Void ImportObimButton_Click(System::Object^ sender, System::EventArgs^ e);
-
-		System::Void ReplaceButton_Click(System::Object^ sender, System::EventArgs^ e);
 		void AddTab(HumongousNode^ node, System::Windows::Forms::TabControl^ tabControl);
 		System::Void DoubleClick(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e);
 	private:
@@ -62,15 +55,12 @@ namespace HumongousFileEditor
 		void GetLocalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel);
 		bool GetRoomBackgroundData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
 		void GetRoomBackground(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel);
-<<<<<<< HEAD
-=======
 		void GetRoomPalette(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel);
->>>>>>> 38efcbb27e8dd25a794425ceeb01c431b85fd8e2
 		void GetRNAM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel);
 		bool GetRoomImageData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
-		void GetRoomImage(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel);
+        void GetRoomImage(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^, System::Windows::Forms::Panel^ propertyPanel);
 		bool GetRoomImageLayerData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info);
-		void GetRoomImageLayer(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel);
+		void GetRoomImageLayer(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^, System::Windows::Forms::Panel^ propertyPanel);
 		void AddSoundButtons(System::Windows::Forms::TabPage^ tab, size_t offset, files::FileType fileType, System::Windows::Forms::Panel^ panel);
 	};
 };

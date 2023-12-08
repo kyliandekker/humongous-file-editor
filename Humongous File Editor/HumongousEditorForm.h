@@ -559,7 +559,6 @@ namespace HumongousFileEditor
 					if (f.Save(path, savePath))
 					{
 						System::Windows::Forms::MessageBox::Show("Successfully indexed file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
-						toolProgressBar->Value = 0;
 					}
 				}
 			}
@@ -587,7 +586,9 @@ namespace HumongousFileEditor
 			System::Windows::Forms::DialogResult result = System::Windows::Forms::MessageBox::Show("Are you sure you want to overwrite the current opened files?", "Overwrite current files", System::Windows::Forms::MessageBoxButtons::YesNo, System::Windows::Forms::MessageBoxIcon::Information);
 			
 			if (result == System::Windows::Forms::DialogResult::Yes)
+			{
 				if (files::FILES.Save())
+				{
 					System::Windows::Forms::MessageBox::Show("Successfully saved files.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
 				}
 			}
@@ -615,7 +616,6 @@ namespace HumongousFileEditor
 					if (fileDecrypter.Read(path, savePath))
 					{
 						System::Windows::Forms::MessageBox::Show("Successfully decrypted/encrypted file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
-						toolProgressBar->Value = 0;
 					}
 				}
 			}
