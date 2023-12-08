@@ -376,7 +376,10 @@ namespace HumongousFileEditor
 			}
 			case files::ResourceType::RoomBackground:
 			{
-				GetRoomBackground(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel);
+				if (!node->special)
+					GetRoomBackground(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel);
+				else
+					GetRoomPalette(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel);
 				break;
 			}
 			case files::ResourceType::RoomImage:
