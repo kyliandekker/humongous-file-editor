@@ -4,7 +4,7 @@ using namespace System;
 using namespace System::Windows::Forms;
 
 [STAThread]
-void Main(array<String^>^ args)
+void Main(array<String^>^)
 {
 #ifdef _DEBUG
 	AllocConsole();

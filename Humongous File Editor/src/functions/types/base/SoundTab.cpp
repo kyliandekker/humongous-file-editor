@@ -11,50 +11,31 @@
 #include "lowlevel/HumongousChunkDefinitions.h"
 #include "lowlevel/HumongousChunks.h"
 
+#include "abstractions/Abstractions.h"
+
 namespace HumongousFileEditor
 {
-    bool SoundTab::ReplaceResource(std::string& file_path, uaudio::wave_reader::FMT_Chunk fmt_chunk, uaudio::wave_reader::DATA_Chunk data_chunk)
+    bool SoundTab::ReplaceResource(std::string& file_path, uaudio::wave_reader::FMT_Chunk& fmt_chunk, uaudio::wave_reader::DATA_Chunk& data_chunk)
     {
-		OPENFILENAME ofn;
-		TCHAR sz_file[260] = { 0 };
-
-		ZeroMemory(&ofn, sizeof(ofn));
-		ofn.lStructSize = sizeof(ofn);
-		ofn.lpstrFile = sz_file;
-		ofn.nMaxFile = sizeof(sz_file);
-		ofn.lpstrFilter = L"\
+		std::string path;
+		if (abstractions::OpenWFile(path, L"\
 						WAVE file (*.wav)\
-						\0*.WAV;*.wav\0";
-		ofn.lpstrFileTitle = nullptr;
-		ofn.nMaxFileTitle = 0;
-		ofn.lpstrInitialDir = nullptr;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-		if (GetOpenFileNameW(&ofn))
+						\0*.WAV;*.wav\0"))
 		{
-			const auto path = new char[wcslen(ofn.lpstrFile) + 1];
-			wsprintfA(path, "%S", ofn.lpstrFile);
-
-			file_path = std::string(path);
-
 			if (!utils::ends_with(path, ".wav"))
-				file_path += ".wav";
-
-			delete[] path;
+				path += ".wav";
 
 			size_t wave_size = 0;
-			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::FTell(file_path.c_str(), wave_size)))
+			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::FTell(path.c_str(), wave_size)))
 				return false;
 
 			uaudio::wave_reader::ChunkCollection chunkCollection(malloc(wave_size), wave_size);
-			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::LoadWave(file_path.c_str(), chunkCollection)))
+			if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::LoadWave(path.c_str(), chunkCollection)))
 				return false;
 
-			uaudio::wave_reader::DATA_Chunk data_chunk;
 			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
 				return false;
 
-			uaudio::wave_reader::FMT_Chunk fmt_chunk;
 			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
 				return false;
 
@@ -69,6 +50,8 @@ namespace HumongousFileEditor
 
 			if (fmt_chunk.numChannels != uaudio::wave_reader::WAVE_CHANNELS_MONO)
 				return false;
+
+			file_path = path;
 
 			return true;
 		}

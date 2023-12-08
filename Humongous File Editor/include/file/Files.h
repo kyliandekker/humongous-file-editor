@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "FileType.h"
 
 namespace HumongousFileEditor
@@ -17,8 +19,8 @@ namespace HumongousFileEditor
 		public:
 			~Files();
 
-			chunk_reader::FileContainer* Read(const char* path);
-			bool SaveAs();
+			chunk_reader::FileContainer* Read(std::string path);
+			bool SaveAs(std::string path);
 			bool Save();
 			chunk_reader::FileContainer* getFile(FileType fileType);
 

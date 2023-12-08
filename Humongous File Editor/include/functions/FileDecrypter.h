@@ -11,7 +11,7 @@ namespace HumongousFileEditor
 		class FileDecrypter : public FileFunction
 		{
 		public:
-			bool Read();
+			bool Read(std::string path, std::string savePath);
 		};
 	}
 }

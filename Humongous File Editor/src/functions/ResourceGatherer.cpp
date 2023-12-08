@@ -89,9 +89,9 @@ namespace HumongousFileEditor
 			return false;
 		}
 
-		bool ResourceGatherer::Read(const char* path)
+		bool ResourceGatherer::Read(std::string path)
 		{
-			FileContainer* fc = files::FILES.Read(path);
+			FileContainer* fc = files::FILES.Read(path.c_str());
 			return Read(fc);
 		}
 
@@ -304,8 +304,8 @@ namespace HumongousFileEditor
 								childNode->fileType = a->fileType;
 								childNode->special = true;
 								childNode->resourceType = it->second;
-								std::string unique_name = std::string(chunk_id_name) + "_" + std::to_string(fc->fileType) + "_" + std::to_string(i) + "_" + fc->path + "_" + std::to_string(lflf) + "_" + std::to_string(random_number_for_unique_id) + "_special";
-								childNode->Name = gcnew System::String(unique_name.c_str());
+								std::string unique_name_2 = std::string(chunk_id_name) + "_" + std::to_string(fc->fileType) + "_" + std::to_string(i) + "_" + fc->path + "_" + std::to_string(lflf) + "_" + std::to_string(random_number_for_unique_id) + "_special";
+								childNode->Name = gcnew System::String(unique_name_2.c_str());
 								childNode->Text = gcnew System::String(std::string(std::to_string(i) + " layer").c_str());
 								node->Nodes->Add(childNode);
 							}
@@ -358,16 +358,16 @@ namespace HumongousFileEditor
 
 			System::Windows::Forms::TreeNode^ baseNode = form->GetBaseNode(gcnew System::String("HE2"));
 
-			for (size_t i = 0; i < offsets.size(); i++)
+			for (size_t j = 0; j < offsets.size(); j++)
 			{
-				System::Windows::Forms::TreeNode^ categoryNode = form->GetNode(baseNode, gcnew System::String(GetCategoryName(offsets[i].type).c_str()));
+				System::Windows::Forms::TreeNode^ categoryNode = form->GetNode(baseNode, gcnew System::String(GetCategoryName(offsets[j].type).c_str()));
 				HumongousNode^ node;
 				node = (gcnew HumongousNode);
-				node->offset = offsets[i].offset;
+				node->offset = offsets[j].offset;
 				node->fileType = fc->fileType;
 				node->resourceType = files::ResourceType::Talkie;
-				node->Name = gcnew System::String(offsets[i].name.c_str());
-				node->Text = gcnew System::String(offsets[i].name.c_str());
+				node->Name = gcnew System::String(offsets[j].name.c_str());
+				node->Text = gcnew System::String(offsets[j].name.c_str());
 				categoryNode->Nodes->Add(node);
 			}
 			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE2 resources for file \"%s\".", fc->path.c_str());
@@ -407,16 +407,16 @@ namespace HumongousFileEditor
 
 			System::Windows::Forms::TreeNode^ baseNode = form->GetBaseNode(gcnew System::String("HE4"));
 
-			for (size_t i = 0; i < offsets.size(); i++)
+			for (size_t j = 0; j < offsets.size(); j++)
 			{
-				System::Windows::Forms::TreeNode^ categoryNode = form->GetNode(baseNode, gcnew System::String(GetCategoryName(offsets[i].type).c_str()));
+				System::Windows::Forms::TreeNode^ categoryNode = form->GetNode(baseNode, gcnew System::String(GetCategoryName(offsets[j].type).c_str()));
 				HumongousNode^ node;
 				node = (gcnew HumongousNode);
-				node->offset = offsets[i].offset;
+				node->offset = offsets[j].offset;
 				node->fileType = fc->fileType;
 				node->resourceType = files::ResourceType::Song;
-				node->Name = gcnew System::String(offsets[i].name.c_str()) + gcnew System::String(std::to_string(i).c_str());
-				node->Text = gcnew System::String(offsets[i].name.c_str());
+				node->Name = gcnew System::String(offsets[j].name.c_str()) + gcnew System::String(std::to_string(j).c_str());
+				node->Text = gcnew System::String(offsets[j].name.c_str());
 				categoryNode->Nodes->Add(node);
 			}
 			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE4 resources for file \"%s\".", fc->path.c_str());

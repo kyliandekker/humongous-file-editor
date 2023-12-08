@@ -21,7 +21,7 @@ namespace HumongousFileEditor
 			delete he4;
 		}
 
-		chunk_reader::FileContainer* Files::Read(const char* path)
+		chunk_reader::FileContainer* Files::Read(std::string path)
 		{
 			// Check if we recognize the extension. If not, do not load it at all.
 			files::FileType fileType = files::getFileTypeByExtension(path);
@@ -104,96 +104,58 @@ namespace HumongousFileEditor
 
 			return fc;
 		}
-		static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+		bool Files::SaveAs(std::string path)
 		{
+			if (path.empty())
+				return false;
 
-			if (uMsg == BFFM_INITIALIZED)
+			if (he4 != nullptr)
 			{
-				SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
+				std::string name = getFileName(he4->path);
+				std::string path_name = path + "\\" + name;
+
+				FILE* file = nullptr;
+				fopen_s(&file, path_name.c_str(), "wb");
+				fwrite(he4->data, he4->size, 1, file);
+				fclose(file);
 			}
-
-			return 0;
-		}
-		bool Files::SaveAs()
-		{
-			TCHAR path[MAX_PATH];
-
-			const char* path_param;
-
-			BROWSEINFO bi = { 0 };
-			bi.lpszTitle = L"Browse for folder...";
-			bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
-			bi.lpfn = BrowseCallbackProc;
-			bi.lParam = (LPARAM)path_param;
-
-			LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
-
-			if (pidl != 0)
+			if (he2 != nullptr)
 			{
-				//get the name of the folder and put it in path
-				SHGetPathFromIDList(pidl, path);
+				std::string name = getFileName(he2->path);
+				std::string path_name = path + "\\" + name;
 
-				//free memory used
-				IMalloc* imalloc = 0;
-				if (SUCCEEDED(SHGetMalloc(&imalloc)))
-				{
-					imalloc->Free(pidl);
-					imalloc->Release();
-
-					if (he4 != nullptr)
-					{
-						std::wstring wpath(&path[0]);
-						std::string name = getFileName(he4->path);
-						std::string path_name = std::string(wpath.begin(), wpath.end()) + "\\" + name;
-						
-						FILE* file = nullptr;
-						fopen_s(&file, path_name.c_str(), "wb");
-						fwrite(he4->data, he4->size, 1, file);
-						fclose(file);
-					}
-					if (he2 != nullptr)
-					{
-						std::wstring wpath(&path[0]);
-						std::string name = getFileName(he2->path);
-						std::string path_name = std::string(wpath.begin(), wpath.end()) + "\\" + name;
-						
-						FILE* file = nullptr;
-						fopen_s(&file, path_name.c_str(), "wb");
-						fwrite(he2->data, he2->size, 1, file);
-						fclose(file);
-					}
-					if (he0 != nullptr)
-					{
-						std::wstring wpath(&path[0]);
-						std::string name = getFileName(he0->path);
-						std::string path_name = std::string(wpath.begin(), wpath.end()) + "\\" + name;
-						
-						FILE* file = nullptr;
-						fopen_s(&file, path_name.c_str(), "wb");
-						he0->Decrypt();
-						fwrite(he0->data, he0->size, 1, file);
-						he0->Decrypt();
-						fclose(file);
-					}
-					if (a != nullptr)
-					{
-						std::wstring wpath(&path[0]);
-						std::string name = getFileName(a->path);
-						std::string path_name = std::string(wpath.begin(), wpath.end()) + "\\" + name;
-						
-						FILE* file = nullptr;
-						fopen_s(&file, path_name.c_str(), "wb");
-						a->Decrypt();
-						fwrite(a->data, a->size, 1, file);
-						a->Decrypt();
-						fclose(file);
-					}
-
-					return true;
-				}
+				FILE* file = nullptr;
+				fopen_s(&file, path_name.c_str(), "wb");
+				fwrite(he2->data, he2->size, 1, file);
+				fclose(file);
 			}
-			return false;
+			if (he0 != nullptr)
+			{
+				std::string name = getFileName(he0->path);
+				std::string path_name = path + "\\" + name;
+
+				FILE* file = nullptr;
+				fopen_s(&file, path_name.c_str(), "wb");
+				he0->Decrypt();
+				fwrite(he0->data, he0->size, 1, file);
+				he0->Decrypt();
+				fclose(file);
+			}
+			if (a != nullptr)
+			{
+				std::string name = getFileName(a->path);
+				std::string path_name = path + "\\" + name;
+
+				FILE* file = nullptr;
+				fopen_s(&file, path_name.c_str(), "wb");
+				a->Decrypt();
+				fwrite(a->data, a->size, 1, file);
+				a->Decrypt();
+				fclose(file);
+			}
+			return true;
 		}
+
 		bool Files::Save()
 		{
 			if (he4 != nullptr)

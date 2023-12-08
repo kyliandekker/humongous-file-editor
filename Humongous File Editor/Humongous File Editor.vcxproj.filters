@@ -132,6 +132,12 @@
     <ClInclude Include="include\allocators\TempAllocator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ProgressBarForm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\abstractions\Abstractions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">
@@ -221,6 +227,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\allocators\TempAllocator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProgressBarForm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\abstractions\Abstractions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -40,16 +40,21 @@
 namespace HumongousFileEditor
 {
 	// Adds a row of info to the info tab.
-	int AddInfoRow(System::String^ key, System::String^ value, System::Windows::Forms::DataGridView^ propertyGrid, float& posX, float& posY, bool readOnly = true)
+	int AddInfoRow(array<System::String^>^ test, System::Windows::Forms::DataGridView^ propertyGrid)
 	{
-		int i = propertyGrid->Rows->Add(key, value);
-		propertyGrid->Rows[i]->Cells[0]->ReadOnly = true;
-		propertyGrid->Rows[i]->Cells[1]->ReadOnly = readOnly;
+		int i = propertyGrid->Rows->Add(test);
+		for (size_t j = 0; j < test->Length - propertyGrid->Columns->Count; j++)
+		{
+			int index = propertyGrid->Columns->Add(gcnew System::String(std::to_string(j).c_str()), gcnew System::String(""));
+			propertyGrid->Columns[index]->AutoSizeMode = System::Windows::Forms::DataGridViewAutoSizeColumnMode::Fill;
+		}
+		for (size_t j = 0; j < test->Length; j++)
+			propertyGrid->Rows[i]->Cells[j]->ReadOnly = true;
 		return i;
 	}
 
 	// Callback for the play button.
-	System::Void TabFunctions::PlayButton_Click(System::Object^ sender, System::EventArgs^ e)
+	System::Void TabFunctions::PlayButton_Click(System::Object^ sender, System::EventArgs^)
 	{
 		HumongousButton^ btn = (HumongousButton^)sender;
 
@@ -80,13 +85,13 @@ namespace HumongousFileEditor
 	}
 
 	// Callback for the stop button.
-	System::Void TabFunctions::StopButton_Click(System::Object^ sender, System::EventArgs^ e)
+	System::Void TabFunctions::StopButton_Click(System::Object^, System::EventArgs^)
 	{
 		audioSystem.Stop();
 	}
 
 	// Callback for the export button.
-	System::Void TabFunctions::NextButton_Click(System::Object^ sender, System::EventArgs^ e)
+	System::Void TabFunctions::NextButton_Click(System::Object^ sender, System::EventArgs^)
 	{
 		HumongousButton^ btn = (HumongousButton^)sender;
 
@@ -99,7 +104,7 @@ namespace HumongousFileEditor
 		form->tabControl1->SelectedIndex = form->tabControl1->Controls->IndexOfKey(node->Name);
 	}
 
-	System::Void TabFunctions::ExportButton_Click(System::Object^ sender, System::EventArgs^ e)
+	System::Void TabFunctions::ExportButton_Click(System::Object^ sender, System::EventArgs^)
 	{
 		HumongousButton^ btn = (HumongousButton^)sender;
 
@@ -150,42 +155,25 @@ namespace HumongousFileEditor
 				if (!GetRoomBackgroundData(fc, btn->offset, info))
 					return;
 
-				OPENFILENAME ofn;
-				TCHAR sz_file[260] = { 0 };
-
-				ZeroMemory(&ofn, sizeof(ofn));
-				ofn.lStructSize = sizeof(ofn);
-				ofn.lpstrFile = sz_file;
-				ofn.nMaxFile = sizeof(sz_file);
-				ofn.lpstrFilter = L"\
-						BMP file (*.bmp)\
-						\0*.BMP;*.bmp\0\
-						PNG file (*.png)\
-						\0*.PNG;*.png\0";
-				ofn.lpstrFileTitle = nullptr;
-				ofn.nMaxFileTitle = 0;
-				ofn.lpstrInitialDir = nullptr;
-				ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-				if (GetSaveFileNameW(&ofn))
+				std::string path;
+				int choice = 1;
+				if (HumongousFileEditor::abstractions::SaveWFile(path, &choice, L"\
+					BMP file (*.bmp)\
+					\0*.BMP;*.bmp\0\
+					PNG file (*.png)\
+					\0*.PNG;*.png\0"))
 				{
-					const auto path = new char[wcslen(ofn.lpstrFile) + 1];
-					wsprintfA(path, "%S", ofn.lpstrFile);
-					std::string save_path_s = std::string(path);
-
-					delete[] path;
-
-					if (ofn.nFilterIndex == 1)
+					if (choice == 1)
 					{
-						if (!utils::ends_with(save_path_s, ".bmp"))
-							save_path_s += ".bmp";
-						stbi_write_bmp(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data);
+						if (!utils::ends_with(path, ".bmp"))
+							path += ".bmp";
+						stbi_write_bmp(path.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data);
 					}
 					else
 					{
-						if (!utils::ends_with(save_path_s, ".png"))
-							save_path_s += ".png";
-						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data, static_cast<int>(info.width * info.channels));
+						if (!utils::ends_with(path, ".png"))
+							path += ".png";
+						stbi_write_png(path.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data, static_cast<int>(info.width * info.channels));
 					}
 
 					System::Windows::Forms::MessageBox::Show("Successfully exported file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
@@ -208,46 +196,31 @@ namespace HumongousFileEditor
 						return;
 				}
 
-				OPENFILENAME ofn;
-				TCHAR sz_file[260] = { 0 };
 
-				ZeroMemory(&ofn, sizeof(ofn));
-				ofn.lStructSize = sizeof(ofn);
-				ofn.lpstrFile = sz_file;
-				ofn.nMaxFile = sizeof(sz_file);
-				ofn.lpstrFilter = L"\
-						BMP file (*.bmp)\
-						\0*.BMP;*.bmp\0\
-						PNG file (*.png)\
-						\0*.PNG;*.png\0";
-				ofn.lpstrFileTitle = nullptr;
-				ofn.nMaxFileTitle = 0;
-				ofn.lpstrInitialDir = nullptr;
-				ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-				if (GetSaveFileNameW(&ofn))
+				std::string path;
+				int choice = 1;
+				if (HumongousFileEditor::abstractions::SaveWFile(path, &choice, L"\
+					BMP file (*.bmp)\
+					\0*.BMP;*.bmp\0\
+					PNG file (*.png)\
+					\0*.PNG;*.png\0"))
 				{
-					const auto path = new char[wcslen(ofn.lpstrFile) + 1];
-					wsprintfA(path, "%S", ofn.lpstrFile);
-					std::string save_path_s = std::string(path);
-
-					if (ofn.nFilterIndex == 1)
+					if (choice == 1)
 					{
-						if (!utils::ends_with(save_path_s, ".bmp"))
-							save_path_s += ".bmp";
-						stbi_write_bmp(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data);
+						if (!utils::ends_with(path, ".bmp"))
+							path += ".bmp";
+						stbi_write_bmp(path.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data);
 					}
 					else
 					{
-						if (!utils::ends_with(save_path_s, ".png"))
-							save_path_s += ".png";
-						stbi_write_png(save_path_s.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data, static_cast<int>(info.width* info.channels));
+						if (!utils::ends_with(path, ".png"))
+							path += ".png";
+						stbi_write_png(path.c_str(), static_cast<int>(info.width), static_cast<int>(info.height), static_cast<int>(info.channels), info.data.data, static_cast<int>(info.width * info.channels));
 					}
 
 					System::Windows::Forms::MessageBox::Show("Successfully exported file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
 					return;
 				}
-
 				break;
 			}
 			default:
@@ -257,7 +230,7 @@ namespace HumongousFileEditor
 		}
 	}
 
-	System::Void TabFunctions::ExportPaletteButton_Click(System::Object^ sender, System::EventArgs^ e)
+	System::Void TabFunctions::ExportPaletteButton_Click(System::Object^ sender, System::EventArgs^)
 	{
 		OPENFILENAME ofn;
 		TCHAR sz_file[260] = { 0 };
@@ -287,20 +260,20 @@ namespace HumongousFileEditor
 			if (children.size() == 0)
 				return;
 
-			size_t bsmap_offset = -1;
+			int32_t bsmap_offset = -1;
 			for (size_t i = 0; i < children.size(); i++)
 				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::BMAP_CHUNK_ID) == 0 || utils::chunkcmp(children[i].chunk_id, chunk_reader::SMAP_CHUNK_ID) == 0)
-					bsmap_offset = children[i].offset;
+					bsmap_offset = static_cast<int32_t>(children[i].offset);
 
 			size_t rmim_offset = fc->GetParent(btn->offset).offset;
 			chunk_reader::RMIM_Chunk rmim_chunk;
 			memcpy(&rmim_chunk, utils::add(fc->data, rmim_offset), sizeof(chunk_reader::RMIM_Chunk));
 
 			std::vector<chunk_reader::ChunkInfo> rmda_children = fc->GetChildren(fc->GetParent(rmim_offset).offset);
-			size_t apal_offset = -1;
+			int32_t apal_offset = -1;
 			for (size_t i = 0; i < rmda_children.size(); i++)
 				if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::APAL_CHUNK_ID) == 0)
-					apal_offset = rmda_children[i].offset;
+					apal_offset = static_cast<int32_t>(rmda_children[i].offset);
 
 			if (apal_offset < 0)
 				return;
@@ -324,7 +297,7 @@ namespace HumongousFileEditor
 		}
 	}
 
-	System::Void TabFunctions::ReplaceButton_Click(System::Object^ sender, System::EventArgs^ e)
+	System::Void TabFunctions::ReplaceButton_Click(System::Object^ sender, System::EventArgs^)
 	{
 		HumongousButton^ btn = (HumongousButton^)sender;
 
@@ -427,57 +400,60 @@ namespace HumongousFileEditor
 		actionPanel->TabIndex = 0;
 
 		// Construct info area.
-		float posX = 35, posY = 35;
-		AddInfoRow("Pos", gcnew System::String(std::to_string(node->offset).c_str()), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Pos", 
+			gcnew System::String(std::to_string(node->offset).c_str())
+		}, propertyGrid);
 
 		switch (node->resourceType)
 		{
 			case files::ResourceType::Song:
 			{
-				GetSong(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				GetSong(fc, node->offset, newTab, propertyGrid, actionPanel);
 				break;
 			}
 			case files::ResourceType::Talkie:
 			{
-				GetTalk(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				GetTalk(fc, node->offset, newTab, propertyGrid, actionPanel);
 				break;
 			}
 			case files::ResourceType::SFX:
 			{
-				GetDigi(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				GetDigi(fc, node->offset, newTab, propertyGrid, actionPanel);
 				break;
 			}
 			case files::ResourceType::Global_Script:
 			{
-				GetGlobalScript(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				GetGlobalScript(fc, node->offset, newTab, propertyGrid, actionPanel);
 				break;
 			}
 			case files::ResourceType::Local_Script:
 			{
-				GetLocalScript(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				GetLocalScript(fc, node->offset, newTab, propertyGrid, actionPanel);
 				break;
 			}
 			case files::ResourceType::Verb_Script:
 			{
-				//GetGlobalScript(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				//GetGlobalScript(fc, node->offset, newTab, propertyGrid, actionPanel);
 				break;
 			}
 			case files::ResourceType::RoomBackground:
 			{
-				GetRoomBackground(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel, posX, posY);
+				GetRoomBackground(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel);
 				break;
 			}
 			case files::ResourceType::RoomImage:
 			{
 				if (!node->special)
-					GetRoomImage(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel, posX, posY);
+					GetRoomImage(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel);
 				else
-					GetRoomImageLayer(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel, posX, posY);
+					GetRoomImageLayer(fc, node->offset, newTab, propertyGrid, actionPanel, propertyPanel);
 				break;
 			}
 			case files::ResourceType::Room:
 			{
-				GetRNAM(fc, node->offset, newTab, propertyGrid, actionPanel, posX, posY);
+				GetRNAM(fc, node->offset, newTab, propertyGrid, actionPanel);
 				break;
 			}
 			default:
@@ -546,96 +522,152 @@ namespace HumongousFileEditor
 		tabControl->Controls->Add(newTab);
 	}
 
-	System::Void TabFunctions::DoubleClick(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
+	System::Void TabFunctions::DoubleClick(System::Object^, System::Windows::Forms::MouseEventArgs^)
 	{
 		return System::Void();
 	}
 
-	void TabFunctions::GetTalk(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetTalk(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel)
 	{
-		AddInfoRow("Type", gcnew System::String("Talk"), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Type", 
+			gcnew System::String("Talk")
+		}, propertyGrid);
 
 		chunk_reader::SDAT_Chunk sdat_chunk;
 		chunk_reader::HSHD_Chunk hshd_chunk;
 		if (!TALKTab::GetData(fc, offset, sdat_chunk, hshd_chunk))
 			return;
 
-		AddInfoRow("Sample Rate", gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str()), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Sample Rate", 
+			gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str())
+		}, propertyGrid);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Size (in bytes)", 
+			gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str())
+		}, propertyGrid);
 
 		AddSoundButtons(tab, offset, fc->fileType, panel);
 	}
 
-	void TabFunctions::GetDigi(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetDigi(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel)
 	{
-		AddInfoRow("Type", gcnew System::String("Sfx"), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Type", 
+			gcnew System::String("Sfx")
+		}, propertyGrid);
 
 		chunk_reader::SDAT_Chunk sdat_chunk;
 		chunk_reader::HSHD_Chunk hshd_chunk;
 		if (!DIGITab::GetData(fc, offset, sdat_chunk, hshd_chunk))
 			return;
 
-		AddInfoRow("Sample Rate", gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str()), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Sample Rate", 
+			gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str())
+		}, propertyGrid);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Size (in bytes)",
+			gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str())
+		}, propertyGrid);
 
 		AddSoundButtons(tab, offset, fc->fileType, panel);
 	}
 
-	void TabFunctions::GetSong(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetSong(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel)
 	{
-		AddInfoRow("Type", gcnew System::String("Song"), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Type",
+			gcnew System::String("Song")
+		}, propertyGrid);
 
 		chunk_reader::SDAT_Chunk sdat_chunk;
 		chunk_reader::HSHD_Chunk hshd_chunk;
 		if (!SONGTab::GetData(fc, offset, sdat_chunk, hshd_chunk))
 			return;
 
-		AddInfoRow("Sample Rate", gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("Size (in bytes)", gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str()), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Sample Rate", 
+			gcnew System::String(std::to_string(hshd_chunk.sample_rate).c_str())
+		}, propertyGrid);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Size (in bytes)", 
+			gcnew System::String(std::to_string(sdat_chunk.ChunkSize()).c_str())
+		}, propertyGrid);
 
 		AddSoundButtons(tab, offset, fc->fileType, panel);
 	}
 
-	void TabFunctions::GetGlobalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetGlobalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^)
 	{
-		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Type", 
+			gcnew System::String("Script")
+		}, propertyGrid);
 		
-		//std::vector<talk_instruction> instructions;
-		//if (!SCRPTab::GetData(fc, offset, instructions))
-		//	return;
+		std::vector<talk_instruction> instructions;
+		if (!SCRPTab::GetData(fc, offset, instructions))
+			return;
 
-		//for (size_t i = 0; i < instructions.size(); i++)
-		//{
-		//	talk_instruction& instruction = instructions[i];
+		int amount = 0;
+		for (size_t i = 0; i < instructions.size(); i++)
+		{
+			talk_instruction& instruction = instructions[i];
+			if (instruction.args.ArgSize() > amount)
+			{
+				int d = instruction.args.ArgSize();
+				amount = d;
+			}
+		}
 
-		//	if (instruction.code == 0x04 || instruction.code == 0xBA)
-		//	{
-		//		talk_string talkie_string = instruction.args.GetArgsString<talk_string>(0);
+		for (size_t i = 0; i < instructions.size(); i++)
+		{
+			talk_instruction& instruction = instructions[i];
 
-		//		AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(talkie_string.c_str()), propertyGrid, posX, posY, false);
-		//	}
-		//}
+			array<System::String^>^ arr = gcnew array<System::String^>(amount + 1);
+			for (size_t j = 0; j < arr->Length; j++)
+				arr[j] = gcnew System::String("");
+			
+			arr[0] = gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str());
+			for (size_t j = 0; j < instruction.args.args.size(); j++)
+				arr[j + 1] = gcnew System::String(instruction.args[j].str.c_str());
+
+			AddInfoRow(arr, propertyGrid);
+		}
 	}
 
-	void TabFunctions::GetLocalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetLocalScript(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^)
 	{
-		AddInfoRow("Type", gcnew System::String("Script"), propertyGrid, posX, posY);
-		
-		//std::vector<talk_instruction> instructions;
-		//if (!SCRPTab::GetData(fc, offset, instructions))
-		//	return;
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Type", 
+			gcnew System::String("Script")
+		}, propertyGrid);
 
-		//for (size_t i = 0; i < instructions.size(); i++)
-		//{
-		//	talk_instruction& instruction = instructions[i];
+		std::vector<talk_instruction> instructions;
+		if (!SCRPTab::GetData(fc, offset, instructions))
+			return;
 
-		//	if (instruction.code == 0x04 || instruction.code == 0xBA)
-		//	{
-		//		talk_string talkie_string = instruction.args.GetArgsString<talk_string>(0);
-
-		//		AddInfoRow(gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), gcnew System::String(talkie_string.c_str()), propertyGrid, posX, posY, false);
-		//	}
-		//}
+		for (size_t i = 0; i < instructions.size(); i++)
+		{
+			talk_instruction& instruction = instructions[i];
+			AddInfoRow(gcnew array<System::String^>(2)
+			{
+				gcnew System::String(std::string(std::to_string(i) + "_" + instructions[i].name).c_str()), 
+				gcnew System::String("")
+			}, propertyGrid);
+		}
 	}
 
 	bool TabFunctions::GetRoomBackgroundData(chunk_reader::FileContainer*& fc, size_t offset, img_info& info)
@@ -644,10 +676,10 @@ namespace HumongousFileEditor
 		if (children.size() == 0)
 			return false;
 
-		size_t bsmap_offset = -1;
+		int32_t bsmap_offset = -1;
 		for (size_t i = 0; i < children.size(); i++)
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::BMAP_CHUNK_ID) == 0 || utils::chunkcmp(children[i].chunk_id, chunk_reader::SMAP_CHUNK_ID) == 0)
-				bsmap_offset = children[i].offset;
+				bsmap_offset = static_cast<int32_t>(children[i].offset);
 
 		if (bsmap_offset < 0)
 			return false;
@@ -656,21 +688,20 @@ namespace HumongousFileEditor
 		size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
 		memcpy(&bmap_chunk, utils::add(fc->data, bsmap_offset), header_size);
 		bmap_chunk.data = utils::add(fc->data, bsmap_offset + header_size);
-		size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
 
 		size_t rmim_offset = fc->GetParent(offset).offset;
 		chunk_reader::RMIM_Chunk rmim_chunk;
 		memcpy(&rmim_chunk, utils::add(fc->data, rmim_offset), sizeof(chunk_reader::RMIM_Chunk));
 
 		std::vector<chunk_reader::ChunkInfo> rmda_children = fc->GetChildren(fc->GetParent(rmim_offset).offset);
-		size_t apal_offset = -1;
-		size_t rmhd_offset = -1;
+		int32_t apal_offset = -1;
+		int32_t rmhd_offset = -1;
 		for (size_t i = 0; i < rmda_children.size(); i++)
 		{
 			if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::APAL_CHUNK_ID) == 0)
-				apal_offset = rmda_children[i].offset;
+				apal_offset = static_cast<int32_t>(rmda_children[i].offset);
 			if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::RMHD_CHUNK_ID) == 0)
-				rmhd_offset = rmda_children[i].offset;
+				rmhd_offset = static_cast<int32_t>(rmda_children[i].offset);
 		}
 
 		if (rmhd_offset < 0)
@@ -685,12 +716,11 @@ namespace HumongousFileEditor
 		chunk_reader::APAL_Chunk apal_chunk;
 		header_size = sizeof(chunk_reader::APAL_Chunk);
 		memcpy(&apal_chunk, utils::add(fc->data, apal_offset), header_size);
-		size_t apal_size = apal_chunk.ChunkSize() - header_size;
 
 		return BMAPTab::GetDataBMAP(fc, bmap_chunk, apal_chunk, bmap_chunk.data[0], rmhd_chunk.width, rmhd_chunk.height, info);
 	}
 
-	void TabFunctions::GetRoomBackground(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
+	void TabFunctions::GetRoomBackground(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel)
 	{
 		img_info info;
 		if (!GetRoomBackgroundData(fc, offset, info))
@@ -698,14 +728,14 @@ namespace HumongousFileEditor
 
 		size_t rmim_offset = fc->GetParent(offset).offset;
 		std::vector<chunk_reader::ChunkInfo> rmda_children = fc->GetChildren(fc->GetParent(rmim_offset).offset);
-		size_t apal_offset = -1;
-		size_t rmhd_offset = -1;
+		int32_t apal_offset = -1;
+		int32_t rmhd_offset = -1;
 		for (size_t i = 0; i < rmda_children.size(); i++)
 		{
 			if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::APAL_CHUNK_ID) == 0)
-				apal_offset = rmda_children[i].offset;
+				apal_offset = static_cast<int32_t>(rmda_children[i].offset);
 			if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::RMHD_CHUNK_ID) == 0)
-				rmhd_offset = rmda_children[i].offset;
+				rmhd_offset = static_cast<int32_t>(rmda_children[i].offset);
 		}
 
 		if (rmhd_offset < 0)
@@ -714,10 +744,22 @@ namespace HumongousFileEditor
 		chunk_reader::RMHD_Chunk rmhd_chunk;
 		memcpy(&rmhd_chunk, utils::add(fc->data, rmhd_offset), sizeof(chunk_reader::RMHD_Chunk));
 
-		AddInfoRow("Type", gcnew System::String("Room Image"), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Type", 
+			gcnew System::String("Room Image")
+		}, propertyGrid);
 
-		AddInfoRow("Width", gcnew System::String(std::to_string(rmhd_chunk.width).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("Height", gcnew System::String(std::to_string(rmhd_chunk.height).c_str()), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Width", 
+			gcnew System::String(std::to_string(rmhd_chunk.width).c_str())
+		}, propertyGrid);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Height", 
+			gcnew System::String(std::to_string(rmhd_chunk.height).c_str())
+		}, propertyGrid);
 
 		propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
 		propertyGrid->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
@@ -740,7 +782,6 @@ namespace HumongousFileEditor
 		pictureBox->Dock = System::Windows::Forms::DockStyle::Top;
 		pictureBox->Location = System::Drawing::Point(0, propertyGrid->Height);
 		pictureBox->Name = L"Action Panel";
-		float relativeW = 1.0f / bmp->Width * tab->Width;
 		pictureBox->Image = bmp;
 		pictureBox->SizeMode = System::Windows::Forms::PictureBoxSizeMode::Zoom;
 		pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
@@ -776,19 +817,19 @@ namespace HumongousFileEditor
 		chunk_reader::OBIM_Chunk obim_chunk;
 		memcpy(&obim_chunk, utils::add(fc->data, obim_offset), sizeof(chunk_reader::IMHD_Chunk));
 
-		size_t bsmap_offset = -1;
+		int32_t bsmap_offset = -1;
 		for (size_t i = 0; i < children.size(); i++)
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::BMAP_CHUNK_ID) == 0 || utils::chunkcmp(children[i].chunk_id, chunk_reader::SMAP_CHUNK_ID) == 0)
-				bsmap_offset = children[i].offset;
+				bsmap_offset = static_cast<int32_t>(children[i].offset);
 
 		if (bsmap_offset < 0)
 			return false;
 
 		std::vector<chunk_reader::ChunkInfo> obim_children = fc->GetChildren(obim_offset);
-		size_t imhd_offset = -1;
+		int32_t imhd_offset = -1;
 		for (size_t i = 0; i < obim_children.size(); i++)
 			if (utils::chunkcmp(obim_children[i].chunk_id, chunk_reader::IMHD_CHUNK_ID) == 0)
-				imhd_offset = obim_children[i].offset;
+				imhd_offset = static_cast<int32_t>(obim_children[i].offset);
 
 		if (imhd_offset < 0)
 			return false;
@@ -798,10 +839,10 @@ namespace HumongousFileEditor
 		imhd_chunk.data = utils::add(fc->data, imhd_offset + (sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data)));
 
 		std::vector<chunk_reader::ChunkInfo> rmda_children = fc->GetChildren(fc->GetParent(obim_offset).offset);
-		size_t apal_offset = -1;
+		int32_t apal_offset = -1;
 		for (size_t i = 0; i < rmda_children.size(); i++)
 			if (utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::APAL_CHUNK_ID) == 0)
-				apal_offset = rmda_children[i].offset;
+				apal_offset = static_cast<int32_t>(rmda_children[i].offset);
 
 		if (apal_offset < 0)
 			return false;
@@ -809,7 +850,6 @@ namespace HumongousFileEditor
 		chunk_reader::APAL_Chunk apal_chunk;
 		size_t header_size = sizeof(chunk_reader::APAL_Chunk);
 		memcpy(&apal_chunk, utils::add(fc->data, apal_offset), header_size);
-		size_t apal_size = apal_chunk.ChunkSize() - header_size;
 
 		chunk_reader::ChunkInfo bsmap = fc->GetChunkInfo(bsmap_offset);
 
@@ -819,19 +859,18 @@ namespace HumongousFileEditor
 		if (utils::chunkcmp(bsmap.chunk_id, chunk_reader::SMAP_CHUNK_ID) == 0)
 		{
 			chunk_reader::SMAP_Chunk smap_chunk;
-			size_t header_size = sizeof(chunk_reader::SMAP_Chunk) - sizeof(smap_chunk.data); // Pointer in the SMAP class is size 8 and needs to be deducted.
-			memcpy(&smap_chunk, utils::add(fc->data, bsmap_offset), header_size);
-			smap_chunk.data = utils::add(fc->data, bsmap_offset + header_size);
+			size_t smap_header_size = sizeof(chunk_reader::SMAP_Chunk) - sizeof(smap_chunk.data); // Pointer in the SMAP class is size 8 and needs to be deducted.
+			memcpy(&smap_chunk, utils::add(fc->data, bsmap_offset), smap_header_size);
+			smap_chunk.data = utils::add(fc->data, bsmap_offset + smap_header_size);
 
 			return BMAPTab::GetDataSMAP(fc, obim_chunk, imhd_chunk.width, imhd_chunk.height, smap_chunk, apal_chunk, info);
 		}
 		else
 		{
 			chunk_reader::BMAP_Chunk bmap_chunk;
-			size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
-			memcpy(&bmap_chunk, utils::add(fc->data, bsmap_offset), header_size);
-			bmap_chunk.data = utils::add(fc->data, bsmap_offset + header_size);
-			size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
+			size_t bmap_header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
+			memcpy(&bmap_chunk, utils::add(fc->data, bsmap_offset), bmap_header_size);
+			bmap_chunk.data = utils::add(fc->data, bsmap_offset + bmap_header_size);
 
 			return BMAPTab::GetDataBMAP(fc, bmap_chunk, apal_chunk, bmap_chunk.fill_color, imhd_chunk.width, imhd_chunk.height, info);
 		}
@@ -839,18 +878,38 @@ namespace HumongousFileEditor
 		return false;
 	}
 
-	void TabFunctions::GetRoomImage(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
+	void TabFunctions::GetRoomImage(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^, System::Windows::Forms::Panel^ propertyPanel)
 	{
 		img_info info;
 		if (!GetRoomImageData(fc, offset, info))
 			return;
 
-		AddInfoRow("Type", gcnew System::String("Room Image"), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Type", 
+			gcnew System::String("Room Image")
+		}, propertyGrid);
 
-		AddInfoRow("Width", gcnew System::String(std::to_string(info.width).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("Height", gcnew System::String(std::to_string(info.height).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("x", gcnew System::String(std::to_string(info.x).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("y", gcnew System::String(std::to_string(info.y).c_str()), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Width", 
+			gcnew System::String(std::to_string(info.width).c_str())
+		}, propertyGrid);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Height", 
+			gcnew System::String(std::to_string(info.height).c_str())
+		}, propertyGrid);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"x", 
+			gcnew System::String(std::to_string(info.x).c_str())
+		}, propertyGrid);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"y", 
+			gcnew System::String(std::to_string(info.y).c_str())
+		}, propertyGrid);
 
 		propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
 		propertyGrid->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
@@ -872,7 +931,6 @@ namespace HumongousFileEditor
 		pictureBox->Dock = System::Windows::Forms::DockStyle::Top;
 		pictureBox->Location = System::Drawing::Point(0, propertyGrid->Height);
 		pictureBox->Name = L"Action Panel";
-		float relativeW = 1.0f / bmp->Width * tab->Width;
 		pictureBox->Image = bmp;
 		pictureBox->SizeMode = System::Windows::Forms::PictureBoxSizeMode::Zoom;
 		pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
@@ -888,10 +946,10 @@ namespace HumongousFileEditor
 
 		size_t lflf_offset = fc->GetParent(fc->GetParent(fc->GetParent(offset).offset).offset).offset;
 		std::vector<chunk_reader::ChunkInfo> lflf_children = fc->GetChildren(lflf_offset);
-		size_t im00_offset = -1;
+		int32_t im00_offset = -1;
 		for (size_t i = 0; i < lflf_children.size(); i++)
 			if (utils::chunkcmp(lflf_children[i].chunk_id, chunk_reader::IM00_CHUNK_ID) == 0)
-				im00_offset = lflf_children[i].offset;
+				im00_offset = static_cast<int32_t>(lflf_children[i].offset);
 
 		img_info background_info;
 		if (!GetRoomBackgroundData(fc, im00_offset, background_info))
@@ -899,10 +957,10 @@ namespace HumongousFileEditor
 
 		size_t obim_offset = fc->GetParent(offset).offset;
 		std::vector<chunk_reader::ChunkInfo> obim_children = fc->GetChildren(obim_offset);
-		size_t imhd_offset = -1;
+		int32_t imhd_offset = -1;
 		for (size_t i = 0; i < obim_children.size(); i++)
 			if (utils::chunkcmp(obim_children[i].chunk_id, chunk_reader::IMHD_CHUNK_ID) == 0)
-				imhd_offset = obim_children[i].offset;
+				imhd_offset = static_cast<int32_t>(obim_children[i].offset);
 
 		if (imhd_offset < 0)
 			return false;
@@ -950,18 +1008,38 @@ namespace HumongousFileEditor
 		return true;
 	}
 
-	void TabFunctions::GetRoomImageLayer(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, System::Windows::Forms::Panel^ propertyPanel, float& posX, float& posY)
+	void TabFunctions::GetRoomImageLayer(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^, System::Windows::Forms::Panel^ propertyPanel)
 	{
 		img_info info;
 		if (!GetRoomImageLayerData(fc, offset, info))
 			return;
 
-		AddInfoRow("Type", gcnew System::String("Room Image"), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Type",
+			gcnew System::String("Room Image")
+		}, propertyGrid);
 
-		AddInfoRow("Background Width", gcnew System::String(std::to_string(info.width).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("Background Height", gcnew System::String(std::to_string(info.height).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("x", gcnew System::String(std::to_string(info.x).c_str()), propertyGrid, posX, posY);
-		AddInfoRow("y", gcnew System::String(std::to_string(info.y).c_str()), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Background Width",
+			gcnew System::String(std::to_string(info.width).c_str())
+		}, propertyGrid);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Background Height", 
+			gcnew System::String(std::to_string(info.height).c_str())
+		}, propertyGrid);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"x", 
+			gcnew System::String(std::to_string(info.x).c_str())
+		}, propertyGrid);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"y", 
+			gcnew System::String(std::to_string(info.y).c_str())
+		}, propertyGrid);
 
 		propertyGrid->Dock = System::Windows::Forms::DockStyle::Top;
 		propertyGrid->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
@@ -981,7 +1059,6 @@ namespace HumongousFileEditor
 		pictureBox->Dock = System::Windows::Forms::DockStyle::Top;
 		pictureBox->Location = System::Drawing::Point(0, propertyGrid->Height);
 		pictureBox->Name = L"Action Panel";
-		float relativeW = 1.0f / bmp->Width * tab->Width;
 		pictureBox->Image = bmp;
 		pictureBox->SizeMode = System::Windows::Forms::PictureBoxSizeMode::Zoom;
 		pictureBox->Size = System::Drawing::Size(propertyPanel->Width, propertyPanel->Height / 2);
@@ -989,9 +1066,13 @@ namespace HumongousFileEditor
 		propertyPanel->Controls->Add(pictureBox);
 	}
 
-	void TabFunctions::GetRNAM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^ tab, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^ panel, float& posX, float& posY)
+	void TabFunctions::GetRNAM(chunk_reader::FileContainer*& fc, size_t offset, System::Windows::Forms::TabPage^, System::Windows::Forms::DataGridView^ propertyGrid, System::Windows::Forms::Panel^)
 	{
-		AddInfoRow("Type", gcnew System::String("Rooms"), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Type", 
+			gcnew System::String("Rooms")
+		}, propertyGrid);
 
 		chunk_reader::RNAM_Chunk* rnam_chunk = reinterpret_cast<chunk_reader::RNAM_Chunk*>(utils::add(fc->data, offset));
 		size_t rnam_end = offset + rnam_chunk->ChunkSize();
@@ -1014,10 +1095,18 @@ namespace HumongousFileEditor
 			pos++;
 		}
 
-		AddInfoRow("Number of Rooms", gcnew System::String(std::to_string(room_names.size()).c_str()), propertyGrid, posX, posY);
+		AddInfoRow(gcnew array<System::String^>(2)
+		{
+			"Number of Rooms",
+				gcnew System::String(std::to_string(room_names.size()).c_str())
+		}, propertyGrid);
 
 		for (size_t i = 0; i < room_names.size(); i++)
-			AddInfoRow(gcnew System::String(std::to_string(i).c_str()), gcnew System::String(room_names[i].c_str()), propertyGrid, posX, posY);
+			AddInfoRow(gcnew array<System::String^>(2)
+			{
+				gcnew System::String(std::to_string(i).c_str()), 
+				gcnew System::String(room_names[i].c_str())
+			}, propertyGrid);
 	}
 
 	void TabFunctions::AddSoundButtons(System::Windows::Forms::TabPage^ tab, size_t offset, files::FileType fileType, System::Windows::Forms::Panel^ panel)

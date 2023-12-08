@@ -3,10 +3,11 @@
 
 namespace HumongousFileEditor
 {
-	ArgHeader::ArgHeader(size_t offset, ArgType argType, size_t size)
+	ArgHeader::ArgHeader(size_t offset, ArgType argType, std::string str, size_t size)
 	{
 		this->offset = offset;
 		this->argType = argType;
+		this->str = str;
 		switch (this->argType)
 		{
 			case ArgType::ArgType_Byte:
@@ -45,5 +46,10 @@ namespace HumongousFileEditor
 		for (size_t i = 0; i < args.size(); i++)
 			size += args[i].size;
 		return size;
+	}
+
+	size_t ArgsAllocator::ArgSize() const
+	{
+		return args.size();
 	}
 }

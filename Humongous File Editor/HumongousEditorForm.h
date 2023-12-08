@@ -11,6 +11,7 @@
 #include "functions/TabFunctions.h"
 #include "file/Files.h"
 #include <allocators/TempAllocator.h>
+#include "abstractions/Abstractions.h"
 
 using namespace  System::Windows::Forms;
 
@@ -508,7 +509,7 @@ namespace HumongousFileEditor
 
 		}
 #pragma endregion
-		System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e)
+		System::Void Form1_Load(System::Object^, System::EventArgs^)
 		{
 			tooltipAbout->SetToolTip(this->aboutButton, "About this program");
 			tooltipOpen->SetToolTip(this->openButton, "Open file");
@@ -518,12 +519,12 @@ namespace HumongousFileEditor
 			tooltipIndex->SetToolTip(this->indexButton, "Create index of file");
 		}
 		// Opens a window with info about the application (via the top menu or info button).
-		System::Void optionAbout_Click(System::Object^ sender, System::EventArgs^ e)
+		System::Void optionAbout_Click(System::Object^, System::EventArgs^)
 		{
 			MessageBox::Show("Humongous File Editor by Kylian Dekker\nVersion: 0.0.1\n\nMany thanks to rzil for helping me with reading the resource files.", "About", MessageBoxButtons::OK, MessageBoxIcon::Information);
 		}
 		// Hover animations for buttons.
-		System::Void buttonHover(System::Object^ sender, System::EventArgs^ e)
+		System::Void buttonHover(System::Object^ sender, System::EventArgs^)
 		{
 			Button^ button = static_cast<Button^>(sender);
 
@@ -531,9 +532,10 @@ namespace HumongousFileEditor
 			button->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
 		}
 		// Hover animations for buttons.
-		System::Void buttonExit(System::Object^ sender, System::EventArgs^ e)
+		System::Void buttonExit(System::Object^ sender, System::EventArgs^)
 		{
 			Button^ button = static_cast<Button^>(sender);
+
 			button->BackColor = System::Drawing::Color::Transparent;
 			button->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
 		}
@@ -541,53 +543,56 @@ namespace HumongousFileEditor
 		/// Returns all the filters for FILE dialogs.
 		/// </summary>
 		/// <returns></returns>
-		LPCWSTR getFilter()
+		LPCWSTR getFilter(bool includeA)
 		{
-			return L"\
-						Humongous Game Files (*.HE0, *.HE2, *.HE3, *.HE4)\
-						\0*.HE0;*.HE2;*.HE3;*.HE4\0\
-						Humongous Talkie Files (*.HE2)\
-						\0*.HE2\0\
+			return includeA ? L"\
+						Humongous Game Files (*.HE0, *.(A), *.HE2, *.HE3, *.HE4)\
+						\0*.(A);*.HE0;*.HE2;*.HE3;*.HE4\0\
+						Humongous Resource Files (*.(A))\
+						\0*.(A)\0\
 						Humongous Index Files (*.HE0)\
 						\0*.HE0\0\
+						Humongous Talkie Files (*.HE2)\
+						\0*.HE2\0\
+						Humongous Song Files (*.HE4)\
+						\0*.HE4\0"
+				: L"\
+						Humongous Game Files (*.HE0, *.HE2, *.HE3, *.HE4)\
+						\0*.HE0;*.HE2;*.HE3;*.HE4\0\
+						Humongous Index Files (*.HE0)\
+						\0*.HE0\0\
+						Humongous Talkie Files (*.HE2)\
+						\0*.HE2\0\
 						Humongous Song Files (*.HE4)\
 						\0*.HE4\0";
 		}
 		// Opens a window with info about the application (via the top menu or info button).
-		System::Void optionIndex_Click(System::Object^ sender, System::EventArgs^ e)
+		System::Void optionIndex_Click(System::Object^, System::EventArgs^)
 		{
-			chunk_reader::FileIndexer f = chunk_reader::FileIndexer();
-			if (f.Read())
+			std::string path;
+			if (abstractions::OpenWFile(path, getFilter(false)))
 			{
-				System::Windows::Forms::MessageBox::Show("Successfully indexed file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
-				toolProgressBar->Value = 0;
-				return;
+				std::string savePath;
+				if (abstractions::SaveWFile(savePath, nullptr, L"\
+						HTML File (*.html)\
+						\0*.HTML;*.html\0"))
+				{
+					chunk_reader::FileIndexer f = chunk_reader::FileIndexer();
+					if (f.Save(path, savePath))
+					{
+						System::Windows::Forms::MessageBox::Show("Successfully indexed file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+						toolProgressBar->Value = 0;
+					}
+				}
 			}
 		}
-		System::Void optionOpen_Click(System::Object^ sender, System::EventArgs^ e)
+		System::Void optionOpen_Click(System::Object^, System::EventArgs^)
 		{
-			OPENFILENAME ofn;
-			TCHAR sz_file[260] = { 0 };
-
-			ZeroMemory(&ofn, sizeof(ofn));
-			ofn.lStructSize = sizeof(ofn);
-			ofn.lpstrFile = sz_file;
-			ofn.nMaxFile = sizeof(sz_file);
-
-			ofn.lpstrFilter = getFilter();
-			ofn.nFilterIndex = 1;
-			ofn.lpstrFileTitle = nullptr;
-			ofn.nMaxFileTitle = 0;
-			ofn.lpstrInitialDir = nullptr;
-			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-			if (GetOpenFileNameW(&ofn))
+			std::string path;
+			if (abstractions::OpenWFile(path, getFilter(false)))
 			{
-				const auto path = new char[wcslen(ofn.lpstrFile) + 1];
-				wsprintfA(path, "%S", ofn.lpstrFile);
-
 				chunk_reader::ResourceGatherer f = chunk_reader::ResourceGatherer();
-				if (f.Read(path))
+				if (f.Read(path.c_str()))
 				{
 					System::Windows::Forms::MessageBox::Show("Successfully opened file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
 					toolProgressBar->Value = 0;
@@ -596,13 +601,10 @@ namespace HumongousFileEditor
 					this->optionSaveAs->Enabled = true;
 					this->saveButton->Enabled = true;
 					this->saveAsButton->Enabled = true;
-					return;
 				}
-
-				delete[] path;
 			}
 		}
-		System::Void optionSave_Click(System::Object^ sender, System::EventArgs^ e)
+		System::Void optionSave_Click(System::Object^, System::EventArgs^)
 		{
 			System::Windows::Forms::DialogResult result = System::Windows::Forms::MessageBox::Show("Are you sure you want to overwrite the current opened files?", "Overwrite current files", System::Windows::Forms::MessageBoxButtons::YesNo, System::Windows::Forms::MessageBoxIcon::Information);
 			
@@ -611,16 +613,35 @@ namespace HumongousFileEditor
 				if (files::FILES.Save())
 				{
 					System::Windows::Forms::MessageBox::Show("Successfully saved files.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
-					return;
 				}
 			}
 		}
-		System::Void optionSaveAs_Click(System::Object^ sender, System::EventArgs^ e)
+		System::Void optionSaveAs_Click(System::Object^, System::EventArgs^)
 		{
-			if (files::FILES.SaveAs())
+			std::string path;
+			if (abstractions::SaveFolder(path))
 			{
-				System::Windows::Forms::MessageBox::Show("Successfully saved files.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
-				return;
+				if (files::FILES.SaveAs(path))
+				{
+					System::Windows::Forms::MessageBox::Show("Successfully saved files.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+				}
+			}
+		}
+		System::Void optionDecrypt_Click(System::Object^, System::EventArgs^)
+		{
+			std::string path;
+			if (abstractions::OpenWFile(path, getFilter(true)))
+			{
+				std::string savePath;
+				if (abstractions::SaveWFile(savePath, nullptr, getFilter(true)))
+				{
+					chunk_reader::FileDecrypter fileDecrypter;
+					if (fileDecrypter.Read(path, savePath))
+					{
+						System::Windows::Forms::MessageBox::Show("Successfully decrypted/encrypted file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
+						toolProgressBar->Value = 0;
+					}
+				}
 			}
 		}
 		// Double click on a node.
@@ -637,6 +658,7 @@ namespace HumongousFileEditor
 
 			if (!tabControl1->Controls->ContainsKey(node->Name))
 				AddTab(node);
+
 			tabControl1->SelectedIndex = tabControl1->Controls->IndexOfKey(node->Name);
 		}
 	public:
@@ -681,7 +703,7 @@ namespace HumongousFileEditor
 			baseNode->Nodes->Add(node);
 			return node;
 		}
-		System::Void tabControl1_MouseDown(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e)
+		System::Void tabControl1_MouseDown(System::Object^, System::Windows::Forms::MouseEventArgs^ e)
 		{
 			if (e->Button == System::Windows::Forms::MouseButtons::Left)
 			{
@@ -700,7 +722,7 @@ namespace HumongousFileEditor
 			}
 			this->tabControl1->TabPages->Remove(this->tabControl1->SelectedTab);
 		}
-		System::Void tabControl1_DrawX(System::Object^ sender, System::Windows::Forms::DrawItemEventArgs^ e)
+		System::Void tabControl1_DrawX(System::Object^, System::Windows::Forms::DrawItemEventArgs^ e)
 		{
 			System::Drawing::Rectangle^ r = e->Bounds;
 			r = this->tabControl1->GetTabRect(e->Index);
@@ -716,16 +738,6 @@ namespace HumongousFileEditor
 			System::Drawing::Font^ f = this->Font;
 			System::Drawing::PointF pointF = System::Drawing::PointF(static_cast<float>(r->X + 5), static_cast<float>(r->Y));
 			e->Graphics->DrawString(titel, f, b, pointF);
-		}
-		System::Void optionDecrypt_Click(System::Object^ sender, System::EventArgs^ e)
-		{
-			chunk_reader::FileDecrypter fileDecrypter;
-			if (fileDecrypter.Read())
-			{
-				System::Windows::Forms::MessageBox::Show("Successfully decrypted/encrypted file.", "Success", System::Windows::Forms::MessageBoxButtons::OK, System::Windows::Forms::MessageBoxIcon::Information);
-				toolProgressBar->Value = 0;
-				return;
-			}
 		}
 	};
 }

@@ -35,7 +35,7 @@ namespace HumongousFileEditor
 		{}
 	};
 
-	bool BMAPTab::GetDataBMAP(chunk_reader::FileContainer*& fc, chunk_reader::BMAP_Chunk& bmap_chunk, chunk_reader::APAL_Chunk& apal_chunk, uint8_t fill_color, size_t width, size_t height, img_info& info)
+	bool BMAPTab::GetDataBMAP(chunk_reader::FileContainer*&, chunk_reader::BMAP_Chunk& bmap_chunk, chunk_reader::APAL_Chunk& apal_chunk, uint8_t fill_color, size_t width, size_t height, img_info& info)
 	{
 		if (utils::chunkcmp(bmap_chunk.chunk_id, chunk_reader::BMAP_CHUNK_ID) != 0)
 			return false;
@@ -48,7 +48,6 @@ namespace HumongousFileEditor
 
 		int palen = bmap_chunk.encoding % 10;
 
-		bool he = bmap_chunk.encoding >= 0x86 && bmap_chunk.encoding <= 0x8A;
 		bool he_transparent = bmap_chunk.encoding >= 0x90 && bmap_chunk.encoding <= 0x94;
 
 		if (!DecodeHE(fill_color, bmap_chunk.data, bmap_size, width, height, palen, he_transparent, info))
@@ -73,15 +72,13 @@ namespace HumongousFileEditor
 		return true;
 	}
 
-	bool BMAPTab::GetDataSMAP(chunk_reader::FileContainer*& fc, chunk_reader::OBIM_Chunk& obim_chunk, size_t width, size_t height, chunk_reader::SMAP_Chunk& smap_chunk, chunk_reader::APAL_Chunk& apal_chunk, img_info& info)
+	bool BMAPTab::GetDataSMAP(chunk_reader::FileContainer*&, chunk_reader::OBIM_Chunk&, size_t width, size_t height, chunk_reader::SMAP_Chunk& smap_chunk, chunk_reader::APAL_Chunk& apal_chunk, img_info& info)
 	{
 		size_t header_size = sizeof(chunk_reader::SMAP_Chunk) - sizeof(smap_chunk.data); // Pointer in the SMAP class is size 8 and needs to be deducted.
 		size_t smap_size = smap_chunk.ChunkSize() - header_size;
 
 		uint32_t strip_width = 8;
 		size_t num_strips = static_cast<size_t>(static_cast<size_t>(floor(static_cast<double>(width / strip_width))));
-
-		unsigned char* data = smap_chunk.data;
 
 		std::vector<uint32_t> offsets;
 		int j = 0;
@@ -150,9 +147,9 @@ namespace HumongousFileEditor
 				uint32_t dataIndex = 0;
 				for (uint32_t k = 0; k < strip_width; ++k)
 				{
-					for (uint32_t j = 0; j < height; ++j)
+					for (uint32_t l = 0; l < static_cast<uint32_t>(height); ++l)
 					{
-						new_data.data[(j * strip_width) + k] = strip_info.data.data[dataIndex];
+						new_data.data[(l * strip_width) + k] = strip_info.data.data[dataIndex];
 						++dataIndex;
 					}
 				}
@@ -164,9 +161,9 @@ namespace HumongousFileEditor
 			for (size_t k = 0; k < height; k++)
 			{
 				std::vector<IndexColor> new_strip;
-				for (size_t j = 0; j < strip_width; j++)
+				for (size_t b = 0; b < strip_width; b++)
 				{
-					new_strip.push_back({ strip_info.data.data[(k * strip_width) + j], color });
+					new_strip.push_back({ strip_info.data.data[(k * strip_width) + b], color });
 				}
 				data_new_block.push_back(new_strip);
 			}
@@ -179,11 +176,11 @@ namespace HumongousFileEditor
 		for (size_t i = 0; i < data_blocks[0].size(); i++)
 		{
 			std::vector<IndexColor> arr;
-			for (size_t j = 0; j < data_blocks.size(); j++)
+			for (size_t b = 0; b < data_blocks.size(); b++)
 			{
 				for (size_t h = 0; h < strip_width; h++)
 				{
-					arr.push_back(data_blocks[j][i][h]);
+					arr.push_back(data_blocks[b][i][h]);
 				}
 			}
 			finals.push_back(arr);
@@ -194,9 +191,9 @@ namespace HumongousFileEditor
 		for (size_t i = 0; i < finals.size(); i++)
 		{
 			std::vector<IndexColor>& arr = finals[i];
-			for (size_t j = 0; j < arr.size(); j++)
+			for (size_t b = 0; b < arr.size(); b++)
 			{
-				final_data[pos] = finals[i][j];
+				final_data[pos] = finals[i][b];
 				pos++;
 			}
 		}

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <string>
+
 #include "lowlevel/utils.h"
 
 namespace HumongousFileEditor
@@ -17,19 +19,21 @@ namespace HumongousFileEditor
 
 	struct ArgHeader
 	{
-		ArgHeader(size_t offset, ArgType argType, size_t size = 0);
+		ArgHeader(size_t offset, ArgType argType, std::string str, size_t size = 0);
 
 		ArgType argType;
 		size_t size;
 		size_t offset;
+		std::string str;
 	};
 
 	class ArgsAllocator
 	{
 	public:
 		void AddArg(ArgHeader argHeader);
-		std::vector<ArgHeader> args;
 		size_t Size() const;
+        size_t ArgSize() const;
+		std::vector<ArgHeader> args;
 		ArgHeader& operator [] (size_t i) { return args[i]; };
 	};
 }

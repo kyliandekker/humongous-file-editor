@@ -30,14 +30,14 @@ namespace HumongousFileEditor
 			memcpy(&digi_chunk, utils::add(fc->data, digi_offset), sizeof(chunk_reader::DIGI_Chunk));
 
 			std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(sgen_chunk.song_pos);
-			size_t hshd_offset = -1;
-			size_t sdat_offset = -1;
+			int32_t hshd_offset = -1;
+			int32_t sdat_offset = -1;
 			for (size_t i = 0; i < children.size(); i++)
 			{
 				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
-					hshd_offset = children[i].offset;
+					hshd_offset = static_cast<int32_t>(children[i].offset);
 				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
-					sdat_offset = children[i].offset;
+					sdat_offset = static_cast<int32_t>(children[i].offset);
 			}
 
 			if (hshd_offset == -1)
@@ -61,7 +61,7 @@ namespace HumongousFileEditor
 			);
 
 			unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(digi_chunk.ChunkSize()));
-			memcpy(new_data, &digi_chunk, header_size);
+			memcpy(new_data, &digi_chunk, sizeof(chunk_reader::SDAT_Chunk));
 			memcpy(utils::add(new_data, sizeof(digi_chunk)), &hshd_chunk, hshd_chunk.ChunkSize());
 			memcpy(utils::add(new_data, sizeof(digi_chunk) + hshd_chunk.ChunkSize()), &sdat_chunk, sizeof(chunk_reader::HumongousHeader));
 			memcpy(utils::add(new_data, sizeof(digi_chunk) + hshd_chunk.ChunkSize() + sizeof(chunk_reader::HumongousHeader)), data_chunk.data, data_chunk.chunkSize);
@@ -108,14 +108,14 @@ namespace HumongousFileEditor
 		memcpy(&sgen_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::SGEN_Chunk));
 
 		std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(sgen_chunk.song_pos);
-		size_t hshd_offset = -1;
-		size_t sdat_offset = -1;
+		int32_t hshd_offset = -1;
+		int32_t sdat_offset = -1;
 		for (size_t i = 0; i < children.size(); i++)
 		{
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
-				hshd_offset = children[i].offset;
+				hshd_offset = static_cast<int32_t>(children[i].offset);
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
-				sdat_offset = children[i].offset;
+				sdat_offset = static_cast<int32_t>(children[i].offset);
 		}
 
 		if (hshd_offset == -1)

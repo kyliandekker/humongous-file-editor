@@ -77,10 +77,11 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -91,10 +92,11 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -105,10 +107,11 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -119,10 +122,11 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)external;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comdlg32.lib;user32.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -139,6 +143,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\abstractions\Abstractions.h" />
     <ClInclude Include="include\allocators\TempAllocator.h" />
     <ClInclude Include="include\cmd\ArgsAllocator.h" />
     <ClInclude Include="include\cmd\talk_instruction.h" />
@@ -179,6 +184,9 @@
     <ClInclude Include="include\functions\ResourceGatherer.h" />
     <ClInclude Include="include\functions\FileDecrypter.h" />
     <ClInclude Include="include\functions\types\base\ImageTab.h" />
+    <ClInclude Include="ProgressBarForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HumongousEditorForm.resx">
@@ -189,6 +197,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ProgressBarForm.cpp" />
+    <ClCompile Include="src\abstractions\Abstractions.cpp" />
     <ClCompile Include="src\allocators\TempAllocator.cpp" />
     <ClCompile Include="src\cmd\ArgsAllocator.cpp" />
     <ClCompile Include="src\cmd\talk_string.cpp" />

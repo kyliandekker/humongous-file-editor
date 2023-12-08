@@ -23,14 +23,14 @@ namespace HumongousFileEditor
 			memcpy(&digi_chunk, utils::add(fc->data, offset), sizeof(chunk_reader::DIGI_Chunk));
 
 			std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(offset);
-			size_t hshd_offset = -1;
-			size_t sdat_offset = -1;
+			int32_t hshd_offset = -1;
+			int32_t sdat_offset = -1;
 			for (size_t i = 0; i < children.size(); i++)
 			{
 				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
-					hshd_offset = children[i].offset;
+					hshd_offset = static_cast<int32_t>(children[i].offset);
 				if (utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
-					sdat_offset = children[i].offset;
+					sdat_offset = static_cast<int32_t>(children[i].offset);
 			}
 
 			if (hshd_offset == -1)
@@ -72,14 +72,14 @@ namespace HumongousFileEditor
 	bool DIGITab::GetData(chunk_reader::FileContainer*& fc, size_t offset, chunk_reader::SDAT_Chunk& sdat_chunk, chunk_reader::HSHD_Chunk& hshd_chunk)
 	{
 		std::vector<chunk_reader::ChunkInfo> children = fc->GetChildren(offset);
-		size_t hshd_offset = -1;
-		size_t sdat_offset = -1;
+		int32_t hshd_offset = -1;
+		int32_t sdat_offset = -1;
 		for (size_t i = 0; i < children.size(); i++)
 		{
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
-				hshd_offset = children[i].offset;
+				hshd_offset = static_cast<int32_t>(children[i].offset);
 			if (utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
-				sdat_offset = children[i].offset;
+				sdat_offset = static_cast<int32_t>(children[i].offset);
 		}
 
 		if (hshd_offset == -1)

@@ -11,7 +11,7 @@ namespace HumongousFileEditor
 		class FileIndexer : public FileFunction
 		{
 		public:
-			bool Read();
+			bool Save(std::string loadPath, std::string savePath);
 		};
 	}
 }

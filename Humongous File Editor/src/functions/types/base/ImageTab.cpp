@@ -23,15 +23,15 @@ namespace HumongousFileEditor
 		for (int i = 0; i < count; i++)
 			result |= bitstream[pos++] << i;
 
-		return result;
+		return static_cast<uint8_t>(result);
 	}
 
-	bool ImageTab::ReplaceResource(std::string& file_path)
+	bool ImageTab::ReplaceResource(std::string&)
 	{
 		return false;
 	}
 
-	bool ImageTab::DecodeHE(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
+	bool ImageTab::DecodeHE(unsigned char fill_color, unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool, img_info& info)
 	{
 		std::vector<uint8_t> out;
 
@@ -49,7 +49,7 @@ namespace HumongousFileEditor
 		}
 		else
 		{
-			std::vector<int> delta_color = { -4, -3, -2, -1, 1, 2, 3, 4 };
+			std::vector<int8_t> delta_color = { -4, -3, -2, -1, 1, 2, 3, 4 };
 
 			std::vector<uint8_t> bits = create_bitstream(data, data_size);
 
@@ -98,7 +98,7 @@ namespace HumongousFileEditor
 
 		size_t num_pixels = info.width * info.height;
 
-		int sub = 1;
+		int8_t sub = 1;
 		int pos = 0;
 		while (out.size() < num_pixels)
 		{
@@ -174,7 +174,7 @@ namespace HumongousFileEditor
 		return true;
 	}
 
-	bool ImageTab::DecodeRaw(unsigned char* data, size_t data_size, size_t width, size_t height, int palen, bool transparent, img_info& info)
+	bool ImageTab::DecodeRaw(unsigned char* data, size_t, size_t width, size_t height, int, bool, img_info& info)
 	{
 		info.size = width * height;
 		info.data = ImageData(info.size, data);

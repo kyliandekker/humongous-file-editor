@@ -13,11 +13,11 @@ namespace HumongousFileEditor
 {
 	namespace chunk_reader
 	{
-		void Temp::AddEntry(uint32_t offset, std::string name)
+		void Temp::AddEntry(uint32_t, std::string)
 		{
 		}
 
-		void Temp::Read(const char* path)
+		void Temp::Read(const char* )
 		{
 			//FileContainer fc = FileContainer(path);
 

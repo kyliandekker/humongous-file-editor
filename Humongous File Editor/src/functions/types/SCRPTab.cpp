@@ -7,6 +7,7 @@
 #include "cmd/OPCodes.h"
 #include "cmd/ArgsAllocator.h"
 #include "lowlevel/bytecode_data.h"
+#include "systems/Logger.h"
 
 namespace HumongousFileEditor
 {
@@ -41,7 +42,6 @@ namespace HumongousFileEditor
 
 		while (pos < scrp_size)
 		{
-			size_t bc_offset = pos;
 			uint8_t b = chunk.data[pos];
 
 			talk_instruction instruction;
@@ -52,7 +52,7 @@ namespace HumongousFileEditor
 
 			ArgsAllocator args;
 			chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[b];
-			bytecode.func(utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader) + pos), scrp_size - pos, args);
+			bytecode.func(utils::add(fc->data, offset + sizeof(chunk_reader::HumongousHeader) + pos), args);
 
 			instruction.name = bytecode.name;
 			instruction.args = args;
@@ -60,24 +60,19 @@ namespace HumongousFileEditor
 			instructions.push_back(instruction);
 
 			// Checking jumps and seeing if they are valid.
-			if (instruction.code == 0x5C || instruction.code == 0x5D || instruction.code == 0x73)
+			if ((instruction.code == 0x5C // jump if
+				|| instruction.code == 0x5D // jump if not
+				|| instruction.code == 0x73) // jump
+				|| (instruction.code == 0xA9 && instruction.args.args.size() == 2)
+				)
 			{
-				int16_t offset = *reinterpret_cast<int16_t*>(utils::add(fc->data, 1 + instruction.scrp_offset + instruction.offset_in_scrp_chunk + instruction.args[0].offset));
-				int16_t relative_offset_in_scrp = instruction.offset_in_scrp_chunk + offset;
+				size_t offset = HumongousFileEditor::chunk_reader::jump(instruction, fc->data);
 
-				uint8_t tb = chunk.data[relative_offset_in_scrp];
-				chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[tb];
-			}
-			// Checking wait jumps.
-			if (instruction.code == 0x5C || instruction.code == 0x5D || instruction.code == 0x73)
-			{
-				if (instruction.args.args.size() == 2)
+				uint8_t tb = *reinterpret_cast<uint8_t*>(utils::add(fc->data, offset));
+
+				if (chunk_reader::OPCODES_HE90.find(tb) == chunk_reader::OPCODES_HE90.end())
 				{
-					int16_t offset = *reinterpret_cast<int16_t*>(utils::add(fc->data, 1 + instruction.scrp_offset + instruction.offset_in_scrp_chunk + instruction.args[1].offset));
-					int16_t relative_offset_in_scrp = instruction.offset_in_scrp_chunk + offset;
-
-					uint8_t tb = chunk.data[relative_offset_in_scrp];
-					chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[tb];
+					LOGF(logger::LOGSEVERITY_ASSERT, "Jump command jumps to invalid bytecode. Expect code in OPCodes dictionary but got %c", tb);
 				}
 			}
 
