@@ -26,7 +26,7 @@ namespace HumongousFileEditor
 					1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
 
 				size_t arg_size = instruction.args[0].size; // position after offset is read.
-				uint16_t offset = *reinterpret_cast<uint16_t*>(utils::add(data, abs_offset));
+				int16_t offset = *reinterpret_cast<int16_t*>(utils::add(data, abs_offset));
 
 				return abs_offset + static_cast<size_t>(offset) + arg_size;
 			}
@@ -40,7 +40,7 @@ namespace HumongousFileEditor
 					1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
 
 				size_t arg_size = instruction.args[0].size; // position after offset is read.
-				uint16_t offset = *reinterpret_cast<uint16_t*>(utils::add(data, abs_offset));
+				int16_t offset = *reinterpret_cast<int16_t*>(utils::add(data, abs_offset));
 
 				return abs_offset + static_cast<size_t>(offset) + arg_size;
 			}
@@ -63,7 +63,7 @@ namespace HumongousFileEditor
 
         void jump_cmd(unsigned char* data, ArgsAllocator& return_data)
         {
-            uint8_t arg = *reinterpret_cast<uint8_t*>(data);
+			int16_t arg = *reinterpret_cast<int16_t*>(data);
             return_data.AddArg({ 0, ArgType::ArgType_Ref, std::string(reinterpret_cast<const char*>(&arg)) });
         }
 
@@ -136,7 +136,7 @@ namespace HumongousFileEditor
             size += sizeof(uint8_t);
             if (cmd == 168 || cmd == 226 || cmd == 232)
             {
-                uint8_t arg = *reinterpret_cast<uint8_t*>(data);
+				int16_t arg = *reinterpret_cast<int16_t*>(data);
                 //uint16_t rel = *reinterpret_cast<uint16_t*>(utils::add(data, size));
                 return_data.AddArg({ size, ArgType::ArgType_Ref, std::string(reinterpret_cast<const char*>(&arg)) });
             }
