@@ -7,113 +7,59 @@ namespace HumongousFileEditor
 {
 	namespace abstractions
 	{
-		bool OpenWFile(std::string& path, LPCWSTR filter)
+		bool genericFileOpen(std::string& path, const IID rclsid, FILEOPENDIALOGOPTIONS options, const std::vector<COMDLG_FILTERSPEC>& filters = {})
 		{
-			OPENFILENAME ofn;
-			TCHAR sz_file[260] = { 0 };
+			CoInitialize(nullptr);
 
-			ZeroMemory(&ofn, sizeof(ofn));
-			ofn.lStructSize = sizeof(ofn);
-			ofn.lpstrFile = sz_file;
-			ofn.nMaxFile = sizeof(sz_file);
-
-			ofn.lpstrFilter = filter;
-			ofn.nFilterIndex = 1;
-			ofn.lpstrFileTitle = nullptr;
-			ofn.nMaxFileTitle = 0;
-			ofn.lpstrInitialDir = nullptr;
-			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-			if (GetOpenFileNameW(&ofn))
+			IFileDialog* pfd;
+			HRESULT hr = CoCreateInstance(rclsid, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
+			pfd->SetFileTypes(filters.size(), filters.data());
+			if (SUCCEEDED(hr))
 			{
-				const auto cpath = new char[wcslen(ofn.lpstrFile) + 1];
-				wsprintfA(cpath, "%S", ofn.lpstrFile);
-
-				path = cpath;
-
-				delete[] cpath;
-
-				return true;
-			}
-			return false;
-		}
-		bool SaveWFile(std::string& path, int* choice, LPCWSTR filter)
-		{
-			OPENFILENAME ofn;
-			TCHAR sz_file_2[260] = { 0 };
-
-			ZeroMemory(&ofn, sizeof(ofn));
-			ofn.lStructSize = sizeof(ofn);
-			ofn.lpstrFile = sz_file_2;
-			ofn.nMaxFile = sizeof(sz_file_2);
-			ofn.lpstrFilter = filter;
-			ofn.lpstrFileTitle = nullptr;
-			ofn.nMaxFileTitle = 0;
-			ofn.lpstrInitialDir = nullptr;
-			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-			if (GetSaveFileNameW(&ofn))
-			{
-				const auto cpath = new char[wcslen(ofn.lpstrFile) + 1];
-				wsprintfA(cpath, "%S", ofn.lpstrFile);
-
-				path = cpath;
-				if (choice != nullptr)
+				DWORD dwOptions;
+				if (SUCCEEDED(pfd->GetOptions(&dwOptions)))
 				{
-					*choice = ofn.nFilterIndex;
+					pfd->SetOptions(dwOptions | options);
 				}
 
-				delete[] cpath;
+				if (SUCCEEDED(pfd->Show(NULL)))
+				{
+					IShellItem* psi;
+					if (SUCCEEDED(pfd->GetResult(&psi)))
+					{
+						LPWSTR pszPath;
+						psi->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &pszPath);
 
-				return true;
+						std::wstring wide(pszPath);
+						path = std::string(wide.begin(), wide.end());
+						psi->Release();
+						CoTaskMemFree(pszPath);
+
+						return true;
+						psi->Release();
+					}
+				}
+				pfd->Release();
 			}
 			return false;
 		}
-
-		static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM, LPARAM lpData)
+		bool OpenWFile(std::string& path, const std::vector<COMDLG_FILTERSPEC>& filters)
 		{
-
-			if (uMsg == BFFM_INITIALIZED)
-			{
-				SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
-			}
-
-			return 0;
+			return genericFileOpen(path, CLSID_FileOpenDialog, 0, filters);
+		}
+		bool SaveWFile(std::string& path, int* choice, const std::vector<COMDLG_FILTERSPEC>& filters)
+		{
+			return genericFileOpen(path, CLSID_FileSaveDialog, 0, filters);
 		}
 
 		bool SaveFolder(std::string& path)
 		{
-			TCHAR cpath[MAX_PATH];
-
-			const char* path_param;
-
-			BROWSEINFO bi = { 0 };
-			bi.lpszTitle = L"Browse for folder...";
-			bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
-			bi.lpfn = BrowseCallbackProc;
-			bi.lParam = (LPARAM)path_param;
-
-			LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
-
-			if (pidl != 0)
-			{
-				//get the name of the folder and put it in path
-				SHGetPathFromIDList(pidl, cpath);
-
-				//free memory used
-				IMalloc* imalloc = 0;
-				if (SUCCEEDED(SHGetMalloc(&imalloc)))
-				{
-					imalloc->Free(pidl);
-					imalloc->Release();
-
-					std::wstring wpath(&cpath[0]);
-					path = std::string(wpath.begin(), wpath.end());
-
-					return true;
-				}
-			}
 			return false;
 		}
+
+        bool OpenFolder(std::string& path)
+        {
+			return genericFileOpen(path, CLSID_FileOpenDialog, FOS_PICKFOLDERS);
+        }
 	}
 }

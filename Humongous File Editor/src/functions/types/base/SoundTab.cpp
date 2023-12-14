@@ -18,9 +18,11 @@ namespace HumongousFileEditor
     bool SoundTab::ReplaceResource(std::string& file_path, uaudio::wave_reader::FMT_Chunk& fmt_chunk, uaudio::wave_reader::DATA_Chunk& data_chunk)
     {
 		std::string path;
-		if (abstractions::OpenWFile(path, L"\
-						WAVE file (*.wav)\
-						\0*.WAV;*.wav\0"))
+		std::vector<COMDLG_FILTERSPEC> filters =
+		{
+			{L"WAVE files (*.wav)", L"*.wav;*.WAV"}
+		};
+		if (abstractions::OpenWFile(path, filters))
 		{
 			if (!utils::ends_with(path, ".wav"))
 			{

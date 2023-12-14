@@ -187,11 +187,12 @@ namespace HumongousFileEditor
 
 				std::string path;
 				int choice = 1;
-				if (HumongousFileEditor::abstractions::SaveWFile(path, &choice, L"\
-					BMP file (*.bmp)\
-					\0*.BMP;*.bmp\0\
-					PNG file (*.png)\
-					\0*.PNG;*.png\0"))
+				std::vector<COMDLG_FILTERSPEC> filters =
+				{
+					{L"BMP files (*.bmp)", L"*.bmp"},
+					{L"PNG files (*.png)", L"*.png"},
+				};
+				if (HumongousFileEditor::abstractions::SaveWFile(path, &choice, filters))
 				{
 					if (choice == 1)
 					{
@@ -237,11 +238,12 @@ namespace HumongousFileEditor
 
 				std::string path;
 				int choice = 1;
-				if (HumongousFileEditor::abstractions::SaveWFile(path, &choice, L"\
-					BMP file (*.bmp)\
-					\0*.BMP;*.bmp\0\
-					PNG file (*.png)\
-					\0*.PNG;*.png\0"))
+				std::vector<COMDLG_FILTERSPEC> filters =
+				{
+					{L"BMP files (*.bmp)", L"*.bmp"},
+					{L"PNG files (*.png)", L"*.png"},
+				};
+				if (HumongousFileEditor::abstractions::SaveWFile(path, &choice, filters))
 				{
 					if (choice == 1)
 					{

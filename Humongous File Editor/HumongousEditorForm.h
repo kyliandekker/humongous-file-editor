@@ -521,28 +521,28 @@ namespace HumongousFileEditor
 		/// Returns all the filters for FILE dialogs.
 		/// </summary>
 		/// <returns></returns>
-		LPCWSTR getFilter(bool includeA)
+		std::vector< COMDLG_FILTERSPEC> getFilter(bool includeA)
 		{
-			return includeA ? L"\
-						Humongous Game Files (*.HE0, *.(A), *.HE2, *.HE3, *.HE4)\
-						\0*.(A);*.HE0;*.HE2;*.HE3;*.HE4\0\
-						Humongous Resource Files (*.(A))\
-						\0*.(A)\0\
-						Humongous Index Files (*.HE0)\
-						\0*.HE0\0\
-						Humongous Talkie Files (*.HE2)\
-						\0*.HE2\0\
-						Humongous Song Files (*.HE4)\
-						\0*.HE4\0"
-				: L"\
-						Humongous Game Files (*.HE0, *.HE2, *.HE3, *.HE4)\
-						\0*.HE0;*.HE2;*.HE3;*.HE4\0\
-						Humongous Index Files (*.HE0)\
-						\0*.HE0\0\
-						Humongous Talkie Files (*.HE2)\
-						\0*.HE2\0\
-						Humongous Song Files (*.HE4)\
-						\0*.HE4\0";
+			std::vector<COMDLG_FILTERSPEC> filters;
+
+			if (includeA)
+			{
+				filters.push_back({L"Humongous Game Files (*.HE0, *.(A), *.HE2, *.HE4)", L"*.HE0;*.(A);*.HE2;*.HE4"});
+			}
+			else
+			{
+				filters.push_back({L"Humongous Game Files (*.HE0, *.HE2, *.HE4)", L"*.HE0;*.HE2;*.HE4"});
+			}
+
+			filters.push_back({ L"Humongous Index Files (*.HE0)", L"*.HE0" });
+			if (includeA)
+			{
+				filters.push_back({ L"Humongous Resource Files (*.(A))", L"*.(A)" });
+			}
+			filters.push_back({ L"Humongous Talk Files (*.HE2)", L"*.HE2" });
+			filters.push_back({ L"Humongous Song Files (*.HE4)", L"*.HE4" });
+
+			return filters;
 		}
 		// Opens a window with info about the application (via the top menu or info button).
 		System::Void optionIndex_Click(System::Object^, System::EventArgs^)
@@ -551,9 +551,11 @@ namespace HumongousFileEditor
 			if (abstractions::OpenWFile(path, getFilter(false)))
 			{
 				std::string savePath;
-				if (abstractions::SaveWFile(savePath, nullptr, L"\
-						HTML File (*.html)\
-						\0*.HTML;*.html\0"))
+				std::vector<COMDLG_FILTERSPEC> filters =
+				{
+					{L"HTML files (*.html)", L"*.html"}
+				};
+				if (abstractions::SaveWFile(savePath, nullptr, filters))
 				{
 					chunk_reader::FileIndexer f = chunk_reader::FileIndexer();
 					if (f.Save(path, savePath))
