@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HumongousResourceEditor", "HumongousResourceEditor\HumongousResourceEditor.vcxproj", "{261F68B1-4D6B-4984-A21A-8951B07485D3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{261F68B1-4D6B-4984-A21A-8951B07485D3}.Debug|x64.ActiveCfg = Debug|x64
+		{261F68B1-4D6B-4984-A21A-8951B07485D3}.Debug|x64.Build.0 = Debug|x64
+		{261F68B1-4D6B-4984-A21A-8951B07485D3}.Debug|x86.ActiveCfg = Debug|Win32
+		{261F68B1-4D6B-4984-A21A-8951B07485D3}.Debug|x86.Build.0 = Debug|Win32
+		{261F68B1-4D6B-4984-A21A-8951B07485D3}.Release|x64.ActiveCfg = Release|x64
+		{261F68B1-4D6B-4984-A21A-8951B07485D3}.Release|x64.Build.0 = Release|x64
+		{261F68B1-4D6B-4984-A21A-8951B07485D3}.Release|x86.ActiveCfg = Release|Win32
+		{261F68B1-4D6B-4984-A21A-8951B07485D3}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D245DE46-853C-4F9E-A856-BD468E7D79DA}
+	EndGlobalSection
+EndGlobal
