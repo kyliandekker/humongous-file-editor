@@ -164,8 +164,11 @@
     <ClInclude Include="include\game\Compiler.h" />
     <ClInclude Include="include\game\compilers\ResourceFileCompiler.h" />
     <ClInclude Include="include\game\compilers\TalkFileCompiler.h" />
+    <ClInclude Include="include\game\decompiled_resource\SongResource.h" />
+    <ClInclude Include="include\game\decompiled_resource\TalkResource.h" />
     <ClInclude Include="include\game\GameResource.h" />
     <ClInclude Include="include\game\compilers\SongFileCompiler.h" />
+    <ClInclude Include="include\imgui\tools\GameResourceWindow.h" />
     <ClInclude Include="include\low_level\ChunkInfo.h" />
     <ClInclude Include="include\low_level\Defines.h" />
     <ClInclude Include="include\low_level\FileContainer.h" />
@@ -186,6 +189,8 @@
     <ClInclude Include="include\system\Logger.h" />
     <ClInclude Include="include\utils\string.h" />
     <ClInclude Include="include\imgui\tools\ResourcesWindow.h" />
+    <ClInclude Include="include\game\decompiled_resource\DecompiledResource.h" />
+    <ClInclude Include="include\system\audio\AudioUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="external\imgui\backends\imgui_impl_dx9.cpp" />
@@ -197,14 +202,22 @@
     <ClCompile Include="external\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="external\imgui\imgui_tables.cpp" />
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="external\imgui\implot.cpp" />
+    <ClCompile Include="external\imgui\implot_items.cpp" />
     <ClCompile Include="include\game\GameResourceType.h" />
-    <ClCompile Include="src\game\ResourceFileCompiler.cpp" />
-    <ClCompile Include="src\game\SongFileCompiler.cpp" />
-    <ClCompile Include="src\game\TalkFileCompiler.cpp" />
+    <ClCompile Include="include\low_level\HumongousChunks.cpp" />
+    <ClCompile Include="src\game\compilers\ResourceFileCompiler.cpp" />
+    <ClCompile Include="src\game\compilers\SongFileCompiler.cpp" />
+    <ClCompile Include="src\game\compilers\TalkFileCompiler.cpp" />
+    <ClCompile Include="src\game\decompiled_resource\DecompiledResource.cpp" />
+    <ClCompile Include="src\game\decompiled_resource\SongResource.cpp" />
+    <ClCompile Include="src\game\decompiled_resource\TalkResource.cpp" />
     <ClCompile Include="src\imgui\tools\ResourcesWindow.cpp" />
+    <ClCompile Include="src\imgui\tools\GameResourceWindow.cpp" />
     <ClCompile Include="src\low_level\FileContainer.cpp" />
     <ClCompile Include="src\low_level\HumongousHeader.cpp" />
     <ClCompile Include="src\low_level\Utils.cpp" />
+    <ClCompile Include="src\system\audio\AudioUtils.cpp" />
     <ClCompile Include="src\utils\abstractions.cpp" />
     <ClCompile Include="src\project\Resource.cpp" />
     <ClCompile Include="src\dx9\DX9Window.cpp" />

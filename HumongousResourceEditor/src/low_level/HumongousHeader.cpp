@@ -26,7 +26,7 @@ namespace resource_editor
 			memcpy(&size32, &chunkSize, sizeof(uint32_t));
 			if (isBigEndian)
 			{
-				size32 = utils::reverseBytesC<uint32_t>(reinterpret_cast<unsigned char*>(&size32));
+				size32 = low_level::utils::reverseBytesC<uint32_t>(reinterpret_cast<unsigned char*>(&size32));
 			}
 			return size32;
 		}
@@ -37,7 +37,7 @@ namespace resource_editor
 			memcpy(chunkSize, reinterpret_cast<unsigned char*>(&size32), sizeof(uint32_t));
 			if (toBigEndian)
 			{
-				utils::reverseBytes(chunkSize, sizeof(uint32_t));
+				low_level::utils::reverseBytes(chunkSize, sizeof(uint32_t));
 			}
 		}
 	}

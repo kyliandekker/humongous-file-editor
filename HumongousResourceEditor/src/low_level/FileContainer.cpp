@@ -78,7 +78,7 @@ namespace resource_editor
 		ChunkInfo FileContainer::GetChunkInfo(size_t offset) const
 		{
 			ChunkInfo header;
-			memcpy(&header, utils::add(data, offset), sizeof(HumongousHeader));
+			memcpy(&header, low_level::utils::add(data, offset), sizeof(HumongousHeader));
 			header.offset = offset;
 			return header;
 		}
@@ -86,14 +86,14 @@ namespace resource_editor
 		HumongousHeader FileContainer::GetChunk(size_t offset) const
 		{
 			HumongousHeader header;
-			memcpy(&header, utils::add(data, offset), sizeof(HumongousHeader));
+			memcpy(&header, low_level::utils::add(data, offset), sizeof(HumongousHeader));
 			return header;
 		}
 
 		ChunkInfo FileContainer::GetNextChunk(size_t offset) const
 		{
 			size_t extra_offset = 0;
-			while (utils::add(data, offset + extra_offset)[0] == 128)
+			while (low_level::utils::add(data, offset + extra_offset)[0] == 128)
 			{
 				extra_offset++;
 			}
@@ -114,7 +114,7 @@ namespace resource_editor
 			ChunkInfo next = GetChunkInfo(offset + sizeof(HumongousHeader));
 			for (size_t i = 0; i < childs.size(); i++)
 			{
-				if (utils::chunkcmp(next.chunk_id, childs[i].c_str()) == 0)
+				if (low_level::utils::chunkcmp(next.chunk_id, childs[i].c_str()) == 0)
 				{
 					return next;
 				}
@@ -173,7 +173,7 @@ namespace resource_editor
 				{
 					if (next_chunk.offset + next_chunk.ChunkSize() >= chunk.offset + chunk.ChunkSize())
 					{
-						HumongousHeader* header = reinterpret_cast<SGEN_Chunk*>(utils::add(data, next_chunk.offset));
+						HumongousHeader* header = reinterpret_cast<SGEN_Chunk*>(low_level::utils::add(data, next_chunk.offset));
 						header->SetChunkSize(header->ChunkSize() + dif_size);
 					}
 					next_chunk = GetNextChunk(next_chunk.offset);
@@ -183,8 +183,8 @@ namespace resource_editor
 			unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(size + dif_size));
 			memset(new_data, 0, size + dif_size);
 			memcpy(new_data, data, offset);
-			memcpy(utils::add(new_data, offset), new_chunk_data, new_size);
-			memcpy(utils::add(new_data, offset + new_size), utils::add(data, offset + chunk.ChunkSize()), size - (offset + chunk.ChunkSize()));
+			memcpy(low_level::utils::add(new_data, offset), new_chunk_data, new_size);
+			memcpy(low_level::utils::add(new_data, offset + new_size), low_level::utils::add(data, offset + chunk.ChunkSize()), size - (offset + chunk.ChunkSize()));
 
 			free(data);
 			data = new_data;
@@ -193,7 +193,7 @@ namespace resource_editor
 
 		void FileContainer::Decrypt(char key)
 		{
-			utils::xorShift(data, size, key);
+			low_level::utils::xorShift(data, size, key);
 		}
 	}
 }

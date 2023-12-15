@@ -15,7 +15,7 @@ namespace resource_editor
 		ExplorerTool::ExplorerTool() : BaseTool(ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse, "Explorer", "Explorer")
 		{ }
 
-		void renderResource(project::Resource& resource, project::Resource*& selectedResource, bool& showPopUp)
+		void ExplorerTool::RenderResource(project::Resource& resource, bool& showPopUp)
 		{
 			if (!resource.m_Show)
 			{
@@ -24,13 +24,6 @@ namespace resource_editor
 
 			std::string name = resource.m_Name;
 			std::string id = "##" + resource.m_Path;
-
-			if (resource.m_OpenedWindow)
-			{
-				std::string window_id = resource.m_Name + "##" + resource.m_Path;
-				ResourcesWindow resourcesWindow = ResourcesWindow(window_id, resource);
-				resourcesWindow.Update();
-			}
 
 			if (resource.m_ResourceType == project::ResourceType::Folder)
 			{
@@ -55,11 +48,11 @@ namespace resource_editor
 						if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 						{
 							showPopUp |= true;
-							selectedResource = &resource;
+							m_SelectedResource = &resource;
 						}
 						for (size_t i = 0; i < resource.m_Resources.size(); i++)
 						{
-							renderResource(resource.m_Resources[i], selectedResource, showPopUp);
+							RenderResource(resource.m_Resources[i], showPopUp);
 						}
 						ImGui::TreePop();
 					}
@@ -72,7 +65,7 @@ namespace resource_editor
 						if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 						{
 							showPopUp |= true;
-							selectedResource = &resource;
+							m_SelectedResource = &resource;
 						}
 						ImGui::TreePop();
 					}
@@ -93,7 +86,7 @@ namespace resource_editor
 					if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 					{
 						showPopUp |= true;
-						selectedResource = &resource;
+						m_SelectedResource = &resource;
 					}
 					ImGui::TreePop();
 				}
@@ -107,7 +100,7 @@ namespace resource_editor
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 10.0f });
 			bool showPopUp = false;
-			renderResource(project::project.m_Folder, m_SelectedResource, showPopUp);
+			RenderResource(project::project.m_Folder, showPopUp);
 			ImGui::PopStyleVar();
 			if (ImGui::BeginPopup("res_popup"))
 			{
@@ -159,17 +152,44 @@ namespace resource_editor
 								// TODO: Pop up message.
 							}
 						}
-						else if (!m_SelectedResource->m_OpenedWindow && ImGui::MenuItem("Show Window"))
+						else
 						{
-							m_SelectedResource->m_OpenedWindow = true;
-						}
-						else if (m_SelectedResource->m_OpenedWindow && ImGui::MenuItem("Hide Window"))
-						{
-							m_SelectedResource->m_OpenedWindow = false;
+							std::string window_id = m_SelectedResource->m_Name + "##" + m_SelectedResource->m_Path;
+							if (!m_SelectedResource->m_OpenedWindow && ImGui::MenuItem("Show Window"))
+							{
+								bool found = false;
+								for (size_t i = 0; i < m_Windows.size(); i++)
+								{
+									if (m_Windows[i].GetName() == window_id)
+									{
+										found = true;
+									}
+								}
+								if (!found)
+								{
+									m_SelectedResource->m_OpenedWindow = true;
+									m_Windows.push_back(ResourcesWindow(window_id, *m_SelectedResource));
+								}
+							}
+							else if (m_SelectedResource->m_OpenedWindow && ImGui::MenuItem("Hide Window"))
+							{
+								for (size_t i = 0; i < m_Windows.size(); i++)
+								{
+									if (m_Windows[i].GetName() == window_id)
+									{
+										m_Windows.erase(m_Windows.begin() + i);
+									}
+								}
+								m_SelectedResource->m_OpenedWindow = false;
+							}
 						}
 					}
 				}
 				ImGui::EndPopup();
+			}
+			for (size_t i = 0; i < m_Windows.size(); i++)
+			{
+				m_Windows[i].Update();
 			}
 		}
 	}

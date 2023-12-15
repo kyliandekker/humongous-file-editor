@@ -6,6 +6,7 @@
 #include <imgui/imgui_internal.h>
 #include <imgui/ImguiDefines.h>
 #include <algorithm>
+#include "implot.h"
 
 namespace ImGui
 {
@@ -318,92 +319,70 @@ namespace ImGui
         return value_changed;
     }
 
-    void UvMeter(char const* label, ImVec2 const& size, double* value, float v_min, float v_max, int steps, float* stack, int* count, float background, std::map<float, float> segment)
-    {
-        float v = static_cast<float>(*value);
-        UvMeter(label, size, &v, v_min, v_max, steps, stack, count, background, segment);
-    }
+	bool BeginPlayPlot(uint32_t& pos, int max_pos, size_t numSamples, const double* samples, const char* title_id, float width, float height, size_t blockAlign)
+	{
+		ImPlotStyle& pStyle = ImPlot::GetStyle();
+		ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, ImVec2(0, 0));
+		ImPlot::PushStyleVar(ImPlotStyleVar_LabelPadding, ImVec2(0, 0));
+		ImPlot::PushStyleVar(ImPlotStyleVar_LegendPadding, ImVec2(0, 0));
+		ImPlot::PushStyleVar(ImPlotStyleVar_LegendInnerPadding, ImVec2(0, 0));
+		ImPlot::PushStyleVar(ImPlotStyleVar_LegendSpacing, ImVec2(0, 0));
+		ImPlot::PushStyleVar(ImPlotStyleVar_MousePosPadding, ImVec2(0, 0));
+		ImPlot::PushStyleVar(ImPlotStyleVar_AnnotationPadding, ImVec2(0, 0));
+		ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2(0, 0));
+		ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(0, 0));
+		ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(0, 0));
+		if (ImPlot::BeginPlot(title_id, ImVec2(width, height), ImPlotFlags_CanvasOnly | ImPlotFlags_NoInputs | ImPlotFlags_NoFrame))
+		{
+			ImDrawList* drw = ImPlot::GetPlotDrawList();
+			if (samples != nullptr)
+			{
+				ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels);
+				ImPlot::SetupAxis(ImAxis_Y1, "", ImPlotAxisFlags_LockMin | ImPlotAxisFlags_LockMax | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels);
+				ImPlot::SetupAxisLimits(ImAxis_Y1, -1.f, 1.f, ImPlotCond_Always);
+				ImPlot::SetupAxisLimits(ImAxis_X1, 0, static_cast<double>(numSamples));
+				ImPlot::PlotLine("Waveform", samples, static_cast<int>(numSamples));
+			}
 
-    void ImGui::UvMeter(char const* label, ImVec2 const& size, float* value, float v_min, float v_max, int steps, float* stack, int* count, float background, std::map<float, float> segment)
-    {
-        UvMeter(ImGui::GetWindowDrawList(), label, size, value, v_min, v_max, steps, stack, count, background, segment);
-    }
+			bool isHovered = ImGui::IsItemHovered();
+			ImPlotStyle& imPlotStyle = ImPlot::GetStyle();
 
-    void ImGui::UvMeter(ImDrawList* draw_list, char const* label, ImVec2 const& size, float* value, float v_min, float v_max, int steps, float* stack, int* count, float background, std::map<float, float> segment)
-    {
-        ImVec2 pos = ImGui::GetCursorScreenPos();
+			if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && isHovered)
+			{
+				ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
+				ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
+				ImVec2 screenPositionAbsolutem = ImGui::GetItemRectMax();
+				ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
 
-        ImGui::InvisibleButton(label, ImVec2(size.x, size.y / 2));
-        float steps_size = (v_max - v_min) / (float)steps;
-        if (stack && count)
-        {
-            if (*value > *stack)
-            {
-                *stack = *value;
-                *count = 0;
-            }
-            else
-            {
-                *(count) += 1;
-                if (*count > 10)
-                {
-                    *stack -= steps_size / 2;
-                    if (*stack < v_min) *stack = v_min;
-                }
-            }
-        }
+				ImVec2 plotPos = ImPlot::GetPlotPos();
+				ImVec2 plotSize = ImPlot::GetPlotSize();
 
-        if (size.y > size.x)
-        {
-            float stepHeight = size.y / (v_max - v_min + 1);
-            auto y = pos.y + size.y;
-            auto hue = 0.4f;
-            auto sat = 1.0f;
-            auto lum = 0.6f;
-            for (float i = v_min; i <= v_max; i += steps_size)
-            {
-                if (segment.empty())
-                    hue = 0.4f - (i / (v_max - v_min)) / 2.0f;
-                else
-                {
-                    for (const auto value : segment)
-                    {
-                        if (i <= value.first)
-                        {
-                            hue = value.second;
-                            break;
-                        }
-                    }
-                }
-                sat = (*value < i ? 0.8f : 1.0f);
-                lum = (*value < i ? background : 1.0f);
-                draw_list->AddRectFilled(ImVec2(pos.x, y), ImVec2(pos.x + size.x, y - (stepHeight * steps_size - 1)), static_cast<ImU32>(ImColor::HSV(hue, sat, lum)));
-                y = pos.y + size.y - (i * stepHeight);
-            }
-            if (stack && count)
-            {
-                draw_list->AddLine(ImVec2(pos.x, pos.y + size.y - (*stack * stepHeight)), ImVec2(pos.x + size.x, pos.y + size.y - (*stack * stepHeight)), IM_COL32_WHITE, 2.f);
-            }
-        }
-        else
-        {
-            float stepWidth = size.x / (v_max - v_min + 1);
-            auto x = pos.x;
-            auto hue = 0.4f;
-            auto sat = 0.6f;
-            auto lum = 0.6f;
-            for (float i = v_min; i <= v_max; i += steps_size)
-            {
-                hue = 0.4f - (i / (v_max - v_min)) / 2.0f;
-                sat = (*value < i ? 0.0f : 0.6f);
-                lum = (*value < i ? 0.0f : 0.6f);
-                draw_list->AddRectFilled(ImVec2(x, pos.y), ImVec2(x + (stepWidth * steps_size - 1), pos.y + size.y), static_cast<ImU32>(ImColor::HSV(hue, sat, lum)));
-                x = pos.x + (i * stepWidth);
-            }
-            if (stack && count)
-            {
-                draw_list->AddLine(ImVec2(pos.x + (*stack * stepWidth), pos.y), ImVec2(pos.x + (*stack * stepWidth), pos.y + size.y), IM_COL32_WHITE, 2.f);
-            }
-        }
-    }
+				mousePositionRelative.x = std::clamp(mousePositionRelative.x, 0.0f, plotSize.x + 0);
+
+				pos = max_pos / static_cast<int>(plotSize.x + 0) * static_cast<int>(mousePositionRelative.x - 0);
+
+				uint32_t left_over = static_cast<uint32_t>(pos) % blockAlign;
+				int32_t ppos = static_cast<uint32_t>(pos) - left_over;
+				if (ppos < 0)
+					ppos = 0;
+				pos = ppos;
+			}
+
+			ImVec2 plotSize = ImPlot::GetPlotSize();
+			plotSize = ImVec2(plotSize.x + 0, plotSize.y);
+			ImVec2 plotPos = ImPlot::GetPlotPos();
+
+			float linePosX = plotSize.x / max_pos * pos;
+
+			drw->AddLine(
+				ImVec2(plotPos.x + linePosX, plotPos.y),
+				ImVec2(plotPos.x + linePosX, plotPos.y + plotSize.y),
+				ImColor(255, 255, 255, 255), 1
+			);
+
+			ImPlot::EndPlot();
+		}
+		ImPlot::PopStyleVar(10);
+		return false;
+	}
 }

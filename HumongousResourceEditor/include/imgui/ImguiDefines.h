@@ -13,6 +13,10 @@ namespace resource_editor
 		#define ICON_FA_FILE_AUDIO "\xef\x87\x87"
 		#define ICON_FA_FILE_CIRCLE_QUESTION "\xee\x93\xaf"
 		#define ICON_FA_FILE_CIRCLE_XMARK "\xee\x96\xa1"	// U+e5a1
+		#define ICON_FA_USER "\xef\x80\x87"
+		#define ICON_FA_MUSIC "\xef\x80\x81"
+		#define ICON_FA_VOLUME_UP "\xef\x80\xa8"
+		#define ICON_FA_FILE_IMAGE_O "\xef\x87\x85"
 
 		#define IMGUI_INDENT 16.0f
 	}

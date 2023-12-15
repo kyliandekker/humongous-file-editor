@@ -31,9 +31,10 @@ namespace resource_editor
 				if (RESOURCE_CHUNKS.find(chunk_id_name) != RESOURCE_CHUNKS.end())
 				{
 					game::GameResource resource;
-					resource.offset = header.offset;
-					resource.name = std::to_string(i);
-					resource.type = RESOURCE_CHUNKS.at(chunk_id_name);
+					resource.m_Offset = header.offset;
+					resource.m_Type = RESOURCE_CHUNKS.at(chunk_id_name);
+					resource.m_Name = std::to_string(i) + getExtension(resource.m_Type);
+					resource.m_Parent = &a_Resource;
 					a_Resources.push_back(resource);
 					i++;
 				}

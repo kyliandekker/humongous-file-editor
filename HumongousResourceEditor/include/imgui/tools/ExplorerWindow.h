@@ -1,6 +1,9 @@
 #pragma once
 
 #include "imgui/tools/BaseTool.h"
+#include "imgui/tools/ResourcesWindow.h"
+
+#include <vector>
 
 namespace resource_editor
 {
@@ -14,9 +17,12 @@ namespace resource_editor
 		{
 		public:
 			ExplorerTool();
+			void RenderResource(project::Resource& resource, bool& showPopUp);
 			void Render() override;
 		private:
 			project::Resource* m_SelectedResource = nullptr;
+
+			std::vector<ResourcesWindow> m_Windows;
 		};
 	}
 }

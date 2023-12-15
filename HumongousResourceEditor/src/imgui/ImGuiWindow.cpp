@@ -5,6 +5,7 @@
 #include <imgui/backends/imgui_impl_win32.h>
 #include <imgui/backends/imgui_impl_dx9.h>
 #include <d3d9.h>
+#include <imgui/implot.h>
 
 #include "imgui/tools/MainWindow.h"
 #include "system/Logger.h"
@@ -73,6 +74,7 @@ namespace resource_editor
 			// setup Dear ImGui context
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
+			ImPlot::CreateContext();
 
 			ImGui_ImplWin32_Init(m_Hwnd);
 			ImGui_ImplDX9_Init(m_DX9Window.g_pd3dDevice);
@@ -182,6 +184,11 @@ namespace resource_editor
 			style.GrabRounding = 3;
 			style.LogSliderDeadzone = 4;
 			style.TabRounding = 4;
+
+			ImPlotStyle& pStyle = ImPlot::GetStyle();
+
+			colors = pStyle.Colors;
+			colors[ImPlotCol_Line] = ImVec4(1.00f, 0.66f, 0.18f, 0.7f);
 		}
 
 		void ImGuiWindow::ResetDevice()
@@ -279,6 +286,7 @@ namespace resource_editor
 		{
 			ImGui_ImplDX9_Shutdown();
 			ImGui_ImplWin32_Shutdown();
+			ImPlot::DestroyContext();
 			ImGui::DestroyContext();
 			m_DX9Window.CleanupDeviceD3D();
 		}

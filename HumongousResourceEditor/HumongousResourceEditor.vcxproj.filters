@@ -93,6 +93,21 @@
     <ClInclude Include="include\game\compilers\TalkFileCompiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\imgui\tools\GameResourceWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\game\decompiled_resource\DecompiledResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\game\decompiled_resource\TalkResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\game\decompiled_resource\SongResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\system\audio\AudioUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dx9\DX9Window.cpp">
@@ -167,13 +182,37 @@
     <ClCompile Include="include\game\GameResourceType.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\SongFileCompiler.cpp">
+    <ClCompile Include="src\game\compilers\SongFileCompiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\ResourceFileCompiler.cpp">
+    <ClCompile Include="src\game\compilers\ResourceFileCompiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\TalkFileCompiler.cpp">
+    <ClCompile Include="src\game\compilers\TalkFileCompiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\tools\GameResourceWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\decompiled_resource\DecompiledResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\decompiled_resource\TalkResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="include\low_level\HumongousChunks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\implot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\implot_items.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\decompiled_resource\SongResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\system\audio\AudioUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

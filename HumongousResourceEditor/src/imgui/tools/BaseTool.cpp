@@ -27,7 +27,7 @@ namespace resource_editor
 
 		void BaseTool::WindowBegin()
 		{
-			ImGui::Begin(m_Name.c_str(), 0, m_Flags);
+			ImGui::Begin(m_Name.c_str(), &m_Enabled, m_Flags);
 		}
 
 		void BaseTool::WindowEnd()
