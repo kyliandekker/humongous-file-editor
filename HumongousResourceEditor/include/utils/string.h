@@ -6,25 +6,25 @@ namespace resource_editor
 {
 	namespace string_extensions
 	{
-		inline std::string getExtensionFromPath(std::string path, bool include_dot = false)
+		inline std::string getExtensionFromPath(std::string a_Path, bool a_IncludeDot = false)
 		{
-			return path.substr(path.find_last_of(".") + (include_dot ? 0 : 1));
+			return a_Path.substr(a_Path.find_last_of(".") + (a_IncludeDot ? 0 : 1));
 		}
 
-		inline std::string getFileWithoutExtension(std::string path)
+		inline std::string getFileWithoutExtension(std::string a_Path)
 		{
-			return path.substr(0, path.find_last_of("."));
+			return a_Path.substr(0, a_Path.find_last_of("."));
 		}
 
-		inline std::string getFileName(std::string path)
+		inline std::string getFileName(std::string a_Path)
 		{
-			return path.substr(path.find_last_of("\\") + 1);
+			return a_Path.substr(a_Path.find_last_of("\\") + 1);
 		}
 
-		inline std::string getPath(std::string path)
+		inline std::string getPath(std::string a_Path)
 		{
-			std::string f = path.substr(0, path.find_last_of("\\"));
-			return f.substr(0, path.find_last_of("/"));
+			std::string f = a_Path.substr(0, a_Path.find_last_of("\\"));
+			return f.substr(0, a_Path.find_last_of("/"));
 		}
 	}
 }

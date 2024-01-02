@@ -25,9 +25,9 @@ namespace resource_editor
 			ImGuiWindow();
 			~ImGuiWindow();
 
-			void SetHwnd(HWND hwnd, WNDCLASSEX wc);
+			void SetHwnd(HWND a_Hwnd, WNDCLASSEX a_Wc);
 			void Initialize();
-			void ProcessEvents(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+			void ProcessEvents(HWND a_Hwnd, UINT a_Msg, WPARAM a_wParam, LPARAM a_lParam);
 			void CreateContext();
 			void CreateImGui() const;
 			void Render();
@@ -37,8 +37,9 @@ namespace resource_editor
 			bool IsEnabled() const;
 			void Stop();
 			void SetSize(ImVec2 a_Size);
+			dx9::DX9Window& GetDX9();
 
-			static void LoggerCallback(logger::Message& message);
+			static void LoggerCallback(logger::Message& a_Message);
 
 			bool m_ShowPopUp = false;
 			std::string m_PopUpText;

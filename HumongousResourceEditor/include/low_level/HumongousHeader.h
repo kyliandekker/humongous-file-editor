@@ -21,9 +21,9 @@ namespace resource_editor
 			unsigned char chunk_id[CHUNK_ID_SIZE] = {};
 			unsigned char chunkSize[sizeof(uint32_t)] = {};
 
-			uint32_t ChunkSize(bool isBigEndian = true) const;
+			uint32_t ChunkSize(bool a_BigEndian = true) const;
 
-			void SetChunkSize(uint32_t chunkSize, bool toBigEndian = true);
+			void SetChunkSize(uint32_t a_ChunkSize, bool a_BigEndian = true);
 		};
 
 		using ChunkHeader = HumongousHeader;

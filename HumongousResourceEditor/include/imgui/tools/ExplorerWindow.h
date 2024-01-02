@@ -2,8 +2,9 @@
 
 #include "imgui/tools/BaseTool.h"
 #include "imgui/tools/ResourcesWindow.h"
+#include "project/ResourceType.h"
 
-#include <vector>
+#include <array>
 
 namespace resource_editor
 {
@@ -17,12 +18,21 @@ namespace resource_editor
 		{
 		public:
 			ExplorerTool();
-			void RenderResource(project::Resource& resource, bool& showPopUp);
+			void RenderResource(project::Resource& a_Resource, bool& a_ShowPopUp);
 			void Render() override;
+
+			std::array<project::Resource*, 6> m_LoadedResources
+			{
+				nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+				nullptr,
+			};
 		private:
 			project::Resource* m_SelectedResource = nullptr;
-
-			std::vector<ResourcesWindow> m_Windows;
 		};
+		extern ExplorerTool explorer;
 	}
 }

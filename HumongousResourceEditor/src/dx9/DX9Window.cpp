@@ -1,6 +1,7 @@
 #include "dx9/DX9Window.h"
 
-#include <d3d9.h>
+#include "game/decompiled_resource/ImgInfo.h"
+#include <d3dx9.h>
 
 namespace resource_editor
 {
@@ -109,6 +110,35 @@ namespace resource_editor
 			{
 
 			}
+		}
+
+		bool DX9Window::CreateTexture(PDIRECT3DTEXTURE9* out_texture, game::ImgInfo& a_Info)
+		{
+			HRESULT hr = D3DXCreateTexture(g_pd3dDevice, a_Info.m_Width, a_Info.m_Height, D3DUSAGE_DYNAMIC,
+				0, a_Info.m_Channels > 3 ? D3DFMT_A8R8G8B8 : D3DFMT_R8G8B8, D3DPOOL_DEFAULT, out_texture);
+
+			D3DLOCKED_RECT lockedRect;
+			RECT rect;
+			out_texture->LockRect(D3DUSAGE_DYNAMIC, &lockedRect, &rect, 0);
+
+			int* pixels = reinterpret_cast<int*>(lockedRect.pBits);
+
+			for (int y = 0; y < a_Info.m_Height; y++)
+			{
+				for (int x = 0; x < a_Info.m_Width; x++)
+				{
+					pixels[(y * x) + x] = 1;
+				}
+			}
+
+			out_texture->UnlockRect(0);
+
+			D3DSURFACE_DESC my_image_desc;
+			out_texture->GetLevelDesc(0, &my_image_desc);
+
+			a_Info.m_Width = (int)my_image_desc.Width;
+			a_Info.m_Height = (int)my_image_desc.Height;
+			return true;
 		}
 	}
 }

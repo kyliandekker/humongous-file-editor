@@ -12,9 +12,9 @@ namespace resource_editor
 			ChunkInfo() = default;
 			ChunkInfo(const ChunkInfo& rhs) : HumongousHeader(rhs)
 			{
-				offset = rhs.offset;
+				m_Offset = rhs.m_Offset;
 			}
-			size_t offset = 0;
+			size_t m_Offset = 0;
 		};
 	}
 }

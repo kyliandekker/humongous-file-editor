@@ -12,6 +12,7 @@
 #include "utils/string.h"
 #include "low_level/Utils.h"
 #include "low_level/HumongousChunks.h"
+#include "imgui/tools/ExplorerWindow.h"
 
 namespace resource_editor
 {
@@ -41,20 +42,8 @@ namespace resource_editor
 				return false;
 			}
 
-			project::Resource* he0 = nullptr;
-			project::Resource* a = nullptr;
-			for (size_t i = 0; i < a_Resource.m_Parent->m_Resources.size(); i++)
-			{
-				project::Resource& resource = a_Resource.m_Parent->m_Resources[i];
-				if (string_extensions::getFileWithoutExtension(resource.m_Name).compare(string_extensions::getFileWithoutExtension(a_Resource.m_Name)) == 0 && resource.m_ResourceType == project::ResourceType::A)
-				{
-					a = &resource;
-				}
-				else if (string_extensions::getFileWithoutExtension(resource.m_Name).compare(string_extensions::getFileWithoutExtension(a_Resource.m_Name)) == 0 && resource.m_ResourceType == project::ResourceType::HE0)
-				{
-					he0 = &resource;
-				}
-			}
+			project::Resource* he0 = imgui::explorer.m_LoadedResources[(int)project::ResourceType::HE0];
+			project::Resource* a = imgui::explorer.m_LoadedResources[(int)project::ResourceType::A];
 
 			// If the a is not found, return false.
 			if (!a)
@@ -85,7 +74,7 @@ namespace resource_editor
 				{ { ".LFL", 26 }, { 5, 0 } }
 			};
 
-			version_key key = { string_extensions::getExtensionFromPath(he0->m_Path), he0->m_FileContainer.size };
+			version_key key = { string_extensions::getExtensionFromPath(he0->m_Path), he0->m_FileContainer.m_Size };
 			version_value values = versions[key];
 
 			LOGF(logger::LOGSEVERITY_INFO, "Index file has version %i and he version %i.", values.version, values.he_version);
@@ -128,20 +117,20 @@ namespace resource_editor
 			}
 
 			// Look for RNAM chunk.
-			while (info.offset < he0->m_FileContainer.size)
+			while (info.m_Offset < he0->m_FileContainer.m_Size)
 			{
 				if (low_level::utils::chunkcmp(info.chunk_id, chunk_reader::RNAM_CHUNK_ID) == 0)
 				{
 					break;
 				}
-				info = he0->m_FileContainer.GetNextChunk(info.offset);
+				info = he0->m_FileContainer.GetNextChunk(info.m_Offset);
 			}
 			if (low_level::utils::chunkcmp(info.chunk_id, chunk_reader::RNAM_CHUNK_ID) != 0)
 			{
 				return false;
 			}
 
-			size_t rnam_offset = info.offset;
+			size_t rnam_offset = info.m_Offset;
 			if (rnam_offset == -1)
 			{
 				return false;
@@ -150,7 +139,7 @@ namespace resource_editor
 			// Extract rooms.
 			std::vector<std::string> room_names;
 
-			chunk_reader::RNAM_Chunk* rnam_chunk = reinterpret_cast<chunk_reader::RNAM_Chunk*>(low_level::utils::add(he0->m_FileContainer.data, rnam_offset));
+			chunk_reader::RNAM_Chunk* rnam_chunk = reinterpret_cast<chunk_reader::RNAM_Chunk*>(low_level::utils::add(he0->m_FileContainer.m_Data, rnam_offset));
 			size_t rnam_end = rnam_offset + rnam_chunk->ChunkSize();
 			size_t pos = rnam_offset + sizeof(chunk_reader::HumongousHeader) + sizeof(uint16_t);
 			std::string room_name;
@@ -158,7 +147,7 @@ namespace resource_editor
 			while (pos < rnam_end)
 			{
 				unsigned char ch;
-				memcpy(&ch, low_level::utils::add(he0->m_FileContainer.data, pos), sizeof(char));
+				memcpy(&ch, low_level::utils::add(he0->m_FileContainer.m_Data, pos), sizeof(char));
 				if (low_level::utils::unsignedCharCmp(ch, '\0'))
 				{
 					room_names.push_back(room_name);
@@ -224,13 +213,13 @@ namespace resource_editor
 
 			chunk_reader::ChunkInfo header = a->m_FileContainer.GetChunkInfo(0);
 			int random_number_for_unique_id = 0;
-			while (header.offset < a->m_FileContainer.size)
+			while (header.m_Offset < a->m_FileContainer.m_Size)
 			{
 				if (low_level::utils::chunkcmp(header.chunk_id, chunk_reader::LFLF_CHUNK_ID) == 0)
 				{
-					chunk_reader::ChunkInfo child_header = a->m_FileContainer.GetChunkInfo(header.offset);
+					chunk_reader::ChunkInfo child_header = a->m_FileContainer.GetChunkInfo(header.m_Offset);
 					uint32_t i = 0;
-					while (child_header.offset < header.offset + header.ChunkSize())
+					while (child_header.m_Offset < header.m_Offset + header.ChunkSize())
 					{
 						std::string chunk_id_name = std::string(reinterpret_cast<char*>(child_header.chunk_id));
 						chunk_id_name.resize(CHUNK_ID_SIZE);
@@ -239,7 +228,7 @@ namespace resource_editor
 						if (it != RESOURCE_CHUNKS.end())
 						{
 							GameResource resource;
-							resource.m_Offset = child_header.offset;
+							resource.m_Offset = child_header.m_Offset;
 							resource.m_Type = it->second;
 							resource.m_Name = std::to_string(i);
 							resource.m_Parent = a;
@@ -264,14 +253,14 @@ namespace resource_editor
 							a_Resources[lflf].m_Resources.push_back(resource);
 							i++;
 						}
-						child_header = a->m_FileContainer.GetNextChunk(child_header.offset);
+						child_header = a->m_FileContainer.GetNextChunk(child_header.m_Offset);
 						random_number_for_unique_id++;
 					}
 
 					lflf++;
 				}
 
-				header = a->m_FileContainer.GetNextChunk(header.offset);
+				header = a->m_FileContainer.GetNextChunk(header.m_Offset);
 			}
 			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .(A) and .HE0 resources for file \"%s\".", a_Resource.m_Path.c_str());
 			return true;

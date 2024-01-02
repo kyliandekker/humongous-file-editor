@@ -9,34 +9,32 @@ namespace resource_editor
 	{
 		namespace utils
 		{
-			double* ToSample(unsigned char* data, size_t buffersize, size_t numSamples)
+			double* ToSample(unsigned char* a_Data, size_t a_Buffersize)
 			{
-				if (data == nullptr)
+				if (a_Data == nullptr)
 				{
 					return nullptr;
 				}
 
-				unsigned char* pData = data;
-				size_t realNumSamples = buffersize;
+				unsigned char* pData = a_Data;
 
-				if (realNumSamples == 0)
+				if (a_Buffersize == 0)
 				{
 					return nullptr;
 				}
-				size_t div = realNumSamples / numSamples;
 
-				double* samples = reinterpret_cast<double*>(malloc(numSamples * sizeof(double)));
+				double* samples = reinterpret_cast<double*>(malloc(a_Buffersize * sizeof(double)));
 				if (!samples)
 				{
 					return nullptr;
 				}
 
-				for (size_t i = 0; i < numSamples; i++)
+				for (size_t i = 0; i < a_Buffersize; i++)
 				{
 					int8_t psample = INT8_MAX - *(uint8_t*)pData;
 					samples[i] = static_cast<double>(psample) / INT8_MAX;
 
-					pData += div;
+					pData += 1;
 				}
 
 				return samples;

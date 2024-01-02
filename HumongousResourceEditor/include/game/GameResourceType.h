@@ -21,9 +21,9 @@ namespace resource_editor
 			Category
 		};
 
-		inline std::string getExtension(GameResourceType resourceType)
+		inline std::string getExtension(GameResourceType a_ResourceType)
 		{
-			switch (resourceType)
+			switch (a_ResourceType)
 			{
 				case Unknown:
 				{
@@ -66,6 +66,7 @@ namespace resource_editor
 					return "";
 				}
 			}
+			return "";
 		}
 	}
 }

@@ -23,7 +23,7 @@ namespace resource_editor
 
 			chunk_reader::ChunkInfo header = a_Resource.m_FileContainer.GetChunkInfo(0);
 			int i = 0;
-			while (header.offset < a_Resource.m_FileContainer.size)
+			while (header.m_Offset < a_Resource.m_FileContainer.m_Size)
 			{
 				std::string chunk_id_name = std::string(reinterpret_cast<char*>(header.chunk_id));
 				chunk_id_name.resize(CHUNK_ID_SIZE);
@@ -31,17 +31,17 @@ namespace resource_editor
 				if (RESOURCE_CHUNKS.find(chunk_id_name) != RESOURCE_CHUNKS.end())
 				{
 					game::GameResource resource;
-					resource.m_Offset = header.offset;
+					resource.m_Offset = header.m_Offset;
 					resource.m_Type = RESOURCE_CHUNKS.at(chunk_id_name);
 					resource.m_Name = std::to_string(i) + getExtension(resource.m_Type);
 					resource.m_Parent = &a_Resource;
 					a_Resources.push_back(resource);
 					i++;
 				}
-				header = a_Resource.m_FileContainer.GetNextChunk(header.offset);
+				header = a_Resource.m_FileContainer.GetNextChunk(header.m_Offset);
 			}
 
-			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE2 resources for file \"%s\".", a_Resource.m_FileContainer.path.c_str());
+			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE2 resources for file \"%s\".", a_Resource.m_FileContainer.m_Path.c_str());
 			return true;
 		}
 	}

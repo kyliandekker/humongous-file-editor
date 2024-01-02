@@ -8,9 +8,9 @@ namespace resource_editor
 {
 	namespace abstractions
 	{
-		bool PickContainer(std::string& path);
-		bool PickFile(std::string& path, const std::vector<COMDLG_FILTERSPEC>& filters = {});
-		bool SaveFile(std::string& path, int* choice = nullptr, const std::vector<COMDLG_FILTERSPEC>& filters = {});
-		bool SaveFolder(std::string& path);
+		bool PickContainer(std::string& a_Path);
+		bool PickFile(std::string& a_Path, const std::vector<COMDLG_FILTERSPEC>& a_Filters = {});
+		bool SaveFile(std::string& a_Path, int* a_Choice = nullptr, const std::vector<COMDLG_FILTERSPEC>& a_Filters = {});
+		bool SaveFolder(std::string& a_Path);
 	}
 }

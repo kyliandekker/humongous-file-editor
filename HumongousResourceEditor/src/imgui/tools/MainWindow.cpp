@@ -2,8 +2,9 @@
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
-#include <project/Project.h>
 #include <string>
+
+#include "project/Project.h"
 #include "utils/abstractions.h"
 #include "utils/string.h"
 
@@ -11,7 +12,7 @@ namespace resource_editor
 {
 	namespace imgui
 	{
-		MainWindow::MainWindow(std::vector<BaseTool*>& a_Tools) : BaseTool(ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking, "DockSpace", "", true), m_Tools(a_Tools)
+		MainWindow::MainWindow(std::vector<BaseTool*>& a_Tools) : BaseTool(ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking, "DockSpace", true), m_Tools(a_Tools)
 		{
 		}
 

@@ -10,13 +10,13 @@ namespace resource_editor
 	{
 		class GameResource;
 
-		class SongResource : public SoundResource
+		class SFXResource : public SoundResource
 		{
 		public:
-			SongResource(game::GameResource& a_Resource);
-			SongResource() = default;
-			SongResource(const SongResource& rhs);
-			~SongResource();
+			SFXResource(game::GameResource& a_Resource);
+			SFXResource() = default;
+			SFXResource(const SFXResource& rhs);
+			~SFXResource();
 			bool GetData(game::GameResource& a_Resource);
 		};
 	}

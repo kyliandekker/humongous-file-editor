@@ -9,98 +9,98 @@ namespace resource_editor
 {
 	namespace chunk_reader
 	{
-		FileContainer::FileContainer(std::string path)
+		FileContainer::FileContainer(std::string a_Path)
 		{
-			Open(path);
+			Open(a_Path);
 		}
 
 		FileContainer::FileContainer(const FileContainer& rhs)
 		{
-			size = rhs.size;
-			path = rhs.path;
-			data = reinterpret_cast<unsigned char*>(malloc(size));
-			if (data != nullptr)
+			m_Size = rhs.m_Size;
+			m_Path = rhs.m_Path;
+			m_Data = reinterpret_cast<unsigned char*>(malloc(m_Size));
+			if (m_Data != nullptr)
 			{
-				memcpy(data, rhs.data, size);
+				memcpy(m_Data, rhs.m_Data, m_Size);
 			}
 		}
 
 		FileContainer::~FileContainer()
 		{
-			if (data)
+			if (m_Data)
 			{
-				free(data);
-				data = nullptr;
+				free(m_Data);
+				m_Data = nullptr;
 			}
 		}
 
-		bool FileContainer::Open(std::string path)
+		bool FileContainer::Open(std::string a_Path)
 		{
 			FILE* file = nullptr;
 
-			fopen_s(&file, path.c_str(), "rb");
+			fopen_s(&file, a_Path.c_str(), "rb");
 			if (file == nullptr)
 			{
-				LOGF(logger::LOGSEVERITY_ERROR, "Cannot open file \"%s\".", path.c_str());
+				LOGF(logger::LOGSEVERITY_ERROR, "Cannot open file \"%s\".", a_Path.c_str());
 				return false;
 			}
 
 			fseek(file, 0, SEEK_END);
-			size = ftell(file);
+			m_Size = ftell(file);
 			rewind(file);
 
-			this->path = path;
+			this->m_Path = a_Path;
 
-			data = reinterpret_cast<unsigned char*>(malloc(size));
-			if (data != nullptr)
+			m_Data = reinterpret_cast<unsigned char*>(malloc(m_Size));
+			if (m_Data != nullptr)
 			{
-				memset(data, 0, size);
-				fread(data, size, 1, file);
+				memset(m_Data, 0, m_Size);
+				fread(m_Data, m_Size, 1, file);
 			}
 			fclose(file);
-			LOGF(logger::LOGSEVERITY_INFO, "Successfully opened file \"%s\".", path.c_str());
+			LOGF(logger::LOGSEVERITY_INFO, "Successfully opened file \"%s\".", m_Path.c_str());
 
 			return true;
 		}
 
         bool FileContainer::Unload()
         {
-			if (data)
+			if (m_Data)
 			{
-				free(data);
-				data = nullptr;
+				free(m_Data);
+				m_Data = nullptr;
 			}
-			size = 0;
+			m_Size = 0;
 
             return true;
         }
 
-		ChunkInfo FileContainer::GetChunkInfo(size_t offset) const
+		ChunkInfo FileContainer::GetChunkInfo(size_t a_Offset) const
 		{
 			ChunkInfo header;
-			memcpy(&header, low_level::utils::add(data, offset), sizeof(HumongousHeader));
-			header.offset = offset;
+			memcpy(&header, low_level::utils::add(m_Data, a_Offset), sizeof(HumongousHeader));
+			header.m_Offset = a_Offset;
 			return header;
 		}
 
-		HumongousHeader FileContainer::GetChunk(size_t offset) const
+		HumongousHeader FileContainer::GetChunk(size_t a_Offset) const
 		{
 			HumongousHeader header;
-			memcpy(&header, low_level::utils::add(data, offset), sizeof(HumongousHeader));
+			memcpy(&header, low_level::utils::add(m_Data, a_Offset), sizeof(HumongousHeader));
 			return header;
 		}
 
-		ChunkInfo FileContainer::GetNextChunk(size_t offset) const
+		ChunkInfo FileContainer::GetNextChunk(size_t a_Offset) const
 		{
 			size_t extra_offset = 0;
-			while (low_level::utils::add(data, offset + extra_offset)[0] == 128)
+			while (low_level::utils::add(m_Data, a_Offset + extra_offset)[0] == 128)
 			{
 				extra_offset++;
 			}
 
-			offset += extra_offset;
+			a_Offset += extra_offset;
 
-			ChunkInfo header = GetChunkInfo(offset);
+			ChunkInfo header = GetChunkInfo(a_Offset);
 
 			std::string chunk_id_name = std::string(reinterpret_cast<char*>(header.chunk_id));
 			chunk_id_name.resize(CHUNK_ID_SIZE);
@@ -108,10 +108,10 @@ namespace resource_editor
 			std::vector<std::string> childs = SCHEMA.at(chunk_id_name);
 			if (childs.size() == 0)
 			{
-				return GetChunkInfo(offset + header.ChunkSize());
+				return GetChunkInfo(a_Offset + header.ChunkSize());
 			}
 
-			ChunkInfo next = GetChunkInfo(offset + sizeof(HumongousHeader));
+			ChunkInfo next = GetChunkInfo(a_Offset + sizeof(HumongousHeader));
 			for (size_t i = 0; i < childs.size(); i++)
 			{
 				if (low_level::utils::chunkcmp(next.chunk_id, childs[i].c_str()) == 0)
@@ -124,76 +124,76 @@ namespace resource_editor
 			return next;
 		}
 
-		ChunkInfo FileContainer::GetParent(size_t offset) const
+		ChunkInfo FileContainer::GetParent(size_t a_Offset) const
 		{
 			ChunkInfo parent;
 
-			ChunkInfo chunk = GetChunkInfo(offset);
+			ChunkInfo chunk = GetChunkInfo(a_Offset);
 			ChunkInfo next_chunk = GetChunkInfo(0);
-			while (next_chunk.offset < chunk.offset)
+			while (next_chunk.m_Offset < chunk.m_Offset)
 			{
-				if (next_chunk.offset + next_chunk.ChunkSize() >= chunk.offset + chunk.ChunkSize())
+				if (next_chunk.m_Offset + next_chunk.ChunkSize() >= chunk.m_Offset + chunk.ChunkSize())
 				{
-					if (parent.offset < next_chunk.offset)
+					if (parent.m_Offset < next_chunk.m_Offset)
 					{
 						parent = next_chunk;
 					}
 				}
-				next_chunk = GetNextChunk(next_chunk.offset);
+				next_chunk = GetNextChunk(next_chunk.m_Offset);
 			}
 
 			return parent;
 		}
 
-		std::vector<ChunkInfo> FileContainer::GetChildren(size_t offset) const
+		std::vector<ChunkInfo> FileContainer::GetChildren(size_t a_Offset) const
 		{
 			std::vector<ChunkInfo> children;
 
-			ChunkInfo chunk = GetChunkInfo(offset);
-			ChunkInfo next_chunk = GetChunkInfo(offset);
-			next_chunk = GetNextChunk(next_chunk.offset);
-			while (next_chunk.offset < chunk.offset + chunk.ChunkSize())
+			ChunkInfo chunk = GetChunkInfo(a_Offset);
+			ChunkInfo next_chunk = GetChunkInfo(a_Offset);
+			next_chunk = GetNextChunk(next_chunk.m_Offset);
+			while (next_chunk.m_Offset < chunk.m_Offset + chunk.ChunkSize())
 			{
 				children.push_back(next_chunk);
-				next_chunk = GetNextChunk(next_chunk.offset);
+				next_chunk = GetNextChunk(next_chunk.m_Offset);
 			}
 
 			return children;
 		}
 
-		void FileContainer::Replace(size_t offset, unsigned char* new_chunk_data, size_t new_size)
+		void FileContainer::Replace(size_t a_Offset, unsigned char* a_NewChunkData, size_t a_NewSize)
 		{
-			ChunkInfo chunk = GetChunkInfo(offset);
-			int32_t dif_size = static_cast<int32_t>(new_size - chunk.ChunkSize());
+			ChunkInfo chunk = GetChunkInfo(a_Offset);
+			int32_t dif_size = static_cast<int32_t>(a_NewSize - chunk.ChunkSize());
 
 			ChunkInfo next_chunk = GetChunkInfo(0);
 			if (dif_size != 0)
 			{
-				while (next_chunk.offset < chunk.offset)
+				while (next_chunk.m_Offset < chunk.m_Offset)
 				{
-					if (next_chunk.offset + next_chunk.ChunkSize() >= chunk.offset + chunk.ChunkSize())
+					if (next_chunk.m_Offset + next_chunk.ChunkSize() >= chunk.m_Offset + chunk.ChunkSize())
 					{
-						HumongousHeader* header = reinterpret_cast<SGEN_Chunk*>(low_level::utils::add(data, next_chunk.offset));
+						HumongousHeader* header = reinterpret_cast<SGEN_Chunk*>(low_level::utils::add(m_Data, next_chunk.m_Offset));
 						header->SetChunkSize(header->ChunkSize() + dif_size);
 					}
-					next_chunk = GetNextChunk(next_chunk.offset);
+					next_chunk = GetNextChunk(next_chunk.m_Offset);
 				}
 			}
 
-			unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(size + dif_size));
-			memset(new_data, 0, size + dif_size);
-			memcpy(new_data, data, offset);
-			memcpy(low_level::utils::add(new_data, offset), new_chunk_data, new_size);
-			memcpy(low_level::utils::add(new_data, offset + new_size), low_level::utils::add(data, offset + chunk.ChunkSize()), size - (offset + chunk.ChunkSize()));
+			unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(m_Size + dif_size));
+			memset(new_data, 0, m_Size + dif_size);
+			memcpy(new_data, m_Data, a_Offset);
+			memcpy(low_level::utils::add(new_data, a_Offset), a_NewChunkData, a_NewSize);
+			memcpy(low_level::utils::add(new_data, a_Offset + a_NewSize), low_level::utils::add(m_Data, a_Offset + chunk.ChunkSize()), m_Size - (a_Offset + chunk.ChunkSize()));
 
-			free(data);
-			data = new_data;
-			size += dif_size;
+			free(m_Data);
+			m_Data = new_data;
+			m_Size += dif_size;
 		}
 
-		void FileContainer::Decrypt(char key)
+		void FileContainer::Decrypt(char a_Key)
 		{
-			low_level::utils::xorShift(data, size, key);
+			low_level::utils::xorShift(m_Data, m_Size, a_Key);
 		}
 	}
 }

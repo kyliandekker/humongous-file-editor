@@ -9,6 +9,7 @@ namespace resource_editor
 		class DecompiledResource
 		{
 		public:
+			virtual bool GetData(game::GameResource& a_Resource) = 0;
 		};
 	}
 }

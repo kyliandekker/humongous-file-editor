@@ -49,20 +49,23 @@ namespace resource_editor
 			}
 			return false;
 		}
-		bool PickContainer(std::string& path)
+
+		bool PickContainer(std::string& a_Path)
 		{
-			return genericFileOpen(path, CLSID_FileOpenDialog, FOS_PICKFOLDERS);
+			return genericFileOpen(a_Path, CLSID_FileOpenDialog, FOS_PICKFOLDERS);
 		}
 
-		bool PickFile(std::string& path, const std::vector<COMDLG_FILTERSPEC>& filters)
+		bool PickFile(std::string& a_Path, const std::vector<COMDLG_FILTERSPEC>& a_Filters)
 		{
-			return genericFileOpen(path, CLSID_FileOpenDialog, 0, filters);
+			return genericFileOpen(a_Path, CLSID_FileOpenDialog, 0, a_Filters);
 		}
-		bool SaveFile(std::string& path, int* choice, const std::vector<COMDLG_FILTERSPEC>& filters)
+
+		bool SaveFile(std::string& a_Path, int*a_Choice, const std::vector<COMDLG_FILTERSPEC>& a_Filters)
 		{
 			return false;
 		}
-		bool SaveFolder(std::string& path)
+
+		bool SaveFolder(std::string& a_Path)
 		{
 			return false;
 		}

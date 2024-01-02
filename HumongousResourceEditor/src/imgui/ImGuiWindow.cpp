@@ -8,6 +8,9 @@
 #include <imgui/implot.h>
 
 #include "imgui/tools/MainWindow.h"
+#include "imgui/tools/ExplorerWindow.h"
+#include "imgui/tools/ResourcesWindow.h"
+#include "imgui/tools/GameResourceWindow.h"
 #include "system/Logger.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -42,10 +45,10 @@ namespace resource_editor
 			return ImVec4(GetRGBColor(r), GetRGBColor(g), GetRGBColor(b), 1);
 		}
 
-		void ImGuiWindow::SetHwnd(HWND hwnd, WNDCLASSEX wc)
+		void ImGuiWindow::SetHwnd(HWND a_Hwnd, WNDCLASSEX a_Wc)
 		{
-			m_Hwnd = hwnd;
-			m_Wc = wc;
+			m_Hwnd = a_Hwnd;
+			m_Wc = a_Wc;
 		}
 
 		void ImGuiWindow::Initialize()
@@ -55,9 +58,9 @@ namespace resource_editor
 			CreateImGui();
 		}
 
-		void ImGuiWindow::ProcessEvents(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+		void ImGuiWindow::ProcessEvents(HWND a_Hwnd, UINT a_Msg, WPARAM a_wParam, LPARAM a_lParam)
 		{
-			ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam);
+			ImGui_ImplWin32_WndProcHandler(a_Hwnd, a_Msg, a_wParam, a_lParam);
 		}
 
 		void ImGuiWindow::CreateContext()
@@ -215,6 +218,11 @@ namespace resource_editor
 			m_Size = a_Size;
 		}
 
+		dx9::DX9Window& ImGuiWindow::GetDX9()
+		{
+			return m_DX9Window;
+		}
+
 		void ImGuiWindow::Render()
 		{
 			if (!m_Enabled)
@@ -236,30 +244,16 @@ namespace resource_editor
 			m_MainWindow->SetSize(size);
 			m_MainWindow->Update();
 
-			if (m_ShowPopUp)
-			{
-				ImGui::SetNextWindowSize(ImVec2(size.x / 2, size.y / 3));
-				ImGui::OpenPopup(m_PopUpTitle.c_str());
-
-				if (ImGui::BeginPopupModal(m_PopUpTitle.c_str(), &m_ShowPopUp))
-				{
-					ImGui::PushTextWrapPos(size.x / 2);
-					ImGui::Text(m_PopUpText.c_str());
-					if (ImGui::Button("Close"))
-					{
-						m_ShowPopUp = false;
-						ImGui::CloseCurrentPopup();
-					}
-					ImGui::EndPopup();
-				}
-			}
-
 			for (auto* tool : m_Tools)
 			{
 				if (tool->IsFullScreen())
 					tool->SetSize(size);
 				tool->Update();
 			}
+
+			resourcesWindow.Update();
+			gameResourceWindow.Update();
+			explorer.Update();
 
 			ImGui::PopFont();
 
@@ -296,13 +290,13 @@ namespace resource_editor
 			m_Tools.push_back(&a_Tool);
 		}
 
-		void ImGuiWindow::LoggerCallback(logger::Message& message)
+		void ImGuiWindow::LoggerCallback(logger::Message& a_Message)
 		{
-			if (message.severity != logger::LOGSEVERITY_ERROR && message.severity != logger::LOGSEVERITY_ASSERT)
+			if (a_Message.severity != logger::LOGSEVERITY_ERROR && a_Message.severity != logger::LOGSEVERITY_ASSERT)
 				return;
 
-			window.m_PopUpText = message.message;
-			window.m_PopUpTitle = (message.severity == logger::LOGSEVERITY_ERROR) ? "Error" : "Critical Error";
+			window.m_PopUpText = a_Message.message;
+			window.m_PopUpTitle = (a_Message.severity == logger::LOGSEVERITY_ERROR) ? "Error" : "Critical Error";
 			window.m_ShowPopUp = true;
 		}
 	}

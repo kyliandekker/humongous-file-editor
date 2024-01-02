@@ -7,65 +7,68 @@
 #include "game/compilers/SongFileCompiler.h"
 #include "game/compilers/TalkFileCompiler.h"
 #include "game/compilers/ResourceFileCompiler.h"
+#include "utils/string.h"
+
+resource_editor::imgui::ExplorerTool resource_editor::imgui::explorer;
 
 namespace resource_editor
 {
 	namespace imgui
 	{
-		ExplorerTool::ExplorerTool() : BaseTool(ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse, "Explorer", "Explorer")
+		ExplorerTool::ExplorerTool() : BaseTool(0, "Explorer")
 		{ }
 
-		void ExplorerTool::RenderResource(project::Resource& resource, bool& showPopUp)
+		void ExplorerTool::RenderResource(project::Resource& a_Resource, bool& a_ShowPopUp)
 		{
-			if (!resource.m_Show)
+			if (!a_Resource.m_Show)
 			{
 				return;
 			}
 
-			std::string name = resource.m_Name;
-			std::string id = "##" + resource.m_Path;
+			std::string name = a_Resource.m_Name;
+			std::string id = "##" + a_Resource.m_Path;
 
-			if (resource.m_ResourceType == project::ResourceType::Folder)
+			if (a_Resource.m_ResourceType == project::ResourceType::Folder)
 			{
-				if (resource.m_HasChildren)
+				if (a_Resource.m_HasChildren)
 				{
-					if (resource.m_FoldedOut)
+					if (a_Resource.m_FoldedOut)
 						name = ICON_FA_FOLDER_OPEN + std::string(" ") + name;
 					else
 						name = ICON_FA_FOLDER + std::string(" ") + name;
 
 					bool fold = ImGui::TreeNodeS(name.c_str(), id.c_str());
-					if (resource.m_FoldedOut != fold)
+					if (a_Resource.m_FoldedOut != fold)
 					{
-						resource.m_FoldedOut = fold;
+						a_Resource.m_FoldedOut = fold;
 						if (fold)
 						{
-							resource.Scan();
+							a_Resource.Scan();
 						}
 					}
-					if (resource.m_FoldedOut)
+					if (a_Resource.m_FoldedOut)
 					{
 						if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 						{
-							showPopUp |= true;
-							m_SelectedResource = &resource;
+							a_ShowPopUp |= true;
+							m_SelectedResource = &a_Resource;
 						}
-						for (size_t i = 0; i < resource.m_Resources.size(); i++)
+						for (size_t i = 0; i < a_Resource.m_Resources.size(); i++)
 						{
-							RenderResource(resource.m_Resources[i], showPopUp);
+							RenderResource(a_Resource.m_Resources[i], a_ShowPopUp);
 						}
 						ImGui::TreePop();
 					}
 				}
-				else if (!resource.m_HasChildren)
+				else if (!a_Resource.m_HasChildren)
 				{
 					name = ICON_FA_FOLDER + std::string(" ") + name;
 					if (ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf))
 					{
 						if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 						{
-							showPopUp |= true;
-							m_SelectedResource = &resource;
+							a_ShowPopUp |= true;
+							m_SelectedResource = &a_Resource;
 						}
 						ImGui::TreePop();
 					}
@@ -73,7 +76,7 @@ namespace resource_editor
 			}
 			else
 			{
-				if (resource.m_FileContainer.size == 0)
+				if (a_Resource.m_FileContainer.m_Size == 0)
 				{
 					name = ICON_FA_FILE_CIRCLE_QUESTION + std::string(" ") + name;
 				}
@@ -85,15 +88,17 @@ namespace resource_editor
 				{
 					if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 					{
-						showPopUp |= true;
-						m_SelectedResource = &resource;
+						a_ShowPopUp |= true;
+						m_SelectedResource = &a_Resource;
 					}
 					ImGui::TreePop();
 				}
 			}
 
-			if (showPopUp)
+			if (a_ShowPopUp)
+			{
 				ImGui::OpenPopup("res_popup");
+			}
 		}
 
 		void ExplorerTool::Render()
@@ -112,10 +117,29 @@ namespace resource_editor
 				}
 				else
 				{
-					if (m_SelectedResource->m_FileContainer.size == 0)
+					if (m_SelectedResource->m_FileContainer.m_Size == 0)
 					{
 						if (ImGui::MenuItem("Load"))
 						{
+							// Clear existing project file first.
+							if (m_LoadedResources[(int)m_SelectedResource->m_ResourceType])
+							{
+								project::Resource* resource = m_LoadedResources[(int)m_SelectedResource->m_ResourceType];
+								resource->m_FileContainer.Unload();
+								resource->m_GameResources.clear();
+								if (resource->m_ResourceType == project::ResourceType::HE0)
+								{
+									if (m_LoadedResources[(int)project::ResourceType::A])
+									{
+										project::Resource* resource = m_LoadedResources[(int)project::ResourceType::A];
+										resource->m_FileContainer.Unload();
+										resource->m_GameResources.clear();
+										m_LoadedResources[(int)project::ResourceType::A] = nullptr;
+									}
+								}
+								m_LoadedResources[(int)m_SelectedResource->m_ResourceType] = nullptr;
+							}
+							m_LoadedResources[(int)m_SelectedResource->m_ResourceType] = m_SelectedResource;
 							if (m_SelectedResource->m_FileContainer.Open(m_SelectedResource->m_Path))
 							{
 								switch (m_SelectedResource->m_ResourceType)
@@ -123,6 +147,22 @@ namespace resource_editor
 									case project::ResourceType::HE0:
 									case project::ResourceType::A:
 									{
+										project::Resource* a = nullptr;
+										for (size_t i = 0; i < m_SelectedResource->m_Parent->m_Resources.size(); i++)
+										{
+											project::Resource& resource = m_SelectedResource->m_Parent->m_Resources[i];
+											if (string_extensions::getFileWithoutExtension(resource.m_Name).compare(string_extensions::getFileWithoutExtension(m_SelectedResource->m_Name)) == 0 && resource.m_ResourceType == project::ResourceType::A)
+											{
+												a = &resource;
+												break;
+											}
+										}
+										if (a == nullptr)
+										{
+											return;
+										}
+
+										m_LoadedResources[(int)project::ResourceType::A] = a;
 										game::ResourceFileCompiler compiler;
 										compiler.Decompile(*m_SelectedResource, m_SelectedResource->m_GameResources);
 										break;
@@ -140,56 +180,33 @@ namespace resource_editor
 										break;
 									}
 								}
+
+								resourcesWindow.SetActiveTab((int)m_SelectedResource->m_ResourceType);
 							}
 						}
 					}
-					else
+					else if (m_LoadedResources[(int)m_SelectedResource->m_ResourceType] == m_SelectedResource)
 					{
 						if (ImGui::MenuItem("Unload"))
 						{
-							if (m_SelectedResource->m_FileContainer.Unload())
+							project::Resource* resource = m_LoadedResources[(int)m_SelectedResource->m_ResourceType];
+							resource->m_FileContainer.Unload();
+							resource->m_GameResources.clear();
+							if (resource->m_ResourceType == project::ResourceType::HE0)
 							{
-								// TODO: Pop up message.
-							}
-						}
-						else
-						{
-							std::string window_id = m_SelectedResource->m_Name + "##" + m_SelectedResource->m_Path;
-							if (!m_SelectedResource->m_OpenedWindow && ImGui::MenuItem("Show Window"))
-							{
-								bool found = false;
-								for (size_t i = 0; i < m_Windows.size(); i++)
+								if (m_LoadedResources[(int)project::ResourceType::A])
 								{
-									if (m_Windows[i].GetName() == window_id)
-									{
-										found = true;
-									}
-								}
-								if (!found)
-								{
-									m_SelectedResource->m_OpenedWindow = true;
-									m_Windows.push_back(ResourcesWindow(window_id, *m_SelectedResource));
+									project::Resource* resource = m_LoadedResources[(int)project::ResourceType::A];
+									resource->m_FileContainer.Unload();
+									resource->m_GameResources.clear();
+									m_LoadedResources[(int)project::ResourceType::A] = nullptr;
 								}
 							}
-							else if (m_SelectedResource->m_OpenedWindow && ImGui::MenuItem("Hide Window"))
-							{
-								for (size_t i = 0; i < m_Windows.size(); i++)
-								{
-									if (m_Windows[i].GetName() == window_id)
-									{
-										m_Windows.erase(m_Windows.begin() + i);
-									}
-								}
-								m_SelectedResource->m_OpenedWindow = false;
-							}
+							m_LoadedResources[(int)m_SelectedResource->m_ResourceType] = nullptr;
 						}
 					}
 				}
 				ImGui::EndPopup();
-			}
-			for (size_t i = 0; i < m_Windows.size(); i++)
-			{
-				m_Windows[i].Update();
 			}
 		}
 	}

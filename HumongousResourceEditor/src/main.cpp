@@ -102,9 +102,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR, _
 
 	resource_editor::imgui::window.Initialize();
 
-	resource_editor::imgui::ExplorerTool explorerTool = resource_editor::imgui::ExplorerTool();
-	resource_editor::imgui::window.AddTool(explorerTool);
-
 	std::thread renderThread = std::thread(&UpdateRenderWindow);
 	while (GetMessage(&Msg, NULL, 0, 0) > 0)
 	{

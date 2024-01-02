@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "imgui/tools/BaseTool.h"
-#include "game/GameResource.h"
 
 namespace resource_editor
 {
@@ -11,23 +10,19 @@ namespace resource_editor
 	{
 		class GameResource;
 		class DecompiledResource;
-
-		class TalkResource;
-		class SongResource;
 	}
 	namespace imgui
 	{
 		class GameResourceWindow : public BaseTool
 		{
 		public:
-			GameResourceWindow(game::GameResource& a_GameResource);
-			~GameResourceWindow();
+			GameResourceWindow();
 			void Render() override;
-		private:
-			game::GameResource* m_Resource = nullptr;
+			void SetResource(game::GameResource& a_Resource);
 
-			game::TalkResource* m_Talk = nullptr;
-			game::SongResource* m_Song = nullptr;
+			game::GameResource* m_Resource = nullptr;
+			game::DecompiledResource* m_ResourceData = nullptr;
 		};
+		extern GameResourceWindow gameResourceWindow;
 	}
 }

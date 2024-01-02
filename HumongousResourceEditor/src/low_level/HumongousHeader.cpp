@@ -20,22 +20,22 @@ namespace resource_editor
 			memcpy(chunkSize, a_DataBuffer->chunkSize, sizeof(uint32_t));
 		}
 
-		uint32_t HumongousHeader::ChunkSize(bool isBigEndian) const
+		uint32_t HumongousHeader::ChunkSize(bool a_BigEndian) const
 		{
 			uint32_t size32 = 0;
 			memcpy(&size32, &chunkSize, sizeof(uint32_t));
-			if (isBigEndian)
+			if (a_BigEndian)
 			{
 				size32 = low_level::utils::reverseBytesC<uint32_t>(reinterpret_cast<unsigned char*>(&size32));
 			}
 			return size32;
 		}
 
-		void HumongousHeader::SetChunkSize(uint32_t chunk_size, bool toBigEndian)
+		void HumongousHeader::SetChunkSize(uint32_t a_ChunkSize, bool a_BigEndian)
 		{
-			uint32_t size32 = static_cast<uint32_t>(chunk_size);
+			uint32_t size32 = static_cast<uint32_t>(a_ChunkSize);
 			memcpy(chunkSize, reinterpret_cast<unsigned char*>(&size32), sizeof(uint32_t));
-			if (toBigEndian)
+			if (a_BigEndian)
 			{
 				low_level::utils::reverseBytes(chunkSize, sizeof(uint32_t));
 			}

@@ -22,7 +22,6 @@ namespace resource_editor
 			ResourceType m_ResourceType = ResourceType::None;
 			bool m_HasChildren = false;
 			chunk_reader::FileContainer m_FileContainer;
-			bool m_OpenedWindow = false;
 			Resource* m_Parent = nullptr;
 			std::vector<game::GameResource> m_GameResources;
 

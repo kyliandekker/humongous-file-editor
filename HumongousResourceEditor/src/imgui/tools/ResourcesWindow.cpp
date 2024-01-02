@@ -1,17 +1,24 @@
 #include "imgui/tools/ResourcesWindow.h"
 
+#include <array>
+#include <string>
+
 #include "game/compilers/SongFileCompiler.h"
 #include "game/compilers/ResourceFileCompiler.h"
 #include "game/compilers/TalkFileCompiler.h"
 #include "game/GameResource.h"
 #include "project/Resource.h"
 #include "imgui/ImguiDefines.h"
+#include "imgui/tools/ExplorerWindow.h"
+#include "imgui/tools/GameResourceWindow.h"
+
+resource_editor::imgui::ResourcesWindow resource_editor::imgui::resourcesWindow;
 
 namespace resource_editor
 {
 	namespace imgui
 	{
-		ResourcesWindow::ResourcesWindow(std::string a_Name, project::Resource& a_Resource) : BaseTool(0, a_Name, ""), m_Resource(&a_Resource)
+		ResourcesWindow::ResourcesWindow() : BaseTool(0, "Resource Window")
 		{ }
 
 		void renderGameResource(game::GameResource & resource, game::GameResource*& selectedResource, bool& showPopUp)
@@ -91,8 +98,47 @@ namespace resource_editor
 				ImGui::OpenPopup("gameres_popup");
 		}
 
+		std::array<std::string, 6> names
+		{
+			"",
+			"HE0",
+			"HE2",
+			"HE4",
+			"",
+			"",
+		};
+
 		void ResourcesWindow::Render()
 		{
+			if (explorer.m_LoadedResources[(int)project::ResourceType::HE0] != nullptr)
+			{
+				if (ImGui::Button("HE0", ImVec2(100.0f, 0.0f)))
+				{
+					SetActiveTab((int)project::ResourceType::HE0);
+				}
+			}
+			if (explorer.m_LoadedResources[(int)project::ResourceType::HE2] != nullptr)
+			{
+				ImGui::SameLine(0.0, 2.0f);
+				if (ImGui::Button("HE2", ImVec2(100.0f, 0.0f)))
+				{
+					SetActiveTab((int)project::ResourceType::HE2);
+				}
+			}
+			if (explorer.m_LoadedResources[(int)project::ResourceType::HE4] != nullptr)
+			{
+				ImGui::SameLine(0.0, 2.0f);
+				if (ImGui::Button("HE4", ImVec2(100.0f, 0.0f)))
+				{
+					SetActiveTab((int)project::ResourceType::HE4);
+				}
+			}
+
+			if (m_ActiveTab == 0 || m_ActiveTab > (int)project::ResourceType::HE4)
+				return;
+
+			project::Resource* m_Resource = explorer.m_LoadedResources[m_ActiveTab];
+
 			bool showPopUp = false;
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 10.0f });
 			for (size_t i = 0; i < m_Resource->m_GameResources.size(); i++)
@@ -104,48 +150,22 @@ namespace resource_editor
 			{
 				if (ImGui::BeginPopup("gameres_popup"))
 				{
-					if (ImGui::MenuItem("Export"))
+					if (ImGui::MenuItem("View"))
+					{
+						gameResourceWindow.SetResource(*m_SelectedResource);
+					}
+					else if (ImGui::MenuItem("Export"))
 					{
 
-					}
-					else
-					{
-						std::string window_id = m_SelectedResource->m_Name + "##resource_window_" + m_SelectedResource->m_Name + m_SelectedResource->m_Parent->m_Path;
-						if (!m_SelectedResource->m_OpenedWindow && ImGui::MenuItem("Show Window"))
-						{
-							bool found = false;
-							for (size_t i = 0; i < m_Windows.size(); i++)
-							{
-								if (m_Windows[i].GetName() == window_id)
-								{
-									found = true;
-								}
-							}
-							if (!found)
-							{
-								m_SelectedResource->m_OpenedWindow = true;
-								m_Windows.emplace_back((*m_SelectedResource));
-							}
-						}
-						else if (m_SelectedResource->m_OpenedWindow && ImGui::MenuItem("Hide Window"))
-						{
-							for (size_t i = 0; i < m_Windows.size(); i++)
-							{
-								if (m_Windows[i].GetName() == window_id)
-								{
-									m_Windows.erase(m_Windows.begin() + i);
-								}
-								m_SelectedResource->m_OpenedWindow = false;
-							}
-						}
 					}
 					ImGui::EndPopup();
 				}
 			}
-			for (size_t i = 0; i < m_Windows.size(); i++)
-			{
-				m_Windows[i].Update();
-			}
+		}
+
+		void ResourcesWindow::SetActiveTab(int a_Selected)
+		{
+			m_ActiveTab = a_Selected;
 		}
 	}
 }

@@ -1,4 +1,4 @@
-#include "game/decompiled_resource/TalkResource.h"
+#include "game/decompiled_resource/SFXResource.h"
 
 #include "low_level/HumongousChunkDefinitions.h"
 #include "low_level/ChunkInfo.h"
@@ -13,12 +13,12 @@ namespace resource_editor
 {
 	namespace game
 	{
-		TalkResource::TalkResource(game::GameResource& a_Resource)
+		SFXResource::SFXResource(game::GameResource& a_Resource)
 		{
 			GetData(a_Resource);
 		}
 
-		TalkResource::TalkResource(const TalkResource& rhs)
+		SFXResource::SFXResource(const SFXResource& rhs)
 		{
 			m_HSHD_Chunk = rhs.m_HSHD_Chunk;
 			m_SDAT_Chunk = rhs.m_SDAT_Chunk;
@@ -30,7 +30,7 @@ namespace resource_editor
 			}
 		}
 
-		TalkResource::~TalkResource()
+		SFXResource::~SFXResource()
 		{
 			if (m_Samples)
 			{
@@ -42,7 +42,7 @@ namespace resource_editor
 			}
 		}
 
-		bool TalkResource::GetData(game::GameResource& a_Resource)
+		bool SFXResource::GetData(game::GameResource& a_Resource)
 		{
 			std::vector<chunk_reader::ChunkInfo> children = a_Resource.m_Parent->m_FileContainer.GetChildren(a_Resource.m_Offset);
 			size_t hshd_offset = -1;

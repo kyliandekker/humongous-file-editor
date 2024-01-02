@@ -7,14 +7,14 @@ namespace resource_editor
 {
 	namespace imgui
 	{
-		BaseTool::BaseTool(ImGuiWindowFlags a_Flags, std::string a_Name, std::string a_Category, bool a_FullScreen) : m_Flags(a_Flags), m_Name(a_Name), m_Category(a_Category), m_FullScreen(a_FullScreen)
+		BaseTool::BaseTool(ImGuiWindowFlags a_Flags, std::string a_Name, bool a_FullScreen) : m_Flags(a_Flags), m_Name(a_Name), m_FullScreen(a_FullScreen)
 		{ }
 
 		BaseTool::~BaseTool() = default;
 
-		float BaseTool::GetRGBColor(int color)
+		float BaseTool::GetRGBColor(int a_Color)
 		{
-			return 1.0f / 255.0f * static_cast<float>(color);
+			return 1.0f / 255.0f * static_cast<float>(a_Color);
 		}
 
 		void BaseTool::ShowValue(std::string a_Text, const char* a_Value)
@@ -81,11 +81,6 @@ namespace resource_editor
 		bool BaseTool::IsEnabled() const
 		{
 			return m_Enabled;
-		}
-
-		std::string BaseTool::GetCategory() const
-		{
-			return m_Category;
 		}
 	}
 }

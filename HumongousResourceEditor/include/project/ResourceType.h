@@ -7,11 +7,11 @@ namespace resource_editor
 		enum class ResourceType
 		{
 			None,
-			Folder,
 			HE0,
-			A,
 			HE2,
-			HE4
+			HE4,
+			Folder,
+			A,
 		};
 	}
 }

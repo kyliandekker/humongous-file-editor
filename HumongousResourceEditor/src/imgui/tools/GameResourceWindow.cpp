@@ -1,16 +1,34 @@
 #include "imgui/tools/GameResourceWindow.h"
 
+#include <imgui/imgui_helpers.h>
+
 #include "project/Resource.h"
 #include "game/decompiled_resource/TalkResource.h"
 #include "game/decompiled_resource/SongResource.h"
-#include <imgui/imgui_helpers.h>
+#include "game/decompiled_resource/SFXResource.h"
+#include "game/decompiled_resource/RoomBackgroundResource.h"
+#include <imgui/ImGuiWindow.h>
+
+resource_editor::imgui::GameResourceWindow resource_editor::imgui::gameResourceWindow;
 
 namespace resource_editor
 {
 	namespace imgui
 	{
-		GameResourceWindow::GameResourceWindow(game::GameResource& a_GameResource) : BaseTool(0, std::string(a_GameResource.m_Name + " (" + a_GameResource.m_Parent->m_Name + ")##" + a_GameResource.m_Parent->m_Path), ""), m_Resource(&a_GameResource)
+		GameResourceWindow::GameResourceWindow() : BaseTool(0, std::string("Game Resource Window"))
+		{ }
+
+		void GameResourceWindow::Render()
 		{
+			if (!m_Resource)
+				return;
+
+			ShowValue("Name:", m_Resource->m_Name.c_str());
+			ShowValue("Path:", std::string(m_Resource->m_Parent->m_Name + " (" + m_Resource->m_Parent->m_Path + ")").c_str());
+
+			if (!m_ResourceData)
+				return;
+
 			switch (m_Resource->m_Type)
 			{
 				case game::GameResourceType::Unknown:
@@ -18,21 +36,23 @@ namespace resource_editor
 					break;
 				}
 				case game::GameResourceType::Talkie:
-				{
-					m_Talk = new game::TalkResource(a_GameResource);
-					break;
-				}
+				case game::GameResourceType::Song:
 				case game::GameResourceType::SFX:
 				{
-					break;
-				}
-				case game::GameResourceType::Song:
-				{
-					m_Song = new game::SongResource(a_GameResource);
+					game::SoundResource* sound = dynamic_cast<game::SoundResource*>(m_ResourceData);
+
+					ShowValue("Sample Rate:", std::string(std::to_string(sound->m_HSHD_Chunk.sample_rate) + "Hz").c_str());
+					ShowValue("Size:", std::string(std::to_string(sound->m_SDAT_Chunk.ChunkSize()) + " bytes").c_str());
+
+					uint32_t pos = 0;
+					ImGui::BeginPlayPlot(pos, sound->m_SDAT_Chunk.ChunkSize(), sound->m_NumSamples, sound->m_Samples, "Test##D", ImGui::GetWindowSize().x, 100, 1);
 					break;
 				}
 				case game::GameResourceType::RoomBackground:
 				{
+					game::ImageResource* image = dynamic_cast<game::ImageResource*>(m_ResourceData);
+
+					ImGui::Image((void*)image->m_Texture, ImVec2(image->m_ImageInfo.m_Width, image->m_ImageInfo.m_Height));
 					break;
 				}
 				case game::GameResourceType::RoomImage:
@@ -62,20 +82,12 @@ namespace resource_editor
 			}
 		}
 
-		GameResourceWindow::~GameResourceWindow()
+		void GameResourceWindow::SetResource(game::GameResource& a_Resource)
 		{
-			if (m_Talk)
-			{
-				delete(m_Talk);
-			}
-			if (m_Song)
-			{
-				delete(m_Song);
-			}
-		}
+			if (m_ResourceData)
+				delete(m_ResourceData);
 
-		void GameResourceWindow::Render()
-		{
+			m_Resource = &a_Resource;
 			switch (m_Resource->m_Type)
 			{
 				case game::GameResourceType::Unknown:
@@ -84,28 +96,22 @@ namespace resource_editor
 				}
 				case game::GameResourceType::Talkie:
 				{
-					ShowValue("Sample Rate", std::string(std::to_string(m_Talk->m_HSHD_Chunk.sample_rate) + "Hz").c_str());
-					ShowValue("Size", std::string(std::to_string(m_Talk->m_SDAT_Chunk.ChunkSize()) + " bytes").c_str());
-
-					uint32_t pos = 0;
-					ImGui::BeginPlayPlot(pos, m_Talk->m_SDAT_Chunk.ChunkSize(), m_Talk->m_NumSamples, m_Talk->m_Samples, "Test##D", ImGui::GetWindowSize().x, 100, 1);
+					m_ResourceData = new game::TalkResource(*m_Resource);
 					break;
 				}
 				case game::GameResourceType::SFX:
 				{
+					m_ResourceData = new game::SFXResource(*m_Resource);
 					break;
 				}
 				case game::GameResourceType::Song:
 				{
-					ShowValue("Sample Rate", std::string(std::to_string(m_Song->m_HSHD_Chunk.sample_rate) + "Hz").c_str());
-					ShowValue("Size", std::string(std::to_string(m_Song->m_SDAT_Chunk.ChunkSize()) + " bytes").c_str());
-
-					uint32_t pos = 0;
-					ImGui::BeginPlayPlot(pos, m_Song->m_SDAT_Chunk.ChunkSize(), m_Song->m_NumSamples, m_Song->m_Samples, "Test##D", ImGui::GetWindowSize().x, 100, 1);
+					m_ResourceData = new game::SongResource(*m_Resource);
 					break;
 				}
 				case game::GameResourceType::RoomBackground:
 				{
+					m_ResourceData = new game::RoomBackgroundResource(*m_Resource);
 					break;
 				}
 				case game::GameResourceType::RoomImage:

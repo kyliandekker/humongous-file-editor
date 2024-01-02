@@ -108,6 +108,21 @@
     <ClInclude Include="include\system\audio\AudioUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\game\decompiled_resource\SoundResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\game\decompiled_resource\SFXResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\game\decompiled_resource\ImageResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\game\decompiled_resource\RoomBackgroundResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\game\decompiled_resource\ImgInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dx9\DX9Window.cpp">
@@ -213,6 +228,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\system\audio\AudioUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\decompiled_resource\SoundResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\decompiled_resource\SFXResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\decompiled_resource\ImageResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\decompiled_resource\RoomBackgroundResource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
