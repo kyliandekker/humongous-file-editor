@@ -20,6 +20,11 @@ namespace resource_editor
 
 		void ExplorerTool::RenderResource(project::Resource& a_Resource, bool& a_ShowPopUp)
 		{
+			if (a_Resource.m_Name.empty())
+			{
+				return;
+			}
+
 			if (!a_Resource.m_Show)
 			{
 				return;
@@ -37,6 +42,7 @@ namespace resource_editor
 					else
 						name = ICON_FA_FOLDER + std::string(" ") + name;
 
+					ImGui::SetNextItemOpen(a_Resource.m_FoldedOut);
 					bool fold = ImGui::TreeNodeS(name.c_str(), id.c_str());
 					if (a_Resource.m_FoldedOut != fold)
 					{

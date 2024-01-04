@@ -26,6 +26,7 @@ namespace resource_editor
 			if (abstractions::PickFile(path, filters))
 			{
 				project::project.m_Folder.m_Path = string_extensions::getPath(path);
+				project::project.m_Folder.m_FoldedOut = true;
 				project::project.m_Folder.Scan();
 			}
 		}

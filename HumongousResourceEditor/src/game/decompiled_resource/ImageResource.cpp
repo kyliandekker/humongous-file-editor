@@ -23,7 +23,13 @@ namespace resource_editor
 		{ }
 
 		ImageResource::~ImageResource()
-		{ }
+		{
+			if (m_Texture)
+			{
+				m_Texture->Release();
+				m_Texture = nullptr;
+			}
+		}
 
 		bool ImageResource::GetData(game::GameResource& a_Resource)
 		{
@@ -245,6 +251,8 @@ namespace resource_editor
 			{
 				return false;
 			}
+
+			m_ImageInfo.m_Channels = 4;
 
 			std::vector<uint8_t> newOut;
 			for (size_t i = 0; i < m_ImageInfo.m_Size; i++)

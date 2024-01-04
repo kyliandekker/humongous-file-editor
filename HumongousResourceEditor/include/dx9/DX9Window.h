@@ -26,7 +26,7 @@ namespace resource_editor
 			bool CreateDeviceD3D(HWND hWnd);
 			void CleanupDeviceD3D();
 			void ResetDevice();
-			bool CreateTexture(PDIRECT3DTEXTURE9* out_texture, game::ImgInfo& a_Info);
+			bool CreateTexture(PDIRECT3DTEXTURE9& out_texture, game::ImgInfo& a_Info);
 
 			_D3DPRESENT_PARAMETERS_* g_d3dpp = nullptr;
 			IDirect3D9* g_pD3D = nullptr;

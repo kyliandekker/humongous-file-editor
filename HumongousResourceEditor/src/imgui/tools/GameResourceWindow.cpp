@@ -52,7 +52,9 @@ namespace resource_editor
 				{
 					game::ImageResource* image = dynamic_cast<game::ImageResource*>(m_ResourceData);
 
-					ImGui::Image((void*)image->m_Texture, ImVec2(image->m_ImageInfo.m_Width, image->m_ImageInfo.m_Height));
+					int width_new = ImGui::GetWindowSize().x;
+					int height_new = (int) ((float)image->m_ImageInfo.m_Height * (1.0f / image->m_ImageInfo.m_Width * width_new));
+					ImGui::Image((void*)image->m_Texture, ImVec2(width_new, height_new));
 					break;
 				}
 				case game::GameResourceType::RoomImage:
@@ -86,6 +88,8 @@ namespace resource_editor
 		{
 			if (m_ResourceData)
 				delete(m_ResourceData);
+
+			m_ResourceData = nullptr;
 
 			m_Resource = &a_Resource;
 			switch (m_Resource->m_Type)

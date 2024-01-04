@@ -2,6 +2,9 @@
 
 #include "game/decompiled_resource/ImgInfo.h"
 #include <d3dx9.h>
+#include <iostream>
+
+#include <DxErr.h>
 
 namespace resource_editor
 {
@@ -112,32 +115,39 @@ namespace resource_editor
 			}
 		}
 
-		bool DX9Window::CreateTexture(PDIRECT3DTEXTURE9* out_texture, game::ImgInfo& a_Info)
+		int PackRGBA(int r, int g, int b, int a)
 		{
-			HRESULT hr = D3DXCreateTexture(g_pd3dDevice, a_Info.m_Width, a_Info.m_Height, D3DUSAGE_DYNAMIC,
-				0, a_Info.m_Channels > 3 ? D3DFMT_A8R8G8B8 : D3DFMT_R8G8B8, D3DPOOL_DEFAULT, out_texture);
+			return (a << 24) | (r << 16) | (g << 8) | b;
+		}
 
+		bool DX9Window::CreateTexture(PDIRECT3DTEXTURE9& out_texture, game::ImgInfo& a_Info)
+		{
+			// Create texture
+			D3DXCreateTexture(g_pd3dDevice, a_Info.m_Width, a_Info.m_Height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &out_texture);
+
+			// Lock the texture to access its data
 			D3DLOCKED_RECT lockedRect;
-			RECT rect;
-			out_texture->LockRect(D3DUSAGE_DYNAMIC, &lockedRect, &rect, 0);
+			out_texture->LockRect(0, &lockedRect, NULL, 0);
 
-			int* pixels = reinterpret_cast<int*>(lockedRect.pBits);
-
-			for (int y = 0; y < a_Info.m_Height; y++)
+			// Create green texture data
+			DWORD* textureData = (DWORD*)lockedRect.pBits;
+			for (int y = 0; y < a_Info.m_Height; ++y)
 			{
-				for (int x = 0; x < a_Info.m_Width; x++)
+				for (int x = 0; x < a_Info.m_Width; ++x)
 				{
-					pixels[(y * x) + x] = 1;
+					int start_color_index = (y * a_Info.m_Width * 4) + (x * 4);
+					textureData[y * a_Info.m_Width + x] =
+						PackRGBA(
+							a_Info.m_Data[start_color_index], 
+							a_Info.m_Data[start_color_index + 1], 
+							a_Info.m_Data[start_color_index + 2], 
+							a_Info.m_Data[start_color_index + 3]
+						);
 				}
 			}
 
+			// Unlock the texture
 			out_texture->UnlockRect(0);
-
-			D3DSURFACE_DESC my_image_desc;
-			out_texture->GetLevelDesc(0, &my_image_desc);
-
-			a_Info.m_Width = (int)my_image_desc.Width;
-			a_Info.m_Height = (int)my_image_desc.Height;
 			return true;
 		}
 	}
