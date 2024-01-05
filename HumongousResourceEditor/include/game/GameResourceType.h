@@ -13,7 +13,9 @@ namespace resource_editor
 			SFX,
 			Song,
 			RoomBackground,
+			RoomBackground_Palette,
 			RoomImage,
+			RoomImage_Layer,
 			Local_Script,
 			Global_Script,
 			Verb_Script,
@@ -30,33 +32,20 @@ namespace resource_editor
 					return "";
 				}
 				case Talkie:
-				{
-					return ".wav";
-				}
 				case SFX:
-				{
-					return ".wav";
-				}
 				case Song:
 				{
 					return ".wav";
 				}
 				case RoomBackground:
-				{
-					return ".png";
-				}
+				case RoomBackground_Palette:
 				case RoomImage:
+				case RoomImage_Layer:
 				{
 					return ".png";
 				}
 				case Local_Script:
-				{
-					return ".txt";
-				}
 				case Global_Script:
-				{
-					return ".txt";
-				}
 				case Verb_Script:
 				{
 					return ".txt";

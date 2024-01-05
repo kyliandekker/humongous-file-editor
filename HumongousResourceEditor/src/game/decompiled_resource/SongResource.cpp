@@ -13,12 +13,12 @@ namespace resource_editor
 {
 	namespace game
 	{
-		SongResource::SongResource(game::GameResource& a_Resource)
+		SongResource::SongResource(game::GameResource& a_Resource) : SoundResource(a_Resource)
 		{
 			GetData(a_Resource);
 		}
 
-		SongResource::SongResource(const SongResource& rhs)
+		SongResource::SongResource(const SongResource& rhs) : SoundResource(rhs)
 		{
 			m_HSHD_Chunk = rhs.m_HSHD_Chunk;
 			m_SDAT_Chunk = rhs.m_SDAT_Chunk;

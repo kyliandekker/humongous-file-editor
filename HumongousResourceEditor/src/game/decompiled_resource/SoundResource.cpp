@@ -9,12 +9,12 @@ namespace resource_editor
 {
 	namespace game
 	{
-		SoundResource::SoundResource(game::GameResource& a_Resource)
+		SoundResource::SoundResource(game::GameResource& a_Resource) : DecompiledResource()
 		{
 			GetData(a_Resource);
 		}
 
-		SoundResource::SoundResource(const SoundResource& rhs)
+		SoundResource::SoundResource(const SoundResource& rhs) : DecompiledResource(rhs)
 		{
 			m_HSHD_Chunk = rhs.m_HSHD_Chunk;
 			m_SDAT_Chunk = rhs.m_SDAT_Chunk;

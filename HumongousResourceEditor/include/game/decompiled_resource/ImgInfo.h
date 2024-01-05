@@ -2,6 +2,7 @@
 
 #include <corecrt_malloc.h>
 #include <cstdint>
+#include <utils/TempAllocator.h>
 
 namespace resource_editor
 {
@@ -10,15 +11,22 @@ namespace resource_editor
 		class ImgInfo
 		{
 		public:
-			~ImgInfo()
-			{
-				free(m_Data);
-			}
-			unsigned char* m_Data = nullptr;
-			uint16_t m_Channels = 0;
-			size_t m_Size = 0;
+			DataContainer m_Data;
 			size_t m_Width = 0, m_Height = 0;
 			size_t m_X = 0, m_Y = 0;
+
+			const size_t Size() const
+			{
+				return m_Data.Size();
+			}
+
+			unsigned char* Data()
+			{
+				return m_Data.Data();
+			}
+
+			unsigned char operator [] (int i) const { return m_Data[i]; }
+			unsigned char& operator [] (int i) { return m_Data[i]; }
 		};
 	}
 }

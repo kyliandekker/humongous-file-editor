@@ -7,6 +7,7 @@
 #include "project/Resource.h"
 #include "system/audio/AudioUtils.h"
 #include "imgui/ImGuiWindow.h"
+#include "low_level/HumongousChunks.h"
 
 #include <vector>
 
@@ -14,12 +15,12 @@ namespace resource_editor
 {
 	namespace game
 	{
-		ImageResource::ImageResource(game::GameResource& a_Resource)
+		ImageResource::ImageResource(game::GameResource& a_Resource) : DecompiledResource()
 		{
 			GetData(a_Resource);
 		}
 
-		ImageResource::ImageResource(const ImageResource& rhs)
+		ImageResource::ImageResource(const ImageResource& rhs) : DecompiledResource(rhs)
 		{ }
 
 		ImageResource::~ImageResource()
@@ -103,27 +104,17 @@ namespace resource_editor
 				};
 			}
 
-			a_Info.m_Size = out.size();
-			a_Info.m_Data = reinterpret_cast<unsigned char*>(malloc(a_Info.m_Size));
-			if (!a_Info.m_Data)
-			{
-				return false;
-			}
-			memcpy(a_Info.m_Data, out.data(), a_Info.m_Size);
+			a_Info.m_Data = DataContainer(out.size(), out.data());
 			return true;
 		}
 
-		bool ImageResource::DecodeBasic(unsigned char a_FillColor, unsigned char* a_Data, size_t a_DataSize, size_t a_Width, size_t a_Height, int a_Palen, bool a_Transparent, ImgInfo& a_Info)
+		bool ImageResource::DecodeBasic(unsigned char a_FillColor, unsigned char* a_Data, size_t a_DataSize, int a_Palen, bool a_Transparent, ImgInfo& a_Info)
 		{
 			unsigned char color = a_FillColor;
 
 			std::vector<uint8_t> bits = CreateBitstream(a_Data, a_DataSize);
 
 			std::vector<uint8_t> out;
-
-			a_Info.m_Channels = 3;
-			if (a_Transparent)
-				a_Info.m_Channels = 4;
 
 			out.push_back(color % 256);
 
@@ -150,13 +141,7 @@ namespace resource_editor
 				out.push_back(color % 256);
 			};
 
-			a_Info.m_Size = out.size();
-			a_Info.m_Data = reinterpret_cast<unsigned char*>(malloc(a_Info.m_Size));
-			if (!a_Info.m_Data)
-			{
-				return false;
-			}
-			memcpy(a_Info.m_Data, out.data(), a_Info.m_Size);
+			a_Info.m_Data = DataContainer(out.size(), out.data());
 			return true;
 		}
 
@@ -166,10 +151,6 @@ namespace resource_editor
 
 			std::vector<uint8_t> bits = CreateBitstream(a_Data, a_DataSize);
 			std::vector<uint8_t> out;
-
-			a_Info.m_Channels = 3;
-			if (a_Transparent)
-				a_Info.m_Channels = 4;
 
 			out.push_back(color % 256);
 
@@ -191,7 +172,9 @@ namespace resource_editor
 						{
 							uint8_t ln = CollectBits(pos, bits, 8) - 1;
 							for (size_t i = 0; i < ln; i++)
+							{
 								out.push_back((color % 256));
+							}
 						}
 					}
 					else
@@ -202,25 +185,13 @@ namespace resource_editor
 				out.push_back(color % 256);
 			};
 
-			a_Info.m_Size = out.size();
-			a_Info.m_Data = reinterpret_cast<unsigned char*>(malloc(a_Info.m_Size));
-			if (!a_Info.m_Data)
-			{
-				return false;
-			}
-			memcpy(a_Info.m_Data, out.data(), a_Info.m_Size);
+			a_Info.m_Data = DataContainer(out.size(), out.data());
 			return true;
 		}
 
 		bool ImageResource::DecodeRaw(unsigned char* a_Data, size_t a_DataSize, int a_Palen, bool a_Transparent, ImgInfo& a_Info)
 		{
-			a_Info.m_Size = a_Info.m_Width * a_Info.m_Height;
-			a_Info.m_Data = reinterpret_cast<unsigned char*>(malloc(a_Info.m_Size));
-			if (!a_Info.m_Data)
-			{
-				return false;
-			}
-			memcpy(a_Info.m_Data, a_Data, a_Info.m_Size);
+			a_Info.m_Data = ImageData(a_Info.m_Width * a_Info.m_Height, a_Data);
 			return true;
 		}
 
@@ -232,6 +203,11 @@ namespace resource_editor
 			}
 
 			if (low_level::utils::chunkcmp(a_APAL_Chunk.chunk_id, chunk_reader::APAL_CHUNK_ID) != 0)
+			{
+				return false;
+			}
+
+			if (a_Width == 0 || a_Height == 0)
 			{
 				return false;
 			}
@@ -252,10 +228,8 @@ namespace resource_editor
 				return false;
 			}
 
-			m_ImageInfo.m_Channels = 4;
-
 			std::vector<uint8_t> newOut;
-			for (size_t i = 0; i < m_ImageInfo.m_Size; i++)
+			for (size_t i = 0; i < m_ImageInfo.Size(); i++)
 			{
 				newOut.push_back(a_APAL_Chunk.data[m_ImageInfo.m_Data[i] * 3]);
 				newOut.push_back(a_APAL_Chunk.data[m_ImageInfo.m_Data[i] * 3 + 1]);
@@ -270,17 +244,224 @@ namespace resource_editor
 				}
 			}
 
-			m_ImageInfo.m_Size = newOut.size();
-			if (m_ImageInfo.m_Data)
+			m_ImageInfo.m_Data = DataContainer(newOut.size(), newOut.data());
+
+			imgui::window.GetDX9().CreateTexture(m_Texture, m_ImageInfo);
+
+			return true;
+		}
+
+		struct pair
+		{
+			size_t rmim_offset;
+			size_t offset;
+			size_t actual_offset;
+		};
+
+		struct offset_pair
+		{
+			size_t start, end;
+		};
+
+		struct strip
+		{
+			unsigned char* data;
+			size_t size;
+		};
+
+		struct IndexColor
+		{
+			uint8_t index = 0;
+			uint8_t trans_color = 0;
+
+			IndexColor(uint8_t index, uint8_t trans_color)
 			{
-				free(m_ImageInfo.m_Data);
+				this->index = index;
+				this->trans_color = trans_color;
 			}
-			m_ImageInfo.m_Data = reinterpret_cast<unsigned char*>(malloc(m_ImageInfo.m_Size));
-			if (!m_ImageInfo.m_Data)
+
+			IndexColor()
+			{}
+		};
+
+		bool ImageResource::GetDataSMAP(chunk_reader::SMAP_Chunk& a_SMAP_Chunk, chunk_reader::APAL_Chunk& a_APAL_Chunk, size_t a_Width, size_t a_Height)
+		{
+			if (low_level::utils::chunkcmp(a_SMAP_Chunk.chunk_id, chunk_reader::SMAP_CHUNK_ID) != 0)
 			{
 				return false;
 			}
-			memcpy(m_ImageInfo.m_Data, newOut.data(), m_ImageInfo.m_Size);
+
+			if (low_level::utils::chunkcmp(a_APAL_Chunk.chunk_id, chunk_reader::APAL_CHUNK_ID) != 0)
+			{
+				return false;
+			}
+
+			if (a_Width == 0 || a_Height == 0)
+			{
+				return false;
+			}
+
+			size_t header_size = sizeof(chunk_reader::SMAP_Chunk) - sizeof(a_SMAP_Chunk.data); // Pointer in the SMAP class is size 8 and needs to be deducted.
+			size_t smap_size = a_SMAP_Chunk.ChunkSize() - header_size;
+
+			uint32_t strip_width = 8;
+			size_t num_strips = static_cast<size_t>(static_cast<size_t>(floor(static_cast<double>(a_Width / strip_width))));
+
+			std::vector<uint32_t> offsets;
+			int j = 0;
+			for (size_t i = 0; i < num_strips; i++, j += sizeof(uint32_t))
+			{
+				uint32_t number = *reinterpret_cast<uint32_t*>(low_level::utils::add(a_SMAP_Chunk.data, j));
+				number -= sizeof(chunk_reader::HumongousHeader);
+				offsets.push_back(number);
+			}
+
+			std::vector<offset_pair> index;
+
+			for (size_t i = 0; i < offsets.size(); i++)
+			{
+				index.push_back({ offsets[i], (i + 1) == offsets.size() ? smap_size : offsets[i + 1] });
+			}
+
+			std::vector<strip> strips;
+			for (size_t i = 0; i < num_strips; i++)
+			{
+				strips.push_back({ low_level::utils::add(a_SMAP_Chunk.data, index[i].start), index[i].end - index[i].start });
+			}
+
+			size_t total_size = 0;
+			std::vector< std::vector<std::vector<IndexColor>>> data_blocks;
+
+			for (size_t i = 0; i < strips.size(); i++)
+			{
+				strip& strip = strips[i];
+
+				std::vector<std::vector<IndexColor>> data_new_block;
+
+				uint8_t code = strip.data[0];
+
+				bool horizontal = true;
+				if (code >= 0x03 && code <= 0x12 || code >= 0x22 && code <= 0x26)
+				{
+					horizontal = false;
+				}
+
+				bool he_transparent = code >= 0x22 && code <= 0x30 || code >= 0x54 && code <= 0x80 || code >= 0x8F;
+
+				int palen = code % 10;
+
+				uint8_t color = strip.data[1];
+
+				ImgInfo strip_info;
+				strip_info.m_Width = strip_width;
+				strip_info.m_Height = a_Height;
+				if (code >= 0x40 && code <= 0x80)
+				{
+					if (!DecodeMajmin(color, low_level::utils::add(strip.data, 2), strip.size - 2, palen, he_transparent, strip_info))
+					{
+						return false;
+					}
+				}
+				else if (code >= 0x0E && code <= 0x30)
+				{
+					if (!DecodeBasic(color, low_level::utils::add(strip.data, 2), strip.size - 2, palen, he_transparent, strip_info))
+					{
+						return false;
+					}
+				}
+				else if (code >= 0x86 && code <= 0x94)
+				{
+					if (!DecodeHE(color, low_level::utils::add(strip.data, 2), strip.size - 2, palen, he_transparent, strip_info))
+					{
+						return false;
+					}
+				}
+				else if (code >= 0x01 && code <= 0x95)
+				{
+					if (!DecodeRaw(strip.data, strip.size, palen, he_transparent, strip_info))
+					{
+						return false;
+					}
+				}
+
+				DataContainer new_data = DataContainer(strip_info.Size(), strip_info.Data());
+
+				if (!horizontal)
+				{
+					uint32_t dataIndex = 0;
+					for (uint32_t k = 0; k < strip_width; ++k)
+					{
+						for (uint32_t l = 0; l < static_cast<uint32_t>(a_Height); ++l)
+						{
+							new_data[(l * strip_width) + k] = strip_info.m_Data[dataIndex];
+							++dataIndex;
+						}
+					}
+				}
+
+				strip_info.m_Data = DataContainer(strip_info.Size(), new_data.Data());
+				total_size += strip_info.Size();
+
+				for (size_t k = 0; k < a_Height; k++)
+				{
+					std::vector<IndexColor> new_strip;
+					for (size_t b = 0; b < strip_width; b++)
+					{
+						new_strip.push_back({ strip_info.m_Data[(k * strip_width) + b], color });
+					}
+					data_new_block.push_back(new_strip);
+				}
+
+				data_blocks.push_back(data_new_block);
+			}
+
+			std::vector<std::vector<IndexColor>> finals;
+
+			for (size_t i = 0; i < data_blocks[0].size(); i++)
+			{
+				std::vector<IndexColor> arr;
+				for (size_t b = 0; b < data_blocks.size(); b++)
+				{
+					for (size_t h = 0; h < strip_width; h++)
+					{
+						arr.push_back(data_blocks[b][i][h]);
+					}
+				}
+				finals.push_back(arr);
+			}
+
+			std::vector<IndexColor> final_data = std::vector<IndexColor>(total_size);
+			int pos = 0;
+			for (size_t i = 0; i < finals.size(); i++)
+			{
+				std::vector<IndexColor>& arr = finals[i];
+				for (size_t b = 0; b < arr.size(); b++)
+				{
+					final_data[pos] = finals[i][b];
+					pos++;
+				}
+			}
+
+			m_ImageInfo.m_Width = a_Width;
+			m_ImageInfo.m_Height = a_Height;
+
+			std::vector<uint8_t> newOut;
+			for (size_t i = 0; i < total_size; i++)
+			{
+				newOut.push_back(a_APAL_Chunk.data[final_data[i].index * 3]);
+				newOut.push_back(a_APAL_Chunk.data[final_data[i].index * 3 + 1]);
+				newOut.push_back(a_APAL_Chunk.data[final_data[i].index * 3 + 2]);
+				if (final_data[i].index == final_data[i].trans_color)
+				{
+					newOut.push_back(255);
+				}
+				else
+				{
+					newOut.push_back(255);
+				}
+			}
+
+			m_ImageInfo.m_Data = DataContainer(newOut.size(), newOut.data());
 
 			imgui::window.GetDX9().CreateTexture(m_Texture, m_ImageInfo);
 

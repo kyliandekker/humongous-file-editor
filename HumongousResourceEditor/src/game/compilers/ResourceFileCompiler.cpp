@@ -236,17 +236,17 @@ namespace resource_editor
 							{
 								GameResource child_resource;
 								child_resource.m_Offset = resource.m_Offset;
-								child_resource.m_Type = resource.m_Type;
 								child_resource.m_Parent = a;
 								if (resource.m_Type == game::GameResourceType::RoomImage)
 								{
 									child_resource.m_Name = resource.m_Name + " placement" + getExtension(resource.m_Type);
+									child_resource.m_Type = RoomImage_Layer;
 								}
 								else if (resource.m_Type == game::GameResourceType::RoomBackground)
 								{
 									child_resource.m_Name = resource.m_Name + " palette" + getExtension(resource.m_Type);
+									child_resource.m_Type = RoomBackground_Palette;
 								}
-								child_resource.m_Special = true;
 								resource.m_Resources.push_back(child_resource);
 							}
 							resource.m_Name += getExtension(resource.m_Type);

@@ -175,6 +175,8 @@
     <ClInclude Include="include\game\decompiled_resource\ImageResource.h" />
     <ClInclude Include="include\game\decompiled_resource\ImgInfo.h" />
     <ClInclude Include="include\game\decompiled_resource\RoomBackgroundResource.h" />
+    <ClInclude Include="include\game\decompiled_resource\RoomImageLayerResource.h" />
+    <ClInclude Include="include\game\decompiled_resource\RoomImageResource.h" />
     <ClInclude Include="include\game\decompiled_resource\SongResource.h" />
     <ClInclude Include="include\game\decompiled_resource\SoundResource.h" />
     <ClInclude Include="include\game\decompiled_resource\TalkResource.h" />
@@ -204,6 +206,7 @@
     <ClInclude Include="include\game\decompiled_resource\DecompiledResource.h" />
     <ClInclude Include="include\system\audio\AudioUtils.h" />
     <ClInclude Include="include\game\decompiled_resource\SFXResource.h" />
+    <ClInclude Include="include\utils\TempAllocator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="external\imgui\backends\imgui_impl_dx9.cpp" />
@@ -225,9 +228,11 @@
     <ClCompile Include="src\game\decompiled_resource\DecompiledResource.cpp" />
     <ClCompile Include="src\game\decompiled_resource\ImageResource.cpp" />
     <ClCompile Include="src\game\decompiled_resource\RoomBackgroundResource.cpp" />
+    <ClCompile Include="src\game\decompiled_resource\RoomImageLayerResource.cpp" />
     <ClCompile Include="src\game\decompiled_resource\SFXResource.cpp" />
     <ClCompile Include="src\game\decompiled_resource\SongResource.cpp" />
     <ClCompile Include="src\game\decompiled_resource\SoundResource.cpp" />
+    <ClCompile Include="src\game\decompiled_resource\RoomImageResource.cpp" />
     <ClCompile Include="src\game\decompiled_resource\TalkResource.cpp" />
     <ClCompile Include="src\imgui\tools\ResourcesWindow.cpp" />
     <ClCompile Include="src\imgui\tools\GameResourceWindow.cpp" />
@@ -245,6 +250,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\project\Project.cpp" />
     <ClCompile Include="src\system\Logger.cpp" />
+    <ClCompile Include="src\utils\TempAllocator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -21,7 +21,6 @@ namespace resource_editor
 			std::string m_Name = "";
 			GameResourceType m_Type;
 			std::vector<GameResource> m_Resources;
-			bool m_Special = false;
 			bool m_OpenedWindow = false;
 			project::Resource* m_Parent = nullptr;
 		};

@@ -50,12 +50,22 @@ namespace resource_editor
 				}
 				case game::GameResourceType::RoomBackground:
 				{
-					name = ICON_FA_FILE_IMAGE_O + std::string(" ") + name + (resource.m_Special ? "" : "(BACKGROUND)");
+					name = ICON_FA_FILE_IMAGE_O + std::string(" ") + name + "(BACKGROUND)";
+					break;
+				}
+				case game::GameResourceType::RoomBackground_Palette:
+				{
+					name = ICON_FA_FILE_IMAGE_O + std::string(" ") + name + "(PALETTE)";
 					break;
 				}
 				case game::GameResourceType::RoomImage:
 				{
-					name = ICON_FA_FILE_IMAGE_O + std::string(" ") + name + (resource.m_Special ? "" : "(IMAGE)");
+					name = ICON_FA_FILE_IMAGE_O + std::string(" ") + name + "(IMAGE)";
+					break;
+				}
+				case game::GameResourceType::RoomImage_Layer:
+				{
+					name = ICON_FA_FILE_IMAGE_O + std::string(" ") + name + "(IMAGE LAYER)";
 					break;
 				}
 				case game::GameResourceType::Local_Script:

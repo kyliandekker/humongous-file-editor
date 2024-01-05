@@ -13,12 +13,12 @@ namespace resource_editor
 {
 	namespace game
 	{
-		SFXResource::SFXResource(game::GameResource& a_Resource)
+		SFXResource::SFXResource(game::GameResource& a_Resource) : SoundResource(a_Resource)
 		{
 			GetData(a_Resource);
 		}
 
-		SFXResource::SFXResource(const SFXResource& rhs)
+		SFXResource::SFXResource(const SFXResource& rhs) : SoundResource(rhs)
 		{
 			m_HSHD_Chunk = rhs.m_HSHD_Chunk;
 			m_SDAT_Chunk = rhs.m_SDAT_Chunk;

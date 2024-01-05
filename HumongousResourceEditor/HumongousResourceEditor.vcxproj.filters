@@ -123,6 +123,15 @@
     <ClInclude Include="include\game\decompiled_resource\ImgInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\game\decompiled_resource\RoomImageResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\TempAllocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\game\decompiled_resource\RoomImageLayerResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dx9\DX9Window.cpp">
@@ -240,6 +249,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\game\decompiled_resource\RoomBackgroundResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\decompiled_resource\RoomImageResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\TempAllocator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\decompiled_resource\RoomImageLayerResource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

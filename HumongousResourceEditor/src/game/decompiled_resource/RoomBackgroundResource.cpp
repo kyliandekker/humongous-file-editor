@@ -13,7 +13,7 @@ namespace resource_editor
 {
 	namespace game
 	{
-		RoomBackgroundResource::RoomBackgroundResource(game::GameResource& a_Resource)
+		RoomBackgroundResource::RoomBackgroundResource(game::GameResource& a_Resource) : ImageResource(a_Resource)
 		{
 			GetData(a_Resource);
 		}
@@ -30,15 +30,23 @@ namespace resource_editor
 		{
 			std::vector<chunk_reader::ChunkInfo> children = a_Resource.m_Parent->m_FileContainer.GetChildren(a_Resource.m_Offset);
 			if (children.size() == 0)
+			{
 				return false;
+			}
 
 			size_t bsmap_offset = -1;
 			for (size_t i = 0; i < children.size(); i++)
+			{
 				if (low_level::utils::chunkcmp(children[i].chunk_id, chunk_reader::BMAP_CHUNK_ID) == 0 || low_level::utils::chunkcmp(children[i].chunk_id, chunk_reader::SMAP_CHUNK_ID) == 0)
+				{
 					bsmap_offset = children[i].m_Offset;
+				}
+			}
 
 			if (bsmap_offset < 0)
+			{
 				return false;
+			}
 
 			chunk_reader::BMAP_Chunk bmap_chunk;
 			size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
@@ -56,19 +64,27 @@ namespace resource_editor
 			for (size_t i = 0; i < rmda_children.size(); i++)
 			{
 				if (low_level::utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::APAL_CHUNK_ID) == 0)
+				{
 					apal_offset = rmda_children[i].m_Offset;
+				}
 				if (low_level::utils::chunkcmp(rmda_children[i].chunk_id, chunk_reader::RMHD_CHUNK_ID) == 0)
+				{
 					rmhd_offset = rmda_children[i].m_Offset;
+				}
 			}
 
 			if (rmhd_offset < 0)
+			{
 				return false;
+			}
 
 			chunk_reader::RMHD_Chunk rmhd_chunk;
 			memcpy(&rmhd_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, rmhd_offset), sizeof(chunk_reader::RMHD_Chunk));
 
 			if (apal_offset < 0)
+			{
 				return false;
+			}
 
 			chunk_reader::APAL_Chunk apal_chunk;
 			header_size = sizeof(chunk_reader::APAL_Chunk);
