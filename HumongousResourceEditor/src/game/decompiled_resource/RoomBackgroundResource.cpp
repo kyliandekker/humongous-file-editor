@@ -1,13 +1,14 @@
 #include "game/decompiled_resource/RoomBackgroundResource.h"
 
+#include <vector>
+
 #include "low_level/HumongousChunkDefinitions.h"
 #include "low_level/ChunkInfo.h"
 #include "low_level/Utils.h"
 #include "game/GameResource.h"
 #include "project/Resource.h"
 #include "system/audio/AudioUtils.h"
-
-#include <vector>
+#include "imgui/ImGuiWindow.h"
 
 namespace resource_editor
 {
@@ -26,7 +27,7 @@ namespace resource_editor
 		{
 		}
 
-		bool RoomBackgroundResource::GetData(game::GameResource& a_Resource)
+		bool RoomBackgroundResource::GetRoomBackgroundData(game::GameResource& a_Resource, ImgInfo& a_ImageInfo)
 		{
 			std::vector<chunk_reader::ChunkInfo> children = a_Resource.m_Parent->m_FileContainer.GetChildren(a_Resource.m_Offset);
 			if (children.size() == 0)
@@ -91,7 +92,15 @@ namespace resource_editor
 			memcpy(&apal_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, apal_offset), header_size);
 			size_t apal_size = apal_chunk.ChunkSize() - header_size;
 
-			return GetDataBMAP(bmap_chunk, apal_chunk, bmap_chunk.data[0], rmhd_chunk.width, rmhd_chunk.height);
+			return GetDataBMAP(bmap_chunk, apal_chunk, bmap_chunk.data[0], rmhd_chunk.width, rmhd_chunk.height, a_ImageInfo);
+		}
+
+		bool RoomBackgroundResource::GetData(game::GameResource& a_Resource)
+		{
+			if (!GetRoomBackgroundData(a_Resource, m_ImageInfo))
+				return false;
+
+			imgui::window.GetDX9().CreateTexture(m_Texture, m_ImageInfo);
 		}
 	}
 }

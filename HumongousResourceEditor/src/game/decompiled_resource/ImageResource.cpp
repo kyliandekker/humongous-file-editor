@@ -6,7 +6,6 @@
 #include "game/GameResource.h"
 #include "project/Resource.h"
 #include "system/audio/AudioUtils.h"
-#include "imgui/ImGuiWindow.h"
 #include "low_level/HumongousChunks.h"
 
 #include <vector>
@@ -195,7 +194,7 @@ namespace resource_editor
 			return true;
 		}
 
-		bool ImageResource::GetDataBMAP(chunk_reader::BMAP_Chunk& a_BMAP_Chunk, chunk_reader::APAL_Chunk& a_APAL_Chunk, uint8_t a_FillColor, size_t a_Width, size_t a_Height)
+		bool ImageResource::GetDataBMAP(chunk_reader::BMAP_Chunk& a_BMAP_Chunk, chunk_reader::APAL_Chunk& a_APAL_Chunk, uint8_t a_FillColor, size_t a_Width, size_t a_Height, ImgInfo& a_ImageInfo)
 		{
 			if (low_level::utils::chunkcmp(a_BMAP_Chunk.chunk_id, chunk_reader::BMAP_CHUNK_ID) != 0)
 			{
@@ -220,21 +219,21 @@ namespace resource_editor
 			bool he = a_BMAP_Chunk.encoding >= 0x86 && a_BMAP_Chunk.encoding <= 0x8A;
 			bool he_transparent = a_BMAP_Chunk.encoding >= 0x90 && a_BMAP_Chunk.encoding <= 0x94;
 
-			m_ImageInfo.m_Width = a_Width;
-			m_ImageInfo.m_Height = a_Height;
+			a_ImageInfo.m_Width = a_Width;
+			a_ImageInfo.m_Height = a_Height;
 
-			if (!DecodeHE(a_FillColor, a_BMAP_Chunk.data, bmap_size, palen, he_transparent, m_ImageInfo))
+			if (!DecodeHE(a_FillColor, a_BMAP_Chunk.data, bmap_size, palen, he_transparent, a_ImageInfo))
 			{
 				return false;
 			}
 
 			std::vector<uint8_t> newOut;
-			for (size_t i = 0; i < m_ImageInfo.Size(); i++)
+			for (size_t i = 0; i < a_ImageInfo.Size(); i++)
 			{
-				newOut.push_back(a_APAL_Chunk.data[m_ImageInfo.m_Data[i] * 3]);
-				newOut.push_back(a_APAL_Chunk.data[m_ImageInfo.m_Data[i] * 3 + 1]);
-				newOut.push_back(a_APAL_Chunk.data[m_ImageInfo.m_Data[i] * 3 + 2]);
-				if (m_ImageInfo.m_Data[i] == a_FillColor)
+				newOut.push_back(a_APAL_Chunk.data[a_ImageInfo.m_Data[i] * 3]);
+				newOut.push_back(a_APAL_Chunk.data[a_ImageInfo.m_Data[i] * 3 + 1]);
+				newOut.push_back(a_APAL_Chunk.data[a_ImageInfo.m_Data[i] * 3 + 2]);
+				if (a_ImageInfo.m_Data[i] == a_FillColor)
 				{
 					newOut.push_back(0);
 				}
@@ -244,9 +243,7 @@ namespace resource_editor
 				}
 			}
 
-			m_ImageInfo.m_Data = DataContainer(newOut.size(), newOut.data());
-
-			imgui::window.GetDX9().CreateTexture(m_Texture, m_ImageInfo);
+			a_ImageInfo.m_Data = DataContainer(newOut.size(), newOut.data());
 
 			return true;
 		}
@@ -284,7 +281,7 @@ namespace resource_editor
 			{}
 		};
 
-		bool ImageResource::GetDataSMAP(chunk_reader::SMAP_Chunk& a_SMAP_Chunk, chunk_reader::APAL_Chunk& a_APAL_Chunk, size_t a_Width, size_t a_Height)
+		bool ImageResource::GetDataSMAP(chunk_reader::SMAP_Chunk& a_SMAP_Chunk, chunk_reader::APAL_Chunk& a_APAL_Chunk, size_t a_Width, size_t a_Height, ImgInfo& a_ImageInfo)
 		{
 			if (low_level::utils::chunkcmp(a_SMAP_Chunk.chunk_id, chunk_reader::SMAP_CHUNK_ID) != 0)
 			{
@@ -442,8 +439,8 @@ namespace resource_editor
 				}
 			}
 
-			m_ImageInfo.m_Width = a_Width;
-			m_ImageInfo.m_Height = a_Height;
+			a_ImageInfo.m_Width = a_Width;
+			a_ImageInfo.m_Height = a_Height;
 
 			std::vector<uint8_t> newOut;
 			for (size_t i = 0; i < total_size; i++)
@@ -461,9 +458,7 @@ namespace resource_editor
 				}
 			}
 
-			m_ImageInfo.m_Data = DataContainer(newOut.size(), newOut.data());
-
-			imgui::window.GetDX9().CreateTexture(m_Texture, m_ImageInfo);
+			a_ImageInfo.m_Data = DataContainer(newOut.size(), newOut.data());
 
 			return true;
 		}

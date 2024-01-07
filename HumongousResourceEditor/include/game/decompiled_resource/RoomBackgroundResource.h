@@ -17,6 +17,7 @@ namespace resource_editor
 			RoomBackgroundResource() = default;
 			RoomBackgroundResource(const RoomBackgroundResource& rhs);
 			~RoomBackgroundResource();
+			static bool GetRoomBackgroundData(game::GameResource& a_Resource, ImgInfo& a_ImageInfo);
 			bool GetData(game::GameResource& a_Resource);
 		};
 	}

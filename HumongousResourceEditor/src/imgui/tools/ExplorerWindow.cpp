@@ -44,6 +44,13 @@ namespace resource_editor
 
 					ImGui::SetNextItemOpen(a_Resource.m_FoldedOut);
 					bool fold = ImGui::TreeNodeS(name.c_str(), id.c_str());
+
+					if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
+					{
+						a_ShowPopUp |= true;
+						m_SelectedResource = &a_Resource;
+					}
+
 					if (a_Resource.m_FoldedOut != fold)
 					{
 						a_Resource.m_FoldedOut = fold;
@@ -54,11 +61,6 @@ namespace resource_editor
 					}
 					if (a_Resource.m_FoldedOut)
 					{
-						if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
-						{
-							a_ShowPopUp |= true;
-							m_SelectedResource = &a_Resource;
-						}
 						for (size_t i = 0; i < a_Resource.m_Resources.size(); i++)
 						{
 							RenderResource(a_Resource.m_Resources[i], a_ShowPopUp);
@@ -69,13 +71,16 @@ namespace resource_editor
 				else if (!a_Resource.m_HasChildren)
 				{
 					name = ICON_FA_FOLDER + std::string(" ") + name;
-					if (ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf))
+					bool opened = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf);
+
+					if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 					{
-						if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
-						{
-							a_ShowPopUp |= true;
-							m_SelectedResource = &a_Resource;
-						}
+						a_ShowPopUp |= true;
+						m_SelectedResource = &a_Resource;
+					}
+
+					if (opened)
+					{
 						ImGui::TreePop();
 					}
 				}
@@ -90,13 +95,16 @@ namespace resource_editor
 				{
 					name = ICON_FA_FILE + std::string(" ") + name;
 				}
-				if (ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf))
+				bool opened = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf);
+
+				if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 				{
-					if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
-					{
-						a_ShowPopUp |= true;
-						m_SelectedResource = &a_Resource;
-					}
+					a_ShowPopUp |= true;
+					m_SelectedResource = &a_Resource;
+				}
+
+				if (opened)
+				{
 					ImGui::TreePop();
 				}
 			}
@@ -117,9 +125,6 @@ namespace resource_editor
 			{
 				if (m_SelectedResource->m_ResourceType == project::ResourceType::Folder)
 				{
-					if (ImGui::MenuItem("Set As Output Folder"))
-					{
-					}
 				}
 				else
 				{

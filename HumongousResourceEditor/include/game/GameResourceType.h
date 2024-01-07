@@ -13,9 +13,8 @@ namespace resource_editor
 			SFX,
 			Song,
 			RoomBackground,
-			RoomBackground_Palette,
 			RoomImage,
-			RoomImage_Layer,
+			RoomImageLayer,
 			Local_Script,
 			Global_Script,
 			Verb_Script,
@@ -38,9 +37,8 @@ namespace resource_editor
 					return ".wav";
 				}
 				case RoomBackground:
-				case RoomBackground_Palette:
 				case RoomImage:
-				case RoomImage_Layer:
+				case RoomImageLayer:
 				{
 					return ".png";
 				}
@@ -53,6 +51,58 @@ namespace resource_editor
 				case Room:
 				{
 					return "";
+				}
+			}
+			return "";
+		}
+
+		inline std::string getResourceTypeName(GameResourceType a_ResourceType)
+		{
+			switch (a_ResourceType)
+			{
+				case Unknown:
+				{
+					return "UNKNOWN";
+				}
+				case Talkie:
+				{
+					return "Talkie";
+				}
+				case SFX:
+				{
+					return "SFX";
+				}
+				case Song:
+				{
+					return "Song";
+				}
+				case RoomBackground:
+				{
+					return "Room Background";
+				}
+				case RoomImage:
+				{
+					return "Room Image";
+				}
+				case RoomImageLayer:
+				{
+					return "Room Image Layer";
+				}
+				case Local_Script:
+				{
+					return "Local Script";
+				}
+				case Global_Script:
+				{
+					return "Global Script";
+				}
+				case Verb_Script:
+				{
+					return "Verb Script";
+				}
+				case Room:
+				{
+					return "Room";
 				}
 			}
 			return "";

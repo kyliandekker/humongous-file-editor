@@ -21,7 +21,7 @@ namespace resource_editor
 		ResourcesWindow::ResourcesWindow() : BaseTool(0, "Resource Window")
 		{ }
 
-		void renderGameResource(game::GameResource & resource, game::GameResource*& selectedResource, bool& showPopUp)
+		void ResourcesWindow::RenderGameResource(game::GameResource & resource, game::GameResource*& selectedResource, bool& showPopUp)
 		{
 			std::string name = resource.m_Name;
 			std::string id = "##" + resource.m_Name;
@@ -53,17 +53,12 @@ namespace resource_editor
 					name = ICON_FA_FILE_IMAGE_O + std::string(" ") + name + "(BACKGROUND)";
 					break;
 				}
-				case game::GameResourceType::RoomBackground_Palette:
-				{
-					name = ICON_FA_FILE_IMAGE_O + std::string(" ") + name + "(PALETTE)";
-					break;
-				}
 				case game::GameResourceType::RoomImage:
 				{
 					name = ICON_FA_FILE_IMAGE_O + std::string(" ") + name + "(IMAGE)";
 					break;
 				}
-				case game::GameResourceType::RoomImage_Layer:
+				case game::GameResourceType::RoomImageLayer:
 				{
 					name = ICON_FA_FILE_IMAGE_O + std::string(" ") + name + "(IMAGE LAYER)";
 					break;
@@ -90,22 +85,27 @@ namespace resource_editor
 			}
 
 			name += id;
-			if (ImGui::TreeNodeEx(name.c_str(), resource.m_Resources.empty() ? ImGuiTreeNodeFlags_Leaf : ImGuiTreeNodeFlags_None))
-			{
-				for (size_t i = 0; i < resource.m_Resources.size(); i++)
-				{
-					renderGameResource(resource.m_Resources[i], selectedResource, showPopUp);
-				}
-				ImGui::TreePop();
-			}
+			bool opened = ImGui::TreeNodeEx(name.c_str(), resource.m_Resources.empty() ? ImGuiTreeNodeFlags_Leaf : ImGuiTreeNodeFlags_None);
+
 			if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 			{
 				showPopUp |= true;
 				selectedResource = &resource;
 			}
 
+			if (opened)
+			{
+				for (size_t i = 0; i < resource.m_Resources.size(); i++)
+				{
+					RenderGameResource(resource.m_Resources[i], selectedResource, showPopUp);
+				}
+				ImGui::TreePop();
+			}
+
 			if (showPopUp)
+			{
 				ImGui::OpenPopup("gameres_popup");
+			}
 		}
 
 		std::array<std::string, 6> names
@@ -153,7 +153,7 @@ namespace resource_editor
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 10.0f });
 			for (size_t i = 0; i < m_Resource->m_GameResources.size(); i++)
 			{
-				renderGameResource(m_Resource->m_GameResources[i], m_SelectedResource, showPopUp);
+				RenderGameResource(m_Resource->m_GameResources[i], m_SelectedResource, showPopUp);
 			}
 			ImGui::PopStyleVar();
 			if (m_SelectedResource)

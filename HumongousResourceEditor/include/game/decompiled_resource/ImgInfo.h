@@ -13,6 +13,7 @@ namespace resource_editor
 		public:
 			DataContainer m_Data;
 			size_t m_Width = 0, m_Height = 0;
+			size_t m_Width2 = 0, m_Height2 = 0;
 			size_t m_X = 0, m_Y = 0;
 
 			const size_t Size() const
@@ -24,9 +25,6 @@ namespace resource_editor
 			{
 				return m_Data.Data();
 			}
-
-			unsigned char operator [] (int i) const { return m_Data[i]; }
-			unsigned char& operator [] (int i) { return m_Data[i]; }
 		};
 	}
 }

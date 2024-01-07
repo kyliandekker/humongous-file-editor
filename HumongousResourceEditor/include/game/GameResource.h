@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include "GameResourceType.h"
 
@@ -23,6 +24,7 @@ namespace resource_editor
 			std::vector<GameResource> m_Resources;
 			bool m_OpenedWindow = false;
 			project::Resource* m_Parent = nullptr;
+			std::map<std::string, std::string> m_Properties;
 		};
 	}
 }

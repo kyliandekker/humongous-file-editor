@@ -232,24 +232,27 @@ namespace resource_editor
 							resource.m_Type = it->second;
 							resource.m_Name = std::to_string(i);
 							resource.m_Parent = a;
+							resource.m_Properties =
+							{
+								{ "Offset", std::to_string(resource.m_Offset) },
+								{ "Type", getResourceTypeName(resource.m_Type) },
+								{ "Room", std::to_string(lflf) },
+							};
 							if (resource.m_Type == game::GameResourceType::RoomImage || resource.m_Type == game::GameResourceType::RoomBackground)
 							{
-								GameResource child_resource;
-								child_resource.m_Offset = resource.m_Offset;
+								GameResource child_resource = resource;
 								child_resource.m_Parent = a;
 								if (resource.m_Type == game::GameResourceType::RoomImage)
 								{
 									child_resource.m_Name = resource.m_Name + " placement" + getExtension(resource.m_Type);
-									child_resource.m_Type = RoomImage_Layer;
+									child_resource.m_Type = RoomImageLayer;
+									child_resource.m_Properties["Name"] = child_resource.m_Name;
+									child_resource.m_Properties["Type"] = getResourceTypeName(child_resource.m_Type);
+									resource.m_Resources.push_back(child_resource);
 								}
-								else if (resource.m_Type == game::GameResourceType::RoomBackground)
-								{
-									child_resource.m_Name = resource.m_Name + " palette" + getExtension(resource.m_Type);
-									child_resource.m_Type = RoomBackground_Palette;
-								}
-								resource.m_Resources.push_back(child_resource);
 							}
 							resource.m_Name += getExtension(resource.m_Type);
+							resource.m_Properties["Name"] = resource.m_Name;
 							a_Resources[lflf].m_Resources.push_back(resource);
 							i++;
 						}

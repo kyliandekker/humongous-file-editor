@@ -319,7 +319,7 @@ namespace ImGui
         return value_changed;
     }
 
-	bool BeginPlayPlot(uint32_t& pos, int max_pos, size_t numSamples, const double* samples, const char* title_id, float width, float height, size_t blockAlign)
+	bool BeginPlayPlot(size_t numSamples, const double* samples, const char* title_id, float width, float height, size_t blockAlign)
 	{
 		ImPlotStyle& pStyle = ImPlot::GetStyle();
 		ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, ImVec2(0, 0));
@@ -347,38 +347,9 @@ namespace ImGui
 			bool isHovered = ImGui::IsItemHovered();
 			ImPlotStyle& imPlotStyle = ImPlot::GetStyle();
 
-			if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && isHovered)
-			{
-				ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
-				ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
-				ImVec2 screenPositionAbsolutem = ImGui::GetItemRectMax();
-				ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
-
-				ImVec2 plotPos = ImPlot::GetPlotPos();
-				ImVec2 plotSize = ImPlot::GetPlotSize();
-
-				mousePositionRelative.x = std::clamp(mousePositionRelative.x, 0.0f, plotSize.x + 0);
-
-				pos = max_pos / static_cast<int>(plotSize.x + 0) * static_cast<int>(mousePositionRelative.x - 0);
-
-				uint32_t left_over = static_cast<uint32_t>(pos) % blockAlign;
-				int32_t ppos = static_cast<uint32_t>(pos) - left_over;
-				if (ppos < 0)
-					ppos = 0;
-				pos = ppos;
-			}
-
 			ImVec2 plotSize = ImPlot::GetPlotSize();
 			plotSize = ImVec2(plotSize.x + 0, plotSize.y);
 			ImVec2 plotPos = ImPlot::GetPlotPos();
-
-			float linePosX = plotSize.x / max_pos * pos;
-
-			drw->AddLine(
-				ImVec2(plotPos.x + linePosX, plotPos.y),
-				ImVec2(plotPos.x + linePosX, plotPos.y + plotSize.y),
-				ImColor(255, 255, 255, 255), 1
-			);
 
 			ImPlot::EndPlot();
 		}

@@ -1,15 +1,15 @@
 #include "game/decompiled_resource/RoomImageResource.h"
 
+#include <vector>
+
 #include "low_level/HumongousChunkDefinitions.h"
 #include "low_level/ChunkInfo.h"
 #include "low_level/Utils.h"
 #include "game/GameResource.h"
 #include "project/Resource.h"
 #include "system/audio/AudioUtils.h"
-
 #include "low_level/HumongousChunks.h"
-
-#include <vector>
+#include "imgui/ImGuiWindow.h"
 
 namespace resource_editor
 {
@@ -28,7 +28,7 @@ namespace resource_editor
 		{
 		}
 
-		bool RoomImageResource::GetData(game::GameResource& a_Resource)
+		bool RoomImageResource::GetRoomImageData(game::GameResource& a_Resource, ImgInfo& a_ImageInfo)
 		{
 			std::vector<chunk_reader::ChunkInfo> children = a_Resource.m_Parent->m_FileContainer.GetChildren(a_Resource.m_Offset);
 			if (children.size() == 0)
@@ -69,6 +69,9 @@ namespace resource_editor
 			memcpy(&imhd_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, imhd_offset), sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data));
 			imhd_chunk.data = low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, imhd_offset + (sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data)));
 
+			a_ImageInfo.m_X = imhd_chunk.x;
+			a_ImageInfo.m_Y = imhd_chunk.y;
+
 			std::vector<chunk_reader::ChunkInfo> rmda_children = a_Resource.m_Parent->m_FileContainer.GetChildren(a_Resource.m_Parent->m_FileContainer.GetParent(obim_offset).m_Offset);
 			int32_t apal_offset = -1;
 			for (size_t i = 0; i < rmda_children.size(); i++)
@@ -97,7 +100,7 @@ namespace resource_editor
 				memcpy(&smap_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, bsmap_offset), smap_header_size);
 				smap_chunk.data = low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, bsmap_offset + smap_header_size);
 
-				return GetDataSMAP(smap_chunk, apal_chunk, imhd_chunk.width, imhd_chunk.height);
+				return GetDataSMAP(smap_chunk, apal_chunk, imhd_chunk.width, imhd_chunk.height, a_ImageInfo);
 			}
 			else
 			{
@@ -106,9 +109,17 @@ namespace resource_editor
 				memcpy(&bmap_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, bsmap_offset), bmap_header_size);
 				bmap_chunk.data = low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, bsmap_offset + bmap_header_size);
 
-				return GetDataBMAP(bmap_chunk, apal_chunk, bmap_chunk.fill_color, imhd_chunk.width, imhd_chunk.height);
+				return GetDataBMAP(bmap_chunk, apal_chunk, bmap_chunk.fill_color, imhd_chunk.width, imhd_chunk.height, a_ImageInfo);
 			}
 			return false;
+		}
+
+		bool RoomImageResource::GetData(game::GameResource& a_Resource)
+		{
+			if (!GetRoomImageData(a_Resource, m_ImageInfo))
+				return false;
+
+			imgui::window.GetDX9().CreateTexture(m_Texture, m_ImageInfo);
 		}
 	}
 }

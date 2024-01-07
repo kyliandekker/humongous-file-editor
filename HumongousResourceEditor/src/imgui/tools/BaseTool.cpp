@@ -20,7 +20,7 @@ namespace resource_editor
 		void BaseTool::ShowValue(std::string a_Text, const char* a_Value)
 		{
 			const ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_FrameBg);
-			ImGui::Text("%s\n", a_Text.c_str());
+			ImGui::Text("%s:\n", a_Text.c_str());
 			ImGui::SameLine();
 			ImGui::TextColored(color, "%s\n", a_Value);
 		}

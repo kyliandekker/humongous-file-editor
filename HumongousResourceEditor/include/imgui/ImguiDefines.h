@@ -6,6 +6,9 @@ namespace resource_editor
 	{
 		// https://github.com/juliettef/IconFontCppHeaders/blob/main/IconsFontAwesome4.h
 
+		#define PLAY "\xef\x81\x8b"
+		#define STOP "\xef\x81\x8d"
+
 		#define ICON_FA_FOLDER "\xef\x81\xbb"
 		#define ICON_FA_FOLDER_OPEN "\xef\x81\xbc"
 		#define ICON_FA_FILE "\xef\x85\x9b"

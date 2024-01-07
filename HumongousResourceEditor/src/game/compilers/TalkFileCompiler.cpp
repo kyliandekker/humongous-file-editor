@@ -35,6 +35,12 @@ namespace resource_editor
 					resource.m_Type = RESOURCE_CHUNKS.at(chunk_id_name);
 					resource.m_Name = std::to_string(i) + getExtension(resource.m_Type);
 					resource.m_Parent = &a_Resource;
+					resource.m_Properties =
+					{
+						{ "Offset", std::to_string(resource.m_Offset) },
+						{ "Type", getResourceTypeName(resource.m_Type) },
+						{ "Name", resource.m_Name },
+					};
 					a_Resources.push_back(resource);
 					i++;
 				}

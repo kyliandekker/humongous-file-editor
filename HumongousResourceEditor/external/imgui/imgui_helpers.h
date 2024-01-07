@@ -31,7 +31,7 @@ namespace ImGui
 
 	bool RangeSliderFloat(const char *label, float *v1, float *v2, float v_min, float v_max, const char *display_format = "(%.3f, %.3f)", float power = 1.0f);
 
-	bool BeginPlayPlot(uint32_t& pos, int max_pos, size_t numSamples, const double* samples, const char* title_id, float width, float height, size_t blockAlign);
+	bool BeginPlayPlot(size_t numSamples, const double* samples, const char* title_id, float width, float height, size_t blockAlign);
 
 #endif // IMGUI_HELPERS_H
 }

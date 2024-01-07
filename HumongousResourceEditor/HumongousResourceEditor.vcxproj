@@ -191,6 +191,7 @@
     <ClInclude Include="include\low_level\HumongousHeader.h" />
     <ClInclude Include="include\low_level\Utils.h" />
     <ClInclude Include="include\project\ResourceType.h" />
+    <ClInclude Include="include\system\AudioSystem.h" />
     <ClInclude Include="include\utils\abstractions.h" />
     <ClInclude Include="include\project\Resource.h" />
     <ClInclude Include="include\dx9\DX9Window.h" />
@@ -239,6 +240,7 @@
     <ClCompile Include="src\low_level\FileContainer.cpp" />
     <ClCompile Include="src\low_level\HumongousHeader.cpp" />
     <ClCompile Include="src\low_level\Utils.cpp" />
+    <ClCompile Include="src\system\AudioSystem.cpp" />
     <ClCompile Include="src\system\audio\AudioUtils.cpp" />
     <ClCompile Include="src\utils\abstractions.cpp" />
     <ClCompile Include="src\project\Resource.cpp" />

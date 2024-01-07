@@ -21,6 +21,7 @@ namespace resource_editor
 		{
 		public:
 			ResourcesWindow();
+			void RenderGameResource(game::GameResource& resource, game::GameResource*& selectedResource, bool& showPopUp);
 			ResourcesWindow(const ResourcesWindow& rhs) = default;
 			void Render() override;
 			void SetActiveTab(int a_Selected);

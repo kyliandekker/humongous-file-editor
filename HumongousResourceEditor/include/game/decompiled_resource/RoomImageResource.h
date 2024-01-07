@@ -15,6 +15,7 @@ namespace resource_editor
 			RoomImageResource() = default;
 			RoomImageResource(const RoomImageResource& rhs);
 			~RoomImageResource();
+			static bool GetRoomImageData(game::GameResource& a_Resource, ImgInfo& a_ImageInfo);
 			bool GetData(game::GameResource& a_Resource);
 		};
 	}
