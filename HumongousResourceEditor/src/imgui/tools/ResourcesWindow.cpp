@@ -21,7 +21,7 @@ namespace resource_editor
 		ResourcesWindow::ResourcesWindow() : BaseTool(0, "Resource Window")
 		{ }
 
-		void ResourcesWindow::RenderGameResource(game::GameResource & resource, game::GameResource*& selectedResource, bool& showPopUp)
+		void ResourcesWindow::RenderGameResource(game::GameResource & resource, game::GameResource*& selectedResource)
 		{
 			std::string name = resource.m_Name;
 			std::string id = "##" + resource.m_Name;
@@ -89,7 +89,13 @@ namespace resource_editor
 
 			if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 			{
-				showPopUp |= true;
+				m_ShowPopUp |= true;
+				selectedResource = &resource;
+			}
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+			{
+				m_DoubleClick |= true;
 				selectedResource = &resource;
 			}
 
@@ -97,12 +103,12 @@ namespace resource_editor
 			{
 				for (size_t i = 0; i < resource.m_Resources.size(); i++)
 				{
-					RenderGameResource(resource.m_Resources[i], selectedResource, showPopUp);
+					RenderGameResource(resource.m_Resources[i], selectedResource);
 				}
 				ImGui::TreePop();
 			}
 
-			if (showPopUp)
+			if (m_ShowPopUp)
 			{
 				ImGui::OpenPopup("gameres_popup");
 			}
@@ -149,28 +155,25 @@ namespace resource_editor
 
 			project::Resource* m_Resource = explorer.m_LoadedResources[m_ActiveTab];
 
-			bool showPopUp = false;
+			m_ShowPopUp = false;
+			m_DoubleClick = false;
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 10.0f });
 			for (size_t i = 0; i < m_Resource->m_GameResources.size(); i++)
 			{
-				RenderGameResource(m_Resource->m_GameResources[i], m_SelectedResource, showPopUp);
+				RenderGameResource(m_Resource->m_GameResources[i], m_SelectedResource);
 			}
 			ImGui::PopStyleVar();
 			if (m_SelectedResource)
 			{
+				if (m_DoubleClick)
+				{
+					gameResourceWindow.SetResource(*m_SelectedResource);
+				}
 				if (ImGui::BeginPopup("gameres_popup"))
 				{
 					if (ImGui::MenuItem("View"))
 					{
 						gameResourceWindow.SetResource(*m_SelectedResource);
-					}
-					else if (ImGui::MenuItem("Export"))
-					{
-
-					}
-					else if (ImGui::MenuItem("Replace"))
-					{
-
 					}
 					ImGui::EndPopup();
 				}

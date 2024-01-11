@@ -21,13 +21,15 @@ namespace resource_editor
 		{
 		public:
 			ResourcesWindow();
-			void RenderGameResource(game::GameResource& resource, game::GameResource*& selectedResource, bool& showPopUp);
+			void RenderGameResource(game::GameResource& resource, game::GameResource*& selectedResource);
 			ResourcesWindow(const ResourcesWindow& rhs) = default;
 			void Render() override;
 			void SetActiveTab(int a_Selected);
 		private:
 			game::GameResource* m_SelectedResource = nullptr;
 
+			bool m_ShowPopUp = false;
+			bool m_DoubleClick = false;
 			int m_ActiveTab = 0;
 		};
 		extern ResourcesWindow resourcesWindow;

@@ -18,7 +18,7 @@ namespace resource_editor
 		ExplorerTool::ExplorerTool() : BaseTool(0, "Explorer")
 		{ }
 
-		void ExplorerTool::RenderResource(project::Resource& a_Resource, bool& a_ShowPopUp)
+		void ExplorerTool::RenderResource(project::Resource& a_Resource)
 		{
 			if (a_Resource.m_Name.empty())
 			{
@@ -38,16 +38,26 @@ namespace resource_editor
 				if (a_Resource.m_HasChildren)
 				{
 					if (a_Resource.m_FoldedOut)
+					{
 						name = ICON_FA_FOLDER_OPEN + std::string(" ") + name;
+					}
 					else
+					{
 						name = ICON_FA_FOLDER + std::string(" ") + name;
+					}
 
 					ImGui::SetNextItemOpen(a_Resource.m_FoldedOut);
 					bool fold = ImGui::TreeNodeS(name.c_str(), id.c_str());
 
 					if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 					{
-						a_ShowPopUp |= true;
+						m_ShowPopUp |= true;
+						m_SelectedResource = &a_Resource;
+					}
+
+					if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+					{
+						m_DoubleClick |= true;
 						m_SelectedResource = &a_Resource;
 					}
 
@@ -63,7 +73,7 @@ namespace resource_editor
 					{
 						for (size_t i = 0; i < a_Resource.m_Resources.size(); i++)
 						{
-							RenderResource(a_Resource.m_Resources[i], a_ShowPopUp);
+							RenderResource(a_Resource.m_Resources[i]);
 						}
 						ImGui::TreePop();
 					}
@@ -75,7 +85,13 @@ namespace resource_editor
 
 					if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 					{
-						a_ShowPopUp |= true;
+						m_ShowPopUp |= true;
+						m_SelectedResource = &a_Resource;
+					}
+
+					if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+					{
+						m_DoubleClick |= true;
 						m_SelectedResource = &a_Resource;
 					}
 
@@ -99,7 +115,13 @@ namespace resource_editor
 
 				if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 				{
-					a_ShowPopUp |= true;
+					m_ShowPopUp |= true;
+					m_SelectedResource = &a_Resource;
+				}
+
+				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+				{
+					m_DoubleClick |= true;
 					m_SelectedResource = &a_Resource;
 				}
 
@@ -109,115 +131,120 @@ namespace resource_editor
 				}
 			}
 
-			if (a_ShowPopUp)
+			if (m_ShowPopUp)
 			{
 				ImGui::OpenPopup("res_popup");
 			}
 		}
 
+		void ExplorerTool::LoadResource(project::Resource& a_Resource)
+		{
+			UnloadResource(a_Resource.m_ResourceType);
+
+			m_LoadedResources[(int)a_Resource.m_ResourceType] = m_SelectedResource;
+			if (a_Resource.m_FileContainer.Open(a_Resource.m_Path))
+			{
+				switch (a_Resource.m_ResourceType)
+				{
+					case project::ResourceType::HE0:
+					case project::ResourceType::A:
+					{
+						project::Resource* a = nullptr;
+						for (size_t i = 0; i < a_Resource.m_Parent->m_Resources.size(); i++)
+						{
+							project::Resource& resource = a_Resource.m_Parent->m_Resources[i];
+							if (string_extensions::getFileWithoutExtension(resource.m_Name).compare(string_extensions::getFileWithoutExtension(a_Resource.m_Name)) == 0 && resource.m_ResourceType == project::ResourceType::A)
+							{
+								a = &resource;
+								break;
+							}
+						}
+						if (!a)
+						{
+							return;
+						}
+
+						m_LoadedResources[(int)project::ResourceType::A] = a;
+						game::ResourceFileCompiler compiler;
+						compiler.Decompile(*m_SelectedResource, a_Resource.m_GameResources);
+						break;
+					}
+					case project::ResourceType::HE2:
+					{
+						game::TalkFileCompiler compiler;
+						compiler.Decompile(*m_SelectedResource, a_Resource.m_GameResources);
+						break;
+					}
+					case project::ResourceType::HE4:
+					{
+						game::SongFileCompiler compiler;
+						compiler.Decompile(*m_SelectedResource, a_Resource.m_GameResources);
+						break;
+					}
+				}
+
+				resourcesWindow.SetActiveTab((int)a_Resource.m_ResourceType);
+			}
+		}
+
+		void ExplorerTool::UnloadResource(project::ResourceType a_ResourceType)
+		{
+			project::Resource* resource = m_LoadedResources[(int)a_ResourceType];
+			if (!resource)
+			{
+				return;
+			}
+
+			resource->m_FileContainer.Unload();
+			resource->m_GameResources.clear();
+			if (resource->m_ResourceType == project::ResourceType::HE0)
+			{
+				if (m_LoadedResources[(int)project::ResourceType::A])
+				{
+					project::Resource* resource = m_LoadedResources[(int)project::ResourceType::A];
+					resource->m_FileContainer.Unload();
+					resource->m_GameResources.clear();
+					m_LoadedResources[(int)project::ResourceType::A] = nullptr;
+				}
+			}
+			m_LoadedResources[(int)a_ResourceType] = nullptr;
+		}
+
 		void ExplorerTool::Render()
 		{
+			m_ShowPopUp = false;
+			m_DoubleClick = false;
+
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 10.0f });
-			bool showPopUp = false;
-			RenderResource(project::project.m_Folder, showPopUp);
+			RenderResource(project::project.m_Folder);
 			ImGui::PopStyleVar();
-			if (ImGui::BeginPopup("res_popup"))
+			if (m_SelectedResource)
 			{
-				if (m_SelectedResource->m_ResourceType == project::ResourceType::Folder)
+				if (m_DoubleClick)
 				{
+					LoadResource(*m_SelectedResource);
 				}
-				else
+				else if (ImGui::BeginPopup("res_popup"))
 				{
-					if (m_SelectedResource->m_FileContainer.m_Size == 0)
+					if (m_SelectedResource->m_ResourceType != project::ResourceType::Folder)
 					{
-						if (ImGui::MenuItem("Load"))
+						if (m_SelectedResource->m_FileContainer.m_Size == 0)
 						{
-							// Clear existing project file first.
-							if (m_LoadedResources[(int)m_SelectedResource->m_ResourceType])
+							if (ImGui::MenuItem("Load"))
 							{
-								project::Resource* resource = m_LoadedResources[(int)m_SelectedResource->m_ResourceType];
-								resource->m_FileContainer.Unload();
-								resource->m_GameResources.clear();
-								if (resource->m_ResourceType == project::ResourceType::HE0)
-								{
-									if (m_LoadedResources[(int)project::ResourceType::A])
-									{
-										project::Resource* resource = m_LoadedResources[(int)project::ResourceType::A];
-										resource->m_FileContainer.Unload();
-										resource->m_GameResources.clear();
-										m_LoadedResources[(int)project::ResourceType::A] = nullptr;
-									}
-								}
-								m_LoadedResources[(int)m_SelectedResource->m_ResourceType] = nullptr;
+								LoadResource(*m_SelectedResource);
 							}
-							m_LoadedResources[(int)m_SelectedResource->m_ResourceType] = m_SelectedResource;
-							if (m_SelectedResource->m_FileContainer.Open(m_SelectedResource->m_Path))
+						}
+						else if (m_LoadedResources[(int)m_SelectedResource->m_ResourceType] == m_SelectedResource)
+						{
+							if (ImGui::MenuItem("Unload"))
 							{
-								switch (m_SelectedResource->m_ResourceType)
-								{
-									case project::ResourceType::HE0:
-									case project::ResourceType::A:
-									{
-										project::Resource* a = nullptr;
-										for (size_t i = 0; i < m_SelectedResource->m_Parent->m_Resources.size(); i++)
-										{
-											project::Resource& resource = m_SelectedResource->m_Parent->m_Resources[i];
-											if (string_extensions::getFileWithoutExtension(resource.m_Name).compare(string_extensions::getFileWithoutExtension(m_SelectedResource->m_Name)) == 0 && resource.m_ResourceType == project::ResourceType::A)
-											{
-												a = &resource;
-												break;
-											}
-										}
-										if (a == nullptr)
-										{
-											return;
-										}
-
-										m_LoadedResources[(int)project::ResourceType::A] = a;
-										game::ResourceFileCompiler compiler;
-										compiler.Decompile(*m_SelectedResource, m_SelectedResource->m_GameResources);
-										break;
-									}
-									case project::ResourceType::HE2:
-									{
-										game::TalkFileCompiler compiler;
-										compiler.Decompile(*m_SelectedResource, m_SelectedResource->m_GameResources);
-										break;
-									}
-									case project::ResourceType::HE4:
-									{
-										game::SongFileCompiler compiler;
-										compiler.Decompile(*m_SelectedResource, m_SelectedResource->m_GameResources);
-										break;
-									}
-								}
-
-								resourcesWindow.SetActiveTab((int)m_SelectedResource->m_ResourceType);
+								UnloadResource(m_SelectedResource->m_ResourceType);
 							}
 						}
 					}
-					else if (m_LoadedResources[(int)m_SelectedResource->m_ResourceType] == m_SelectedResource)
-					{
-						if (ImGui::MenuItem("Unload"))
-						{
-							project::Resource* resource = m_LoadedResources[(int)m_SelectedResource->m_ResourceType];
-							resource->m_FileContainer.Unload();
-							resource->m_GameResources.clear();
-							if (resource->m_ResourceType == project::ResourceType::HE0)
-							{
-								if (m_LoadedResources[(int)project::ResourceType::A])
-								{
-									project::Resource* resource = m_LoadedResources[(int)project::ResourceType::A];
-									resource->m_FileContainer.Unload();
-									resource->m_GameResources.clear();
-									m_LoadedResources[(int)project::ResourceType::A] = nullptr;
-								}
-							}
-							m_LoadedResources[(int)m_SelectedResource->m_ResourceType] = nullptr;
-						}
-					}
+					ImGui::EndPopup();
 				}
-				ImGui::EndPopup();
 			}
 		}
 	}

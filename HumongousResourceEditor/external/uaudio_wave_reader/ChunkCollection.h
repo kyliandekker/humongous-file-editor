@@ -53,7 +53,6 @@ namespace uaudio
 
 			ChunkCollection(void* a_Ptr, size_t a_Size);
 
-			ChunkCollection() = default;
 			ChunkCollection(const ChunkCollection& rhs) = default;
 
 			~ChunkCollection() = default;

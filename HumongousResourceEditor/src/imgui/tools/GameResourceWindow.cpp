@@ -13,6 +13,7 @@
 #include "imgui/ImGuiWindow.h"
 #include "imgui/ImGuiDefines.h"
 #include "system/AudioSystem.h"
+#include "imgui/tools/ExplorerWindow.h"
 
 resource_editor::imgui::GameResourceWindow resource_editor::imgui::gameResourceWindow;
 
@@ -26,16 +27,19 @@ namespace resource_editor
 		void GameResourceWindow::Render()
 		{
 			if (!m_Resource)
+			{
 				return;
+			}
 
 			for (auto& pair : m_Resource->m_Properties)
 			{
 				ShowValue(pair.first, pair.second.c_str());
 			}
 
-
 			if (!m_ResourceData)
+			{
 				return;
+			}
 
 			switch (m_Resource->m_Type)
 			{
@@ -54,15 +58,17 @@ namespace resource_editor
 
 					ImGui::BeginPlayPlot(sound->m_NumSamples, sound->m_Samples, "Test##D", ImGui::GetWindowSize().x, 100, 1);
 
-					if (ImGui::Button(std::string(PLAY + std::string(" Play")).c_str()))
+					if (ImGui::Button(std::string(PLAY + std::string(" Play")).c_str(), ImVec2(75, 25)))
 					{
 						audioSystem.Stop();
 						audioSystem.Play(sound->m_SDAT_Chunk.data, sound->m_SDAT_Chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader) - sizeof(sound->m_SDAT_Chunk.data));
 					}
-					else if (ImGui::Button(std::string(STOP + std::string(" Stop")).c_str()))
+					ImGui::SameLine();
+					if (ImGui::Button(std::string(STOP + std::string(" Stop")).c_str(), ImVec2(75, 25)))
 					{
 						audioSystem.Stop();
 					}
+					ImGui::SameLine();
 					break;
 				}
 				case game::GameResourceType::RoomImage:
@@ -173,12 +179,27 @@ namespace resource_editor
 					break;
 				}
 			}
+			if (ImGui::Button(std::string(SAVE + std::string(" Save")).c_str(), ImVec2(75, 25)))
+			{
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(std::string(SAVE + std::string(" Replace")).c_str(), ImVec2(75, 25)))
+			{
+				audioSystem.Stop();
+
+				m_ResourceData->ReplaceResource(*m_Resource);
+				project::ResourceType resourceType = m_Resource->m_Parent->m_ResourceType;
+				explorer.UnloadResource(resourceType);
+				explorer.LoadResource(*m_Resource->m_Parent);
+			}
 		}
 
 		void GameResourceWindow::SetResource(game::GameResource& a_Resource)
 		{
 			if (m_ResourceData)
+			{
 				delete(m_ResourceData);
+			}
 
 			m_ResourceData = nullptr;
 

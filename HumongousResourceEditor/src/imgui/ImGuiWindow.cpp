@@ -12,6 +12,7 @@
 #include "imgui/tools/ResourcesWindow.h"
 #include "imgui/tools/GameResourceWindow.h"
 #include "system/Logger.h"
+#include <imgui/ImguiDefines.h>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -99,13 +100,13 @@ namespace resource_editor
 			ImFont* font1 = io.Fonts->AddFontDefault();
 			(void)font1;
 
-			constexpr auto ICON_MIN_FA = 0xf000;
-			constexpr auto ICON_MAX_FA = 0xf2e0;
+			m_DefaultFont = io.Fonts->AddFontFromFileTTF("./resources/font_default.ttf", 14.0f);
+
 			constexpr ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
 			ImFontConfig icons_config;
 			icons_config.MergeMode = true;
 			icons_config.PixelSnapH = true;
-			m_EditorFont = io.Fonts->AddFontFromFileTTF("./resources/fa-solid-900.ttf", 17.0f, &icons_config, icons_ranges);
+			m_EditorFont = io.Fonts->AddFontFromFileTTF("./resources/fa-solid-900.ttf", 16.0f, &icons_config, icons_ranges);
 			io.Fonts->Build();
 
 			ImGui::StyleColorsDark();
