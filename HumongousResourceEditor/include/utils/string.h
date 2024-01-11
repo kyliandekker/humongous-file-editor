@@ -26,5 +26,11 @@ namespace resource_editor
 			std::string f = a_Path.substr(0, a_Path.find_last_of("\\"));
 			return f.substr(0, a_Path.find_last_of("/"));
 		}
+
+		inline bool ends_with(std::string const& value, std::string const& ending)
+		{
+			if (ending.size() > value.size()) return false;
+			return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+		}
 	}
 }

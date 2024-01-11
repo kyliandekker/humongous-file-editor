@@ -10,6 +10,7 @@ namespace resource_editor
 		{
 		public:
 			virtual bool GetData(game::GameResource& a_Resource) = 0;
+			virtual bool ReplaceResource(game::GameResource& a_Resource) = 0;
 		};
 	}
 }

@@ -19,6 +19,7 @@ namespace resource_editor
 			~RoomBackgroundResource();
 			static bool GetRoomBackgroundData(game::GameResource& a_Resource, ImgInfo& a_ImageInfo);
 			bool GetData(game::GameResource& a_Resource);
+			bool ReplaceResource(game::GameResource& a_Resource) override;
 		};
 	}
 }

@@ -1,13 +1,15 @@
 #include "game/decompiled_resource/SongResource.h"
 
+#include <vector>
+#include <uaudio_wave_reader/WaveChunks.h>
+#include <uaudio_wave_reader/ChunkCollection.h>
+
 #include "low_level/HumongousChunkDefinitions.h"
 #include "low_level/ChunkInfo.h"
 #include "low_level/Utils.h"
 #include "game/GameResource.h"
 #include "project/Resource.h"
 #include "system/audio/AudioUtils.h"
-
-#include <vector>
 
 namespace resource_editor
 {
@@ -83,6 +85,126 @@ namespace resource_editor
 			m_Samples = audio::utils::ToSample(m_SDAT_Chunk.data, m_SDAT_Chunk.ChunkSize());
 
 			return true;
+		}
+
+		bool SongResource::ReplaceResource(game::GameResource& a_Resource)
+		{
+			std::string path;
+			uaudio::wave_reader::ChunkCollection chunkCollection;
+			if (OpenResource(path, chunkCollection))
+			{
+				uaudio::wave_reader::FMT_Chunk fmt_chunk;
+				uaudio::wave_reader::DATA_Chunk data_chunk;
+
+				if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
+				{
+					free(chunkCollection.data());
+					return false;
+				}
+
+				if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
+				{
+					free(chunkCollection.data());
+					return false;
+				}
+
+				// Get SGEN chunk first (tells us the position of the SONG).
+				chunk_reader::SGEN_Chunk sgen_chunk;
+				memcpy(&sgen_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, a_Resource.m_Offset), sizeof(chunk_reader::SGEN_Chunk));
+
+				// Get DIGI chunk for the raw audio data.
+				size_t digi_offset = sgen_chunk.song_pos;
+
+				chunk_reader::DIGI_Chunk digi_chunk;
+				memcpy(&digi_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, digi_offset), sizeof(chunk_reader::DIGI_Chunk));
+
+				std::vector<chunk_reader::ChunkInfo> children = a_Resource.m_Parent->m_FileContainer.GetChildren(sgen_chunk.song_pos);
+				int32_t hshd_offset = -1;
+				int32_t sdat_offset = -1;
+				for (size_t i = 0; i < children.size(); i++)
+				{
+					if (low_level::utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
+					{
+						hshd_offset = static_cast<int32_t>(children[i].m_Offset);
+					}
+					if (low_level::utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
+					{
+						sdat_offset = static_cast<int32_t>(children[i].m_Offset);
+					}
+				}
+
+				if (hshd_offset == -1)
+				{
+					free(chunkCollection.data());
+					return false;
+				}
+
+				if (hshd_offset == -1)
+				{
+					free(chunkCollection.data());
+					return false;
+				}
+
+				chunk_reader::HSHD_Chunk hshd_chunk;
+				memcpy(&hshd_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
+
+				chunk_reader::SDAT_Chunk sdat_chunk;
+				size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(sdat_chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
+				memcpy(&sdat_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, sdat_offset), header_size);
+				sdat_chunk.SetChunkSize(data_chunk.chunkSize + static_cast<uint32_t>(header_size));
+
+				digi_chunk.SetChunkSize(
+					sizeof(chunk_reader::HumongousHeader) + // DIGI chunk itself.
+					hshd_chunk.ChunkSize() + // HSHD chunk.
+					sdat_chunk.ChunkSize() // SDAT chunk.
+				);
+
+				unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(digi_chunk.ChunkSize()));
+				if (!new_data)
+				{
+					free(chunkCollection.data());
+					return false;
+				}
+				memcpy(new_data, &digi_chunk, sizeof(chunk_reader::SDAT_Chunk));
+				memcpy(low_level::utils::add(new_data, sizeof(digi_chunk)), &hshd_chunk, hshd_chunk.ChunkSize());
+				memcpy(low_level::utils::add(new_data, sizeof(digi_chunk) + hshd_chunk.ChunkSize()), &sdat_chunk, sizeof(chunk_reader::HumongousHeader));
+				memcpy(low_level::utils::add(new_data, sizeof(digi_chunk) + hshd_chunk.ChunkSize() + sizeof(chunk_reader::HumongousHeader)), data_chunk.data, data_chunk.chunkSize);
+
+				a_Resource.m_Parent->m_FileContainer.Replace(digi_offset, new_data, digi_chunk.ChunkSize());
+
+				uint32_t dif_size = digi_chunk.ChunkSize() - sgen_chunk.song_size;
+
+				chunk_reader::ChunkInfo next_chunk = a_Resource.m_Parent->m_FileContainer.GetChunkInfo(sizeof(chunk_reader::HumongousHeader));
+				while (next_chunk.m_Offset < a_Resource.m_Parent->m_FileContainer.m_Size)
+				{
+					if (low_level::utils::chunkcmp(next_chunk.chunk_id, chunk_reader::SGEN_CHUNK_ID) == 0)
+					{
+						if (next_chunk.m_Offset >= a_Resource.m_Offset)
+						{
+							chunk_reader::SGEN_Chunk new_sgen_chunk;
+							memcpy(&new_sgen_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, next_chunk.m_Offset), sizeof(chunk_reader::SGEN_Chunk));
+
+							if (next_chunk.m_Offset == a_Resource.m_Offset)
+							{
+								new_sgen_chunk.song_size = digi_chunk.ChunkSize();
+							}
+							else
+							{
+								new_sgen_chunk.song_pos += dif_size;
+							}
+
+							a_Resource.m_Parent->m_FileContainer.Replace(next_chunk.m_Offset, reinterpret_cast<unsigned char*>(&new_sgen_chunk), sizeof(chunk_reader::SGEN_Chunk));
+						}
+					}
+					next_chunk = a_Resource.m_Parent->m_FileContainer.GetNextChunk(next_chunk.m_Offset);
+				}
+
+				free(new_data);
+				free(chunkCollection.data());
+
+				return true;
+			}
+			return false;
 		}
 	}
 }

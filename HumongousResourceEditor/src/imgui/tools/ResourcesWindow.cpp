@@ -168,6 +168,10 @@ namespace resource_editor
 					{
 
 					}
+					else if (ImGui::MenuItem("Replace"))
+					{
+
+					}
 					ImGui::EndPopup();
 				}
 			}

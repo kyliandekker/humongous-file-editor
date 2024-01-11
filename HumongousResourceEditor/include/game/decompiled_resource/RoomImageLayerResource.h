@@ -16,6 +16,7 @@ namespace resource_editor
 			RoomImageLayerResource(const RoomImageLayerResource& rhs);
 			~RoomImageLayerResource();
 			bool GetData(game::GameResource& a_Resource);
+			bool ReplaceResource(game::GameResource& a_Resource) override;
 		};
 	}
 }

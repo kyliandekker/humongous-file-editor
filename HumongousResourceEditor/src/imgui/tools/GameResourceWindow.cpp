@@ -9,6 +9,7 @@
 #include "game/decompiled_resource/RoomBackgroundResource.h"
 #include "game/decompiled_resource/RoomImageResource.h"
 #include "game/decompiled_resource/RoomImageLayerResource.h"
+#include "game/decompiled_resource/ScriptResource.h"
 #include "imgui/ImGuiWindow.h"
 #include "imgui/ImGuiDefines.h"
 #include "system/AudioSystem.h"
@@ -31,7 +32,7 @@ namespace resource_editor
 			{
 				ShowValue(pair.first, pair.second.c_str());
 			}
-			
+
 
 			if (!m_ResourceData)
 				return;
@@ -93,20 +94,74 @@ namespace resource_editor
 					}
 
 					int width_new = ImGui::GetWindowSize().x;
-					int height_new = (int) ((float)image->m_ImageInfo.m_Height * (1.0f / image->m_ImageInfo.m_Width * width_new));
+					int height_new = (int)((float)image->m_ImageInfo.m_Height * (1.0f / image->m_ImageInfo.m_Width * width_new));
 					ImGui::Image((void*)image->m_Texture, ImVec2(width_new, height_new));
 					break;
 				}
 				case game::GameResourceType::Local_Script:
-				{
-					break;
-				}
 				case game::GameResourceType::Global_Script:
-				{
-					break;
-				}
 				case game::GameResourceType::Verb_Script:
 				{
+					game::ScriptResource* script = dynamic_cast<game::ScriptResource*>(m_ResourceData);
+					for (size_t i = 0; i < script->m_Instructions.size(); i++)
+					{
+						ScriptInstruction& instruction = script->m_Instructions[i];
+						std::string instruction_name = instruction.m_Name + "##" + m_Resource->m_Name + "_" + m_Resource->m_Parent->m_Path + "_" + instruction.m_Name + "_" + std::to_string(instruction.m_OffsetInSCRPChunk);
+						if (ImGui::CollapsingHeader(instruction_name.c_str()))
+						{
+							ImGui::Indent(IMGUI_INDENT);
+							ShowValue("Instruction", instruction.m_Name.c_str());
+							ShowValue("Code", std::to_string(instruction.m_Code).c_str());
+							ShowValue("Code (char)", std::string(1, instruction.m_Code).c_str());
+							ShowValue("Offset", std::to_string(instruction.m_OffsetInSCRPChunk).c_str());
+							std::string args_name = "Arguments (" + std::to_string(instruction.m_Args.m_Args.size()) + ")##Args_" + m_Resource->m_Name + "_" + m_Resource->m_Parent->m_Path + "_" + instruction.m_Name + "_" + std::to_string(instruction.m_OffsetInSCRPChunk);
+							if (ImGui::CollapsingHeader(args_name.c_str()))
+							{
+								for (size_t j = 0; j < instruction.m_Args.m_Args.size(); j++)
+								{
+									ImGui::Indent(IMGUI_INDENT);
+									std::string val;
+									switch (instruction.m_Args.m_Args[j].m_ArgType)
+									{
+										case ArgType::ArgType_Byte:
+										{
+											val = std::string(1, reinterpret_cast<char>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											break;
+										}
+										case ArgType::ArgType_Short:
+										{
+											val = std::to_string(reinterpret_cast<uint16_t>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											break;
+										}
+										case ArgType::ArgType_Ref:
+										{
+											val = std::to_string(reinterpret_cast<uint16_t>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											break;
+										}
+										case ArgType::ArgType_Long:
+										{
+											val = std::to_string(reinterpret_cast<uint32_t>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											break;
+										}
+										case ArgType::ArgType_String:
+										{
+											val = std::string(reinterpret_cast<char*>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											break;
+										}
+										case ArgType::ArgType_TalkString:
+										{
+											val = std::string(reinterpret_cast<char*>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											break;
+										}
+									}
+									ShowValue(std::string("Arg " + std::to_string(j)), val.c_str());
+									ImGui::Unindent(IMGUI_INDENT);
+								}
+							}
+							ImGui::Unindent(IMGUI_INDENT);
+						}
+					}
+
 					break;
 				}
 				case game::GameResourceType::Room:
@@ -165,15 +220,10 @@ namespace resource_editor
 					break;
 				}
 				case game::GameResourceType::Local_Script:
-				{
-					break;
-				}
 				case game::GameResourceType::Global_Script:
-				{
-					break;
-				}
 				case game::GameResourceType::Verb_Script:
 				{
+					m_ResourceData = new game::ScriptResource(*m_Resource);
 					break;
 				}
 				case game::GameResourceType::Room:

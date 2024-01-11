@@ -120,6 +120,12 @@ namespace resource_editor
 				return false;
 
 			imgui::window.GetDX9().CreateTexture(m_Texture, m_ImageInfo);
+			return true;
 		}
+
+        bool RoomImageResource::ReplaceResource(game::GameResource& a_Resource)
+        {
+            return false;
+        }
 	}
 }
