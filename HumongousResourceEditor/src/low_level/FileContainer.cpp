@@ -9,11 +9,6 @@ namespace resource_editor
 {
 	namespace chunk_reader
 	{
-		FileContainer::FileContainer(std::string a_Path)
-		{
-			Open(a_Path);
-		}
-
 		FileContainer::FileContainer(const FileContainer& rhs)
 		{
 			m_Size = rhs.m_Size;
@@ -165,7 +160,7 @@ namespace resource_editor
 		{
 			ChunkInfo chunk = GetChunkInfo(a_Offset);
 			int32_t dif_size = static_cast<int32_t>(a_NewSize - chunk.ChunkSize());
-
+			
 			ChunkInfo next_chunk = GetChunkInfo(0);
 			if (dif_size != 0)
 			{
@@ -180,8 +175,9 @@ namespace resource_editor
 				}
 			}
 
-			unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(m_Size + dif_size));
-			memset(new_data, 0, m_Size + dif_size);
+			size_t new_size = m_Size + dif_size;
+			unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(new_size));
+			memset(new_data, 0, new_size);
 			memcpy(new_data, m_Data, a_Offset);
 			memcpy(low_level::utils::add(new_data, a_Offset), a_NewChunkData, a_NewSize);
 			memcpy(low_level::utils::add(new_data, a_Offset + a_NewSize), low_level::utils::add(m_Data, a_Offset + chunk.ChunkSize()), m_Size - (a_Offset + chunk.ChunkSize()));

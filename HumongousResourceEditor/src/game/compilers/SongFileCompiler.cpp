@@ -16,6 +16,8 @@ namespace resource_editor
 	{
 		bool SongFileCompiler::Decompile(project::Resource& a_Resource, std::vector<GameResource>& a_Resources)
 		{
+			a_Resources.clear();
+
 			std::map<std::string, game::GameResourceType> RESOURCE_CHUNKS =
 			{
 				{ chunk_reader::SGEN_CHUNK_ID, game::GameResourceType::Song }

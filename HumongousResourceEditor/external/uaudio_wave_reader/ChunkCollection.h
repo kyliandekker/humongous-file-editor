@@ -55,6 +55,7 @@ namespace uaudio
 
 			ChunkCollection(const ChunkCollection& rhs) = default;
 
+			ChunkCollection() = default;
 			~ChunkCollection() = default;
 
 			ChunkCollection& operator=(const ChunkCollection& rhs) = default;

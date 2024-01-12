@@ -14,7 +14,6 @@ namespace resource_editor
 		{
 		public:
 			FileContainer() = default;
-			FileContainer(std::string a_Path);
 			FileContainer(const FileContainer& rhs);
 			~FileContainer();
 			

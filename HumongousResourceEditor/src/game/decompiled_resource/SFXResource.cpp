@@ -80,5 +80,25 @@ namespace resource_editor
 
 			return true;
 		}
+
+        bool SFXResource::Replace(game::GameResource& a_Resource)
+        {
+            return false;
+        }
+
+		bool SFXResource::Save(game::GameResource& a_Resource)
+		{
+			std::string path;
+			if (SaveResource(path))
+			{
+				bool saved = SaveSound(path, m_SDAT_Chunk.data, m_SDAT_Chunk.ChunkSize() - sizeof(resource_editor::chunk_reader::SDAT_Chunk), m_HSHD_Chunk.sample_rate);
+				if (saved)
+				{
+					system(path.c_str());
+				}
+				return saved;
+			}
+			return false;
+		}
 	}
 }

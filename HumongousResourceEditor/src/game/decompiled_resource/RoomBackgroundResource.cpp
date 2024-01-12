@@ -104,9 +104,14 @@ namespace resource_editor
 			return true;
 		}
 
-        bool RoomBackgroundResource::ReplaceResource(game::GameResource& a_Resource)
+        bool RoomBackgroundResource::Replace(game::GameResource& a_Resource)
         {
             return false;
         }
+
+		bool RoomBackgroundResource::Save(game::GameResource& a_Resource)
+		{
+			return false;
+		}
 	}
 }

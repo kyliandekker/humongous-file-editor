@@ -14,6 +14,7 @@
 #include "imgui/ImGuiDefines.h"
 #include "system/AudioSystem.h"
 #include "imgui/tools/ExplorerWindow.h"
+#include "system/Logger.h"
 
 resource_editor::imgui::GameResourceWindow resource_editor::imgui::gameResourceWindow;
 
@@ -179,18 +180,31 @@ namespace resource_editor
 					break;
 				}
 			}
-			if (ImGui::Button(std::string(SAVE + std::string(" Save")).c_str(), ImVec2(75, 25)))
+			if (ImGui::Button(std::string(SAVE + std::string(" Export")).c_str(), ImVec2(75, 25)))
 			{
+				if (m_ResourceData->Save(*m_Resource))
+				{
+					return;
+				}
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(std::string(SAVE + std::string(" Replace")).c_str(), ImVec2(75, 25)))
 			{
 				audioSystem.Stop();
 
-				m_ResourceData->ReplaceResource(*m_Resource);
-				project::ResourceType resourceType = m_Resource->m_Parent->m_ResourceType;
-				explorer.UnloadResource(resourceType);
-				explorer.LoadResource(*m_Resource->m_Parent);
+				if (m_ResourceData->Replace(*m_Resource))
+				{
+					project::Resource* resource = m_Resource->m_Parent;
+
+					m_Resource = nullptr;
+					delete(m_ResourceData);
+					m_ResourceData = nullptr;
+
+					explorer.ClearResources(*resource);
+					explorer.LoadResource(*resource);
+
+					LOG(logger::LOGSEVERITY_MESSAGE, "Successfully replaced resource!");
+				}
 			}
 		}
 

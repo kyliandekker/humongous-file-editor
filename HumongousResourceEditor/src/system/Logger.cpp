@@ -18,7 +18,8 @@ namespace resource_editor
 			"INFO",
 			"WARNING",
 			"ERROR",
-			"ASSERT"
+			"ASSERT",
+			"INFO",
 		};
 
 		Logger::Logger()
@@ -69,7 +70,7 @@ namespace resource_editor
 				a_Message);
 
 			m_MessagesMutex.lock();
-			m_Messages.push({ message, a_Severity });
+			m_Messages.push({ message, a_Message, a_Severity });
 			m_MessagesMutex.unlock();
 		}
 
@@ -91,8 +92,8 @@ namespace resource_editor
 						&written,
 						nullptr
 					);
-					//if (m_LoggerCallback)
-					//	m_LoggerCallback(lm);
+					if (m_LoggerCallback)
+						m_LoggerCallback(lm);
 					if (lm.severity == logger::LOGSEVERITY_ASSERT)
 						assert(0 && "Logger assert, check log file for information");
 				}

@@ -44,6 +44,7 @@ namespace resource_editor
 			bool m_ShowPopUp = false;
 			std::string m_PopUpText;
 			std::string m_PopUpTitle;
+			bool m_IsError = true;
 			std::mutex m_RenderMutex;
 		private:
 			HWND m_Hwnd = nullptr;

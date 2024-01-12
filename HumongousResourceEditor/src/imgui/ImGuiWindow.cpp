@@ -54,9 +54,9 @@ namespace resource_editor
 
 		void ImGuiWindow::Initialize()
 		{
-			logger::logger.m_LoggerCallback = &window.LoggerCallback;
 			CreateContext();
 			CreateImGui();
+			logger::logger.m_LoggerCallback = &window.LoggerCallback;
 		}
 
 		void ImGuiWindow::ProcessEvents(HWND a_Hwnd, UINT a_Msg, WPARAM a_wParam, LPARAM a_lParam)
@@ -245,6 +245,42 @@ namespace resource_editor
 			m_MainWindow->SetSize(size);
 			m_MainWindow->Update();
 
+			if (m_IsError)
+			{
+				ImGui::PushStyleColor(ImGuiCol_NavWindowingHighlight, ImVec4(1.00f, 0.00f, 0.00f, 0.75f));
+				ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4(1.00f, 0.00f, 0.00f, 0.35f));
+				ImGui::PushStyleColor(ImGuiCol_NavWindowingDimBg, ImVec4(1.00f, 0.00f, 0.00f, 0.2f));
+			}
+			else
+			{
+				ImGui::PushStyleColor(ImGuiCol_NavWindowingHighlight, ImVec4(0.00f, 1.00f, 0.00f, 0.75f));
+				ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4(0.00f, 1.00f, 0.00f, 0.35f));
+				ImGui::PushStyleColor(ImGuiCol_NavWindowingDimBg, ImVec4(0.00f, 1.00f, 0.00f, 0.2f));
+			}
+
+			if (m_ShowPopUp)
+			{
+				ImGui::SetNextWindowSize(ImVec2(size.x / 2, size.y / 3));
+
+				ImGui::OpenPopup(m_PopUpTitle.c_str());
+
+				if (ImGui::BeginPopupModal(m_PopUpTitle.c_str(), &m_ShowPopUp))
+				{
+					ImGui::Text(m_PopUpText.c_str());
+					if (ImGui::Button("Close"))
+					{
+						m_ShowPopUp = false;
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::EndPopup();
+				}
+
+			}
+
+			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
+
 			for (auto* tool : m_Tools)
 			{
 				if (tool->IsFullScreen())
@@ -293,11 +329,36 @@ namespace resource_editor
 
 		void ImGuiWindow::LoggerCallback(logger::Message& a_Message)
 		{
-			if (a_Message.severity != logger::LOGSEVERITY_ERROR && a_Message.severity != logger::LOGSEVERITY_ASSERT)
-				return;
-
 			window.m_PopUpText = a_Message.message;
-			window.m_PopUpTitle = (a_Message.severity == logger::LOGSEVERITY_ERROR) ? "Error" : "Critical Error";
+			switch (a_Message.severity)
+			{
+				case logger::LOGSEVERITY_ERROR:
+				{
+					window.m_IsError = true;
+
+					window.m_PopUpTitle = "Error";
+					break;
+				}
+				case logger::LOGSEVERITY_ASSERT:
+				{
+					window.m_IsError = true;
+
+					window.m_PopUpTitle = "Critical Error";
+					break;
+				}
+				case logger::LOGSEVERITY_MESSAGE:
+				{
+					window.m_IsError = false;
+
+					window.m_PopUpTitle = "Success";
+					window.m_PopUpText = a_Message.raw_message;
+					break;
+				}
+				default:
+				{
+					return;
+				}
+			}
 			window.m_ShowPopUp = true;
 		}
 	}

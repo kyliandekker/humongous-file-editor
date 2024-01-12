@@ -62,7 +62,7 @@ namespace resource_editor
 
 		bool SaveFile(std::string& a_Path, int*a_Choice, const std::vector<COMDLG_FILTERSPEC>& a_Filters)
 		{
-			return false;
+			return genericFileOpen(a_Path, CLSID_FileSaveDialog, 0, a_Filters);
 		}
 
 		bool SaveFolder(std::string& a_Path)

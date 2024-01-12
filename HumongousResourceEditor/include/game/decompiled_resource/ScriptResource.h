@@ -18,7 +18,8 @@ namespace resource_editor
 			ScriptResource(const ScriptResource& rhs);
 			~ScriptResource();
 			bool GetData(game::GameResource& a_Resource);
-			bool ReplaceResource(game::GameResource& a_Resource) override;
+			bool Replace(game::GameResource& a_Resource) override;
+			bool Save(game::GameResource& a_Resource) override;
 
 			std::vector<ScriptInstruction> m_Instructions;
 		};

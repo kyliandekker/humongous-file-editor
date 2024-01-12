@@ -97,9 +97,14 @@ namespace resource_editor
 			return true;
 		}
 
-        bool ScriptResource::ReplaceResource(game::GameResource& a_Resource)
+        bool ScriptResource::Replace(game::GameResource& a_Resource)
         {
             return false;
         }
+
+		bool ScriptResource::Save(game::GameResource& a_Resource)
+		{
+			return false;
+		}
 	}
 }

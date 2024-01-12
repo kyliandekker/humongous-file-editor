@@ -10,6 +10,7 @@
 #include "game/GameResource.h"
 #include "project/Resource.h"
 #include "system/audio/AudioUtils.h"
+#include "system/Logger.h"
 
 namespace resource_editor
 {
@@ -87,7 +88,7 @@ namespace resource_editor
 			return true;
 		}
 
-		bool SongResource::ReplaceResource(game::GameResource& a_Resource)
+		bool SongResource::Replace(game::GameResource& a_Resource)
 		{
 			std::string path;
 			uaudio::wave_reader::ChunkCollection chunkCollection;
@@ -98,12 +99,14 @@ namespace resource_editor
 
 				if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
 				{
+					LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" does not have a data chunk.", path.c_str());
 					free(chunkCollection.data());
 					return false;
 				}
 
 				if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
 				{
+					LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" does not have a fmt chunk.", path.c_str());
 					free(chunkCollection.data());
 					return false;
 				}
@@ -135,12 +138,14 @@ namespace resource_editor
 
 				if (hshd_offset == -1)
 				{
+					LOGF(logger::LOGSEVERITY_ERROR, "Could not find HSHD chunk when trying to replace resource with file \"%s\".", path.c_str());
 					free(chunkCollection.data());
 					return false;
 				}
 
-				if (hshd_offset == -1)
+				if (sdat_offset == -1)
 				{
+					LOGF(logger::LOGSEVERITY_ERROR, "Could not find SDAT chunk when trying to replace resource with file \"%s\".", path.c_str());
 					free(chunkCollection.data());
 					return false;
 				}
@@ -162,6 +167,7 @@ namespace resource_editor
 				unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(digi_chunk.ChunkSize()));
 				if (!new_data)
 				{
+					LOGF(logger::LOGSEVERITY_ERROR, "Could not allocate memory when trying to replace resource with file \"%s\".", path.c_str());
 					free(chunkCollection.data());
 					return false;
 				}
@@ -172,7 +178,7 @@ namespace resource_editor
 
 				a_Resource.m_Parent->m_FileContainer.Replace(digi_offset, new_data, digi_chunk.ChunkSize());
 
-				uint32_t dif_size = digi_chunk.ChunkSize() - sgen_chunk.song_size;
+				int32_t dif_size = digi_chunk.ChunkSize() - sgen_chunk.song_size;
 
 				chunk_reader::ChunkInfo next_chunk = a_Resource.m_Parent->m_FileContainer.GetChunkInfo(sizeof(chunk_reader::HumongousHeader));
 				while (next_chunk.m_Offset < a_Resource.m_Parent->m_FileContainer.m_Size)
@@ -203,6 +209,21 @@ namespace resource_editor
 				free(chunkCollection.data());
 
 				return true;
+			}
+			return false;
+		}
+
+		bool SongResource::Save(game::GameResource& a_Resource)
+		{
+			std::string path;
+			if (SaveResource(path))
+			{
+				bool saved = SaveSound(path, m_SDAT_Chunk.data, m_SDAT_Chunk.ChunkSize() - sizeof(resource_editor::chunk_reader::SDAT_Chunk), m_HSHD_Chunk.sample_rate);
+				if (saved)
+				{
+					system(path.c_str());
+				}
+				return saved;
 			}
 			return false;
 		}

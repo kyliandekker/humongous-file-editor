@@ -127,9 +127,14 @@ namespace resource_editor
 			return true;
 		}
 
-        bool RoomImageLayerResource::ReplaceResource(game::GameResource& a_Resource)
+        bool RoomImageLayerResource::Replace(game::GameResource& a_Resource)
         {
             return false;
         }
+
+		bool RoomImageLayerResource::Save(game::GameResource& a_Resource)
+		{
+			return false;
+		}
 	}
 }

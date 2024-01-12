@@ -126,6 +126,11 @@ namespace resource_editor
 
 		void ResourcesWindow::Render()
 		{
+			if (!explorer.m_LoadedResources[m_ActiveTab])
+			{
+				return;
+			}
+
 			if (explorer.m_LoadedResources[(int)project::ResourceType::HE0] != nullptr)
 			{
 				if (ImGui::Button("HE0", ImVec2(100.0f, 0.0f)))

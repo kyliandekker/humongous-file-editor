@@ -18,6 +18,8 @@ namespace resource_editor
 			TalkResource(const TalkResource& rhs);
 			~TalkResource();
 			bool GetData(game::GameResource& a_Resource);
+			bool Replace(game::GameResource& a_Resource) override;
+			bool Save(game::GameResource& a_Resource) override;
 		};
 	}
 }

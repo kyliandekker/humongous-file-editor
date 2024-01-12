@@ -16,12 +16,14 @@ namespace resource_editor
 			LOGSEVERITY_INFO,
 			LOGSEVERITY_WARNING,
 			LOGSEVERITY_ERROR,
-			LOGSEVERITY_ASSERT
+			LOGSEVERITY_ASSERT,
+			LOGSEVERITY_MESSAGE,
 		} LogSeverity;
 
 		struct Message
 		{
 			std::string message;
+			std::string raw_message;
 			LogSeverity severity;
 		};
 

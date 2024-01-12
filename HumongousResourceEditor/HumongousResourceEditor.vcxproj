@@ -172,6 +172,7 @@
     <ClInclude Include="include\cmd\ArgsAllocator.h" />
     <ClInclude Include="include\cmd\OPCodes.h" />
     <ClInclude Include="include\cmd\ScriptInstruction.h" />
+    <ClInclude Include="include\cmd\TalkInstruction.h" />
     <ClInclude Include="include\game\Compiler.h" />
     <ClInclude Include="include\game\compilers\ResourceFileCompiler.h" />
     <ClInclude Include="include\game\compilers\TalkFileCompiler.h" />
@@ -225,6 +226,8 @@
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="external\imgui\implot.cpp" />
     <ClCompile Include="external\imgui\implot_items.cpp" />
+    <ClCompile Include="src\cmd\TalkInstruction.cpp" />
+    <ClCompile Include="src\cmd\ScriptInstruction.cpp" />
     <ClCompile Include="include\game\GameResourceType.h" />
     <ClCompile Include="include\low_level\HumongousChunks.cpp" />
     <ClCompile Include="src\cmd\ArgsAllocator.cpp" />
