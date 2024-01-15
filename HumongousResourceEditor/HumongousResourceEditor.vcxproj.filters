@@ -296,5 +296,8 @@
     <ClCompile Include="src\cmd\TalkInstruction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="include\low_level\ChunkInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

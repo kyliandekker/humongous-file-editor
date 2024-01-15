@@ -26,6 +26,12 @@ namespace resource_editor
 				return b;
 			}
 
+			int chunkcmp(unsigned char* a_ChunkID1, unsigned char* a_ChunkID2)
+			{
+				int b = strncmp(reinterpret_cast<const char*>(a_ChunkID1), reinterpret_cast<const char*>(a_ChunkID2), CHUNK_ID_SIZE);
+				return b;
+			}
+
 			int unsignedCharCmp(unsigned char a_ChunkID1, unsigned char a_ChunkID2)
 			{
 				return a_ChunkID1 == a_ChunkID2;
@@ -50,6 +56,29 @@ namespace resource_editor
 				{
 					a_Data[i] = a_Data[i] ^ a_Key;
 				}
+			}
+
+			size_t seekChildren(std::vector<chunk_reader::ChunkInfo>& a_Children, std::vector<chunk_reader::ChunkInfo>& a_Desired)
+			{
+				for (auto& chunkInfo : a_Desired)
+				{
+					chunkInfo.m_Offset = -1;
+				}
+
+				size_t found = 0;
+				for (auto& chunkInfo : a_Desired)
+				{
+					for (auto& childInfo : a_Children)
+					{
+						if (chunkcmp(chunkInfo.chunk_id, childInfo.chunk_id) == 0)
+						{
+							found++;
+							chunkInfo = childInfo;
+						}
+					}
+				}
+
+				return found;
 			}
 		}
 	}

@@ -10,11 +10,13 @@ namespace resource_editor
 		{
 		public:
 			ChunkInfo() = default;
+			ChunkInfo(const char* a_ChunkID) : HumongousHeader(a_ChunkID)
+			{ }
 			ChunkInfo(const ChunkInfo& rhs) : HumongousHeader(rhs)
 			{
 				m_Offset = rhs.m_Offset;
 			}
-			size_t m_Offset = 0;
+			int32_t m_Offset = 0;
 		};
 	}
 }

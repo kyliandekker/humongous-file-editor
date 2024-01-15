@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <low_level/ChunkInfo.h>
+
 namespace resource_editor
 {
 	namespace low_level
@@ -23,6 +26,7 @@ namespace resource_editor
 			/// <param name="chunkID2">Name of chunk 2.</param>
 			/// <returns></returns>
 			int chunkcmp(unsigned char* a_ChunkID1, const char* a_ChunkID2);
+			int chunkcmp(unsigned char* a_ChunkID1, unsigned char* a_ChunkID2);
 
 			/// <summary>
 			/// Compares two chunks.
@@ -53,6 +57,8 @@ namespace resource_editor
 			}
 
 			void xorShift(unsigned char*& a_Data, size_t a_Size, char a_Key);
+
+			size_t seekChildren(std::vector<chunk_reader::ChunkInfo>& a_Children, std::vector<chunk_reader::ChunkInfo>& a_Desired);
 		}
 	}
 }

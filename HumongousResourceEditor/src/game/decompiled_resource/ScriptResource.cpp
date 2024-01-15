@@ -33,8 +33,10 @@ namespace resource_editor
 			unsigned char* data = nullptr;
 		};
 
-		bool ScriptResource::GetData(game::GameResource& a_Resource)
+		bool ScriptResource::GetScriptData(game::GameResource& a_Resource, std::vector<ScriptInstruction>& a_Instructions)
 		{
+			a_Instructions.clear();
+
 			size_t scrp_size = 0;
 			size_t pos = 0;
 
@@ -72,7 +74,7 @@ namespace resource_editor
 				instruction.m_Name = bytecode.m_Name;
 				instruction.m_Args = args;
 
-				m_Instructions.push_back(instruction);
+				a_Instructions.push_back(instruction);
 
 				// Checking jumps and seeing if they are valid.
 				if ((instruction.m_Code == 0x5C // jump if
@@ -95,6 +97,11 @@ namespace resource_editor
 			}
 
 			return true;
+		}
+
+		bool ScriptResource::GetData(game::GameResource& a_Resource)
+		{
+			return GetScriptData(a_Resource, m_Instructions);
 		}
 
         bool ScriptResource::Replace(game::GameResource& a_Resource)
