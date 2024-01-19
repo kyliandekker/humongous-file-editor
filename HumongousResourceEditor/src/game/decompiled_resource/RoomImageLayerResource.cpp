@@ -94,7 +94,10 @@ namespace resource_editor
 				}
 				else
 				{
-					backgroundImage.m_Data[i + 3] = 55;
+					if (backgroundImage.m_Data[i + 3] > 0)
+					{
+						backgroundImage.m_Data[i + 3] = 55;
+					}
 				}
 			}
 

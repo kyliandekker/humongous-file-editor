@@ -25,7 +25,7 @@ namespace resource_editor
 		{
 		}
 
-		bool RoomImageResource::GetRoomImageData(game::GameResource& a_Resource, ImgInfo& a_ImageInfo, bool a_ShowTransparent)
+		bool RoomImageResource::GetRoomImageData(game::GameResource& a_Resource, ImgInfo& a_ImageInfo, bool a_ShowTransparency)
 		{
 			std::vector<chunk_reader::ChunkInfo> children = a_Resource.m_Parent->m_FileContainer.GetChildren(a_Resource.m_Offset);
 			if (children.size() == 0)
@@ -84,14 +84,14 @@ namespace resource_editor
 				chunk_reader::SMAP_Chunk smap_chunk;
 				a_Resource.m_Parent->m_FileContainer.GetChunk(smap_chunk, bsmap_offset, sizeof(chunk_reader::SMAP_Chunk) - sizeof(smap_chunk.data));
 				smap_chunk.data = reinterpret_cast<unsigned char*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, bsmap_offset + sizeof(chunk_reader::HumongousHeader)));
-				return GetDataSMAP(smap_chunk, apal_chunk, imhd_chunk.width, imhd_chunk.height, a_ImageInfo);
+				return GetDataSMAP(smap_chunk, apal_chunk, imhd_chunk.width, imhd_chunk.height, a_ImageInfo, a_ShowTransparency);
 			}
 			else
 			{
 				chunk_reader::BMAP_Chunk bmap_chunk;
 				a_Resource.m_Parent->m_FileContainer.GetChunk(bmap_chunk, bsmap_offset, sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data));
 				bmap_chunk.data = reinterpret_cast<unsigned char*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, bsmap_offset + sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data)));
-				return GetDataBMAP(bmap_chunk, apal_chunk, bmap_chunk.fill_color, imhd_chunk.width, imhd_chunk.height, a_ImageInfo, a_ShowTransparent);
+				return GetDataBMAP(bmap_chunk, apal_chunk, bmap_chunk.fill_color, imhd_chunk.width, imhd_chunk.height, a_ImageInfo, a_ShowTransparency);
 			}
 			return false;
 		}
