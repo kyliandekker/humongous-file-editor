@@ -31,7 +31,10 @@ namespace resource_editor
 		Logger::~Logger()
 		{
 			m_MessagesMutex.lock();
-			while (!m_Messages.empty()) m_Messages.pop();
+			while (!m_Messages.empty())
+			{
+				m_Messages.pop();
+			}
 			m_MessagesMutex.unlock();
 			m_Running = false;
 			m_Thread.join();
@@ -93,9 +96,13 @@ namespace resource_editor
 						nullptr
 					);
 					if (m_LoggerCallback)
+					{
 						m_LoggerCallback(lm);
+					}
 					if (lm.severity == logger::LOGSEVERITY_ASSERT)
+					{
 						assert(0 && "Logger assert, check log file for information");
+					}
 				}
 				m_MessagesMutex.unlock();
 			}

@@ -26,7 +26,9 @@ namespace resource_editor
 		{
 			if (m_Texture)
 			{
+				m_ImageMutex.lock();
 				m_Texture->Release();
+				m_ImageMutex.unlock();
 				m_Texture = nullptr;
 			}
 		}
@@ -194,7 +196,7 @@ namespace resource_editor
 			return true;
 		}
 
-		bool ImageResource::GetDataBMAP(chunk_reader::BMAP_Chunk& a_BMAP_Chunk, chunk_reader::APAL_Chunk& a_APAL_Chunk, uint8_t a_FillColor, size_t a_Width, size_t a_Height, ImgInfo& a_ImageInfo)
+		bool ImageResource::GetDataBMAP(chunk_reader::BMAP_Chunk& a_BMAP_Chunk, chunk_reader::APAL_Chunk& a_APAL_Chunk, uint8_t a_FillColor, size_t a_Width, size_t a_Height, ImgInfo& a_ImageInfo, bool a_ShowTransparency)
 		{
 			if (low_level::utils::chunkcmp(a_BMAP_Chunk.chunk_id, chunk_reader::BMAP_CHUNK_ID) != 0)
 			{
@@ -233,7 +235,7 @@ namespace resource_editor
 				newOut.push_back(a_APAL_Chunk.data[a_ImageInfo.m_Data[i] * 3]);
 				newOut.push_back(a_APAL_Chunk.data[a_ImageInfo.m_Data[i] * 3 + 1]);
 				newOut.push_back(a_APAL_Chunk.data[a_ImageInfo.m_Data[i] * 3 + 2]);
-				if (a_ImageInfo.m_Data[i] == a_FillColor)
+				if (a_ImageInfo.m_Data[i] == a_FillColor && a_ShowTransparency)
 				{
 					newOut.push_back(0);
 				}
@@ -281,7 +283,7 @@ namespace resource_editor
 			{}
 		};
 
-		bool ImageResource::GetDataSMAP(chunk_reader::SMAP_Chunk& a_SMAP_Chunk, chunk_reader::APAL_Chunk& a_APAL_Chunk, size_t a_Width, size_t a_Height, ImgInfo& a_ImageInfo)
+		bool ImageResource::GetDataSMAP(chunk_reader::SMAP_Chunk& a_SMAP_Chunk, chunk_reader::APAL_Chunk& a_APAL_Chunk, size_t a_Width, size_t a_Height, ImgInfo& a_ImageInfo, bool a_ShowTransparency)
 		{
 			if (low_level::utils::chunkcmp(a_SMAP_Chunk.chunk_id, chunk_reader::SMAP_CHUNK_ID) != 0)
 			{
@@ -314,7 +316,6 @@ namespace resource_editor
 			}
 
 			std::vector<offset_pair> index;
-
 			for (size_t i = 0; i < offsets.size(); i++)
 			{
 				index.push_back({ offsets[i], (i + 1) == offsets.size() ? smap_size : offsets[i + 1] });
@@ -323,16 +324,14 @@ namespace resource_editor
 			std::vector<strip> strips;
 			for (size_t i = 0; i < num_strips; i++)
 			{
-				strips.push_back({ low_level::utils::add(a_SMAP_Chunk.data, index[i].start), index[i].end - index[i].start });
+				strips.push_back({ reinterpret_cast<unsigned char*>(low_level::utils::add(a_SMAP_Chunk.data, index[i].start)), index[i].end - index[i].start });
 			}
 
 			size_t total_size = 0;
 			std::vector< std::vector<std::vector<IndexColor>>> data_blocks;
 
-			for (size_t i = 0; i < strips.size(); i++)
+			for (auto& strip : strips)
 			{
-				strip& strip = strips[i];
-
 				std::vector<std::vector<IndexColor>> data_new_block;
 
 				uint8_t code = strip.data[0];
@@ -354,21 +353,21 @@ namespace resource_editor
 				strip_info.m_Height = a_Height;
 				if (code >= 0x40 && code <= 0x80)
 				{
-					if (!DecodeMajmin(color, low_level::utils::add(strip.data, 2), strip.size - 2, palen, he_transparent, strip_info))
+					if (!DecodeMajmin(color, reinterpret_cast<unsigned char*>(low_level::utils::add(strip.data, 2)), strip.size - 2, palen, he_transparent, strip_info))
 					{
 						return false;
 					}
 				}
 				else if (code >= 0x0E && code <= 0x30)
 				{
-					if (!DecodeBasic(color, low_level::utils::add(strip.data, 2), strip.size - 2, palen, he_transparent, strip_info))
+					if (!DecodeBasic(color, reinterpret_cast<unsigned char*>(low_level::utils::add(strip.data, 2)), strip.size - 2, palen, he_transparent, strip_info))
 					{
 						return false;
 					}
 				}
 				else if (code >= 0x86 && code <= 0x94)
 				{
-					if (!DecodeHE(color, low_level::utils::add(strip.data, 2), strip.size - 2, palen, he_transparent, strip_info))
+					if (!DecodeHE(color, reinterpret_cast<unsigned char*>(low_level::utils::add(strip.data, 2)), strip.size - 2, palen, he_transparent, strip_info))
 					{
 						return false;
 					}
@@ -448,9 +447,9 @@ namespace resource_editor
 				newOut.push_back(a_APAL_Chunk.data[final_data[i].index * 3]);
 				newOut.push_back(a_APAL_Chunk.data[final_data[i].index * 3 + 1]);
 				newOut.push_back(a_APAL_Chunk.data[final_data[i].index * 3 + 2]);
-				if (final_data[i].index == final_data[i].trans_color)
+				if (final_data[i].index == final_data[i].trans_color && a_ShowTransparency)
 				{
-					newOut.push_back(255);
+					newOut.push_back(0);
 				}
 				else
 				{

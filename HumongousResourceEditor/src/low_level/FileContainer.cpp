@@ -88,7 +88,7 @@ namespace resource_editor
 		ChunkInfo FileContainer::GetNextChunk(size_t a_Offset) const
 		{
 			size_t extra_offset = 0;
-			while (low_level::utils::add(m_Data, a_Offset + extra_offset)[0] == 128)
+			while (reinterpret_cast<unsigned char*>(low_level::utils::add(m_Data, a_Offset + extra_offset))[0] == 128)
 			{
 				extra_offset++;
 			}
@@ -107,9 +107,9 @@ namespace resource_editor
 			}
 
 			ChunkInfo next = GetChunkInfo(a_Offset + sizeof(HumongousHeader));
-			for (size_t i = 0; i < childs.size(); i++)
+			for (auto& child : childs)
 			{
-				if (low_level::utils::chunkcmp(next.chunk_id, childs[i].c_str()) == 0)
+				if (low_level::utils::chunkcmp(next.chunk_id, child.c_str()) == 0)
 				{
 					return next;
 				}
@@ -156,7 +156,7 @@ namespace resource_editor
 			return children;
 		}
 
-		void FileContainer::Replace(size_t a_Offset, unsigned char* a_NewChunkData, size_t a_NewSize)
+		void FileContainer::Replace(size_t a_Offset, void* a_NewChunkData, size_t a_NewSize)
 		{
 			ChunkInfo chunk = GetChunkInfo(a_Offset);
 			int32_t dif_size = static_cast<int32_t>(a_NewSize - chunk.ChunkSize());
@@ -176,7 +176,7 @@ namespace resource_editor
 			}
 
 			size_t new_size = m_Size + dif_size;
-			unsigned char* new_data = reinterpret_cast<unsigned char*>(malloc(new_size));
+			void* new_data = malloc(new_size);
 			memset(new_data, 0, new_size);
 			memcpy(new_data, m_Data, a_Offset);
 			memcpy(low_level::utils::add(new_data, a_Offset), a_NewChunkData, a_NewSize);
@@ -189,7 +189,7 @@ namespace resource_editor
 
 		void FileContainer::Decrypt(char a_Key)
 		{
-			low_level::utils::xorShift(m_Data, m_Size, a_Key);
+			low_level::utils::xorShift(reinterpret_cast<unsigned char*&>(m_Data), m_Size, a_Key);
 		}
 	}
 }

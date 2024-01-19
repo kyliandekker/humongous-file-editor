@@ -2,9 +2,15 @@
 
 #include <vector>
 #include <low_level/ChunkInfo.h>
+#include <cstdarg>
 
 namespace resource_editor
 {
+	namespace project
+	{
+		class Resource;
+	}
+
 	namespace low_level
 	{
 		namespace utils
@@ -15,7 +21,7 @@ namespace resource_editor
 			/// <param name="a_Ptr">The pointer</param>
 			/// <param name="a_Size">The size that needs to be added.</param>
 			/// <returns></returns>
-			unsigned char* add(void* a_Ptr, size_t a_Size);
+			void* add(void* a_Ptr, size_t a_Size);
 
 			int getBit(char i, size_t a_Position);
 
@@ -59,6 +65,7 @@ namespace resource_editor
 			void xorShift(unsigned char*& a_Data, size_t a_Size, char a_Key);
 
 			size_t seekChildren(std::vector<chunk_reader::ChunkInfo>& a_Children, std::vector<chunk_reader::ChunkInfo>& a_Desired);
+			int32_t seekChildren(project::Resource& a_File, size_t a_Size, std::vector<chunk_reader::ChunkInfo>& a_Desired);
 		}
 	}
 }

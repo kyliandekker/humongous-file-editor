@@ -227,7 +227,9 @@ namespace resource_editor
 		void ImGuiWindow::Render()
 		{
 			if (!m_Enabled)
+			{
 				return;
+			}
 
 			m_RenderMutex.lock();
 
@@ -284,13 +286,15 @@ namespace resource_editor
 			for (auto* tool : m_Tools)
 			{
 				if (tool->IsFullScreen())
+				{
 					tool->SetSize(size);
+				}
 				tool->Update();
 			}
 
 			resourcesWindow.Update();
 			gameResourceWindow.Update();
-			explorer.Update();
+			explorerWindow.Update();
 
 			ImGui::PopFont();
 
@@ -308,7 +312,9 @@ namespace resource_editor
 
 			// Handle loss of D3D9 device
 			if (result == D3DERR_DEVICELOST && m_DX9Window.g_pd3dDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET)
+			{
 				ResetDevice();
+			}
 
 			m_RenderMutex.unlock();
 		}

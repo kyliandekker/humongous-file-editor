@@ -7,6 +7,7 @@
 #include "game/GameResourceType.h"
 #include "game/GameResource.h"
 #include "project/Resource.h"
+#include "project/Project.h"
 #include "low_level/ChunkInfo.h"
 #include "system/Logger.h"
 #include "utils/string.h"
@@ -42,8 +43,8 @@ namespace resource_editor
 				return false;
 			}
 
-			project::Resource* he0 = imgui::explorer.m_LoadedResources[(int)project::ResourceType::HE0];
-			project::Resource* a = imgui::explorer.m_LoadedResources[(int)project::ResourceType::A];
+			project::Resource* he0 = project::project.m_LoadedResources[(int)project::ResourceType::HE0];
+			project::Resource* a = project::project.m_LoadedResources[(int)project::ResourceType::A];
 
 			// If the a is not found, return false.
 			if (!a)
@@ -116,22 +117,9 @@ namespace resource_editor
 				}
 			}
 
-			// Look for RNAM chunk.
-			while (info.m_Offset < he0->m_FileContainer.m_Size)
-			{
-				if (low_level::utils::chunkcmp(info.chunk_id, chunk_reader::RNAM_CHUNK_ID) == 0)
-				{
-					break;
-				}
-				info = he0->m_FileContainer.GetNextChunk(info.m_Offset);
-			}
-			if (low_level::utils::chunkcmp(info.chunk_id, chunk_reader::RNAM_CHUNK_ID) != 0)
-			{
-				return false;
-			}
+			std::vector<chunk_reader::ChunkInfo> desired = { chunk_reader::ChunkInfo(chunk_reader::RNAM_CHUNK_ID) };
 
-			size_t rnam_offset = info.m_Offset;
-			if (rnam_offset == -1)
+			if (low_level::utils::seekChildren(*he0, he0->m_FileContainer.m_Size, desired) < desired.size())
 			{
 				return false;
 			}
@@ -139,9 +127,12 @@ namespace resource_editor
 			// Extract rooms.
 			std::vector<std::string> room_names;
 
-			chunk_reader::RNAM_Chunk* rnam_chunk = reinterpret_cast<chunk_reader::RNAM_Chunk*>(low_level::utils::add(he0->m_FileContainer.m_Data, rnam_offset));
-			size_t rnam_end = rnam_offset + rnam_chunk->ChunkSize();
-			size_t pos = rnam_offset + sizeof(chunk_reader::HumongousHeader) + sizeof(uint16_t);
+			chunk_reader::RNAM_Chunk rnam_chunk;
+			he0->m_FileContainer.GetChunk(rnam_chunk, desired[0].m_Offset);
+			rnam_chunk.data = low_level::utils::add(he0->m_FileContainer.m_Data, desired[0].m_Offset + sizeof(chunk_reader::HumongousHeader));
+			
+			size_t rnam_end = desired[0].m_Offset + rnam_chunk.ChunkSize();
+			size_t pos = desired[0].m_Offset + sizeof(chunk_reader::HumongousHeader) + sizeof(uint16_t);
 			std::string room_name;
 
 			while (pos < rnam_end)
@@ -161,12 +152,17 @@ namespace resource_editor
 				pos++;
 			}
 
+			if (room_names.size() == 0)
+			{
+				return false;
+			}
+
 			// Add rooms.
-			for (size_t i = 0; i < room_names.size(); i++)
+			for (std::string& room_name : room_names)
 			{
 				GameResource resource;
-				resource.m_Name = room_names[i];
-				resource.m_Offset = rnam_offset;
+				resource.m_Name = room_name;
+				resource.m_Offset = desired[0].m_Offset;
 				resource.m_Type = game::GameResourceType::Room;
 				resource.m_Parent = he0;
 				a_Resources.push_back(resource);
@@ -180,8 +176,8 @@ namespace resource_editor
 				{ chunk_reader::LSCR_CHUNK_ID, game::GameResourceType::Local_Script },
 				{ chunk_reader::LSC2_CHUNK_ID, game::GameResourceType::Local_Script },
 				{ chunk_reader::VERB_CHUNK_ID, game::GameResourceType::Verb_Script },
-				//chunk_reader::{ ENCD_CHUNK_IDgameesGame::ResourceType::Global_Script },
-				//chunk_reader::{ EXCD_CHUNK_IDgameesGame::ResourceType::Global_Script },
+				{ chunk_reader::ENCD_CHUNK_ID, game::GameResourceType::Global_Script },
+				{ chunk_reader::EXCD_CHUNK_ID, game::GameResourceType::Global_Script },
 				{ chunk_reader::IM00_CHUNK_ID, game::GameResourceType::RoomBackground },
 				{ chunk_reader::IM01_CHUNK_ID, game::GameResourceType::RoomImage },
 				{ chunk_reader::IM02_CHUNK_ID, game::GameResourceType::RoomImage },
@@ -234,9 +230,10 @@ namespace resource_editor
 							resource.m_Parent = a;
 							resource.m_Properties =
 							{
-								{ "Offset", std::to_string(resource.m_Offset) },
-								{ "Type", getResourceTypeName(resource.m_Type) },
-								{ "Room", std::to_string(lflf) },
+								{ "1. Name", resource.m_Name },
+								{ "2. Offset", std::to_string(resource.m_Offset) },
+								{ "3. Type", getResourceTypeName(resource.m_Type) },
+								{ "4. Room", std::to_string(lflf) },
 							};
 							if (resource.m_Type == game::GameResourceType::RoomImage || resource.m_Type == game::GameResourceType::RoomBackground)
 							{
@@ -246,13 +243,13 @@ namespace resource_editor
 								{
 									child_resource.m_Name = resource.m_Name + " placement" + getExtension(resource.m_Type);
 									child_resource.m_Type = RoomImageLayer;
-									child_resource.m_Properties["Name"] = child_resource.m_Name;
-									child_resource.m_Properties["Type"] = getResourceTypeName(child_resource.m_Type);
+									child_resource.m_Properties["1. Name"] = child_resource.m_Name;
+									child_resource.m_Properties["3. Type"] = getResourceTypeName(child_resource.m_Type);
 									resource.m_Resources.push_back(child_resource);
 								}
 							}
 							resource.m_Name += getExtension(resource.m_Type);
-							resource.m_Properties["Name"] = resource.m_Name;
+							resource.m_Properties["1. Name"] = resource.m_Name;
 							a_Resources[lflf].m_Resources.push_back(resource);
 							i++;
 						}

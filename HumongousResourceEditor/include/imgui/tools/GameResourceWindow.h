@@ -22,6 +22,7 @@ namespace resource_editor
 
 			game::GameResource* m_Resource = nullptr;
 			game::DecompiledResource* m_ResourceData = nullptr;
+			bool m_UpdateImage = false;
 		};
 		extern GameResourceWindow gameResourceWindow;
 	}

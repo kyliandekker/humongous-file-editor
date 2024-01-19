@@ -108,15 +108,12 @@ namespace resource_editor
 				}
 			}
 
-			for (size_t i = 0; i < m_Resources.size(); i++)
+			for (auto& resource : m_Resources)
 			{
-				m_Resources[i].Scan();
+				resource.Scan();
 			}
 
-			if (m_Resources.size() == 0)
-				m_HasChildren = false;
-			else
-				m_HasChildren = true;
+			m_HasChildren = m_Resources.size() != 0;
 		}
 	}
 }

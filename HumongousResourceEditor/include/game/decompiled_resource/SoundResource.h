@@ -26,11 +26,11 @@ namespace resource_editor
 			SoundResource(game::GameResource& a_Resource);
 			SoundResource() = default;
 			SoundResource(const SoundResource& rhs);
-			~SoundResource();
+			~SoundResource() override;
 			bool GetData(game::GameResource& a_Resource) override;
 			bool OpenResource(std::string& a_Path, uaudio::wave_reader::ChunkCollection& a_ChunkCollection);
 			bool SaveResource(std::string& a_Path);
-			bool SaveSound(std::string a_Path, unsigned char* a_Data, size_t a_DataSize, uint16_t a_SampleRate);
+			bool SaveSound(std::string a_Path, void* a_Data, size_t a_DataSize, uint16_t a_SampleRate);
 			chunk_reader::HSHD_Chunk m_HSHD_Chunk;
 			chunk_reader::SDAT_Chunk m_SDAT_Chunk;
 			size_t m_NumSamples = 0;

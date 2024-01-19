@@ -16,7 +16,6 @@ namespace resource_editor
 			SongResource(game::GameResource& a_Resource);
 			SongResource() = default;
 			SongResource(const SongResource& rhs);
-			~SongResource();
 			bool GetData(game::GameResource& a_Resource);
 			bool Replace(game::GameResource& a_Resource) override;
 			bool Save(game::GameResource& a_Resource) override;

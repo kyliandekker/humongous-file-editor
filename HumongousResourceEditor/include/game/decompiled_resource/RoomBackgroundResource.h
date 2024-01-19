@@ -16,8 +16,7 @@ namespace resource_editor
 			RoomBackgroundResource(game::GameResource& a_Resource);
 			RoomBackgroundResource() = default;
 			RoomBackgroundResource(const RoomBackgroundResource& rhs);
-			~RoomBackgroundResource();
-			static bool GetRoomBackgroundData(game::GameResource& a_Resource, ImgInfo& a_ImageInfo);
+			static bool GetRoomBackgroundData(game::GameResource& a_Resource, ImgInfo& a_ImageInfo, bool a_ShowTransparency = false);
 			bool GetData(game::GameResource& a_Resource);
 			bool Save(game::GameResource& a_Resource) override;
 			bool Replace(game::GameResource& a_Resource) override;

@@ -41,10 +41,14 @@ namespace resource_editor
 		wfx.cbSize = 0;
 
 		if (FAILED(hr = m_Engine->CreateSourceVoice(&m_SourceVoice, &wfx)))
+		{
 			return;
+		}
 
 		if (FAILED(hr = m_SourceVoice->Start(0)))
+		{
 			return;
+		}
 	}
 
 	AudioSystem::~AudioSystem()
@@ -55,7 +59,7 @@ namespace resource_editor
 		CoUninitialize();
 	}
 
-	void AudioSystem::Play(unsigned char* data, size_t size)
+	void AudioSystem::Play(void* data, size_t size)
 	{
 		m_SourceVoice->Stop(0);
 		m_SourceVoice->FlushSourceBuffers();
@@ -64,10 +68,12 @@ namespace resource_editor
 		HRESULT hr;
 
 		XAUDIO2_BUFFER xaBuffer{};
-		xaBuffer.pAudioData = data;
+		xaBuffer.pAudioData = reinterpret_cast<unsigned char*>(data);
 		xaBuffer.AudioBytes = static_cast<UINT32>(size);
 		if (FAILED(hr = m_SourceVoice->SubmitSourceBuffer(&xaBuffer)))
+		{
 			std::cout << "Failed to play." << std::endl;
+		}
 	}
 
 	void AudioSystem::Stop()

@@ -13,7 +13,7 @@
 #include "imgui/ImGuiWindow.h"
 #include "imgui/ImGuiDefines.h"
 #include "system/AudioSystem.h"
-#include "imgui/tools/ExplorerWindow.h"
+#include "project/Project.h"
 #include "system/Logger.h"
 
 resource_editor::imgui::GameResourceWindow resource_editor::imgui::gameResourceWindow;
@@ -54,18 +54,15 @@ namespace resource_editor
 				{
 					game::SoundResource* sound = dynamic_cast<game::SoundResource*>(m_ResourceData);
 
-					ShowValue("Sample Rate", std::string(std::to_string(sound->m_HSHD_Chunk.sample_rate) + "Hz").c_str());
-					ShowValue("Size", std::string(std::to_string(sound->m_SDAT_Chunk.ChunkSize()) + " bytes").c_str());
-
 					ImGui::BeginPlayPlot(sound->m_NumSamples, sound->m_Samples, "Test##D", ImGui::GetWindowSize().x, 100, 1);
 
-					if (ImGui::Button(std::string(PLAY + std::string(" Play")).c_str(), ImVec2(75, 25)))
+					if (ImGui::Button(std::string(ICON_PLAY + std::string(" Play")).c_str(), ImVec2(75, 25)))
 					{
 						audioSystem.Stop();
-						audioSystem.Play(sound->m_SDAT_Chunk.data, sound->m_SDAT_Chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader) - sizeof(sound->m_SDAT_Chunk.data));
+						audioSystem.Play(sound->m_SDAT_Chunk.data, sound->m_SDAT_Chunk.DataSize() - sizeof(sound->m_SDAT_Chunk.data));
 					}
 					ImGui::SameLine();
-					if (ImGui::Button(std::string(STOP + std::string(" Stop")).c_str(), ImVec2(75, 25)))
+					if (ImGui::Button(std::string(ICON_STOP + std::string(" Stop")).c_str(), ImVec2(75, 25)))
 					{
 						audioSystem.Stop();
 					}
@@ -77,32 +74,27 @@ namespace resource_editor
 				case game::GameResourceType::RoomImageLayer:
 				{
 					game::ImageResource* image = dynamic_cast<game::ImageResource*>(m_ResourceData);
-					ShowValue("Size", std::string(std::to_string(image->m_ImageInfo.Size()) + " bytes").c_str());
-
-					if (m_Resource->m_Type != game::GameResourceType::RoomImageLayer)
-					{
-						ShowValue("Width", std::to_string(image->m_ImageInfo.m_Width).c_str());
-						ShowValue("Height", std::to_string(image->m_ImageInfo.m_Height).c_str());
-					}
-
-					if (m_Resource->m_Type != game::GameResourceType::RoomBackground)
-					{
-						ShowValue("X", std::to_string(image->m_ImageInfo.m_X).c_str());
-						ShowValue("Y", std::to_string(image->m_ImageInfo.m_Y).c_str());
-
-						if (m_Resource->m_Type == game::GameResourceType::RoomImageLayer)
-						{
-							ShowValue("Image Width", std::to_string(image->m_ImageInfo.m_Width2).c_str());
-							ShowValue("Image Height", std::to_string(image->m_ImageInfo.m_Height2).c_str());
-
-							ShowValue("Background Width", std::to_string(image->m_ImageInfo.m_Width).c_str());
-							ShowValue("Background Height", std::to_string(image->m_ImageInfo.m_Height).c_str());
-						}
-					}
 
 					int width_new = ImGui::GetWindowSize().x;
 					int height_new = (int)((float)image->m_ImageInfo.m_Height * (1.0f / image->m_ImageInfo.m_Width * width_new));
-					ImGui::Image((void*)image->m_Texture, ImVec2(width_new, height_new));
+					if (m_UpdateImage)
+					{
+						image->m_ShowTransparency = !image->m_ShowTransparency;
+						m_ResourceData->GetData(*m_Resource);
+						m_UpdateImage = false;
+					}
+					image->m_ImageMutex.lock();
+					if (image->m_Texture)
+					{
+						ImGui::Image((void*)image->m_Texture, ImVec2(width_new, height_new));
+					}
+					image->m_ImageMutex.unlock();
+
+					if (ImGui::Button(std::string(ICON_STOP + std::string(" Transparent?")).c_str(), ImVec2(75, 25)))
+					{
+						m_UpdateImage = true;
+					}
+					ImGui::SameLine();
 					break;
 				}
 				case game::GameResourceType::Local_Script:
@@ -124,45 +116,47 @@ namespace resource_editor
 							std::string args_name = "Arguments (" + std::to_string(instruction.m_Args.m_Args.size()) + ")##Args_" + m_Resource->m_Name + "_" + m_Resource->m_Parent->m_Path + "_" + instruction.m_Name + "_" + std::to_string(instruction.m_OffsetInSCRPChunk);
 							if (ImGui::CollapsingHeader(args_name.c_str()))
 							{
-								for (size_t j = 0; j < instruction.m_Args.m_Args.size(); j++)
+								size_t j = 1;
+								for (auto& arg : instruction.m_Args.m_Args)
 								{
 									ImGui::Indent(IMGUI_INDENT);
 									std::string val;
-									switch (instruction.m_Args.m_Args[j].m_ArgType)
+									switch (arg.m_ArgType)
 									{
 										case ArgType::ArgType_Byte:
 										{
-											val = std::string(1, reinterpret_cast<char>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											val = std::string(1, reinterpret_cast<char>(arg.m_Data));
 											break;
 										}
 										case ArgType::ArgType_Short:
 										{
-											val = std::to_string(reinterpret_cast<uint16_t>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											val = std::to_string(reinterpret_cast<uint16_t>(arg.m_Data));
 											break;
 										}
 										case ArgType::ArgType_Ref:
 										{
-											val = std::to_string(reinterpret_cast<uint16_t>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											val = std::to_string(reinterpret_cast<uint16_t>(arg.m_Data));
 											break;
 										}
 										case ArgType::ArgType_Long:
 										{
-											val = std::to_string(reinterpret_cast<uint32_t>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											val = std::to_string(reinterpret_cast<uint32_t>(arg.m_Data));
 											break;
 										}
 										case ArgType::ArgType_String:
 										{
-											val = std::string(reinterpret_cast<char*>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											val = std::string(reinterpret_cast<char*>(arg.m_Data));
 											break;
 										}
 										case ArgType::ArgType_TalkString:
 										{
-											val = std::string(reinterpret_cast<char*>(script->m_Instructions[i].m_Args.m_Args[j].m_Data));
+											val = std::string(reinterpret_cast<char*>(arg.m_Data));
 											break;
 										}
 									}
 									ShowValue(std::string("Arg " + std::to_string(j)), val.c_str());
 									ImGui::Unindent(IMGUI_INDENT);
+									j++;
 								}
 							}
 							ImGui::Unindent(IMGUI_INDENT);
@@ -180,7 +174,7 @@ namespace resource_editor
 					break;
 				}
 			}
-			if (ImGui::Button(std::string(SAVE + std::string(" Export")).c_str(), ImVec2(75, 25)))
+			if (ImGui::Button(std::string(ICON_SAVE + std::string(" Export")).c_str(), ImVec2(75, 25)))
 			{
 				if (m_ResourceData->Save(*m_Resource))
 				{
@@ -188,7 +182,7 @@ namespace resource_editor
 				}
 			}
 			ImGui::SameLine();
-			if (ImGui::Button(std::string(SAVE + std::string(" Replace")).c_str(), ImVec2(75, 25)))
+			if (ImGui::Button(std::string(ICON_LOAD + std::string(" Replace")).c_str(), ImVec2(75, 25)))
 			{
 				audioSystem.Stop();
 
@@ -200,8 +194,8 @@ namespace resource_editor
 					delete(m_ResourceData);
 					m_ResourceData = nullptr;
 
-					explorer.ClearResources(*resource);
-					explorer.LoadResource(*resource);
+					project::project.ClearResources(*resource);
+					project::project.LoadResource(*resource);
 
 					LOG(logger::LOGSEVERITY_MESSAGE, "Successfully replaced resource!");
 				}
@@ -212,7 +206,7 @@ namespace resource_editor
 		{
 			if (m_ResourceData)
 			{
-				delete(m_ResourceData);
+				delete m_ResourceData;
 			}
 
 			m_ResourceData = nullptr;

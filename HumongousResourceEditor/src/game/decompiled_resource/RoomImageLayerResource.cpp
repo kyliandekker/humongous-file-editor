@@ -25,32 +25,33 @@ namespace resource_editor
 		{
 		}
 
-		RoomImageLayerResource::~RoomImageLayerResource()
-		{
-		}
-
 		bool RoomImageLayerResource::GetData(game::GameResource& a_Resource)
 		{
+			if (m_Texture)
+			{
+				m_ImageMutex.lock();
+				m_Texture->Release();
+				m_Texture = nullptr;
+				m_ImageMutex.unlock();
+			}
+
 			ImgInfo roomImage;
 			
-			if (!RoomImageResource::GetRoomImageData(a_Resource, roomImage))
+			if (!RoomImageResource::GetRoomImageData(a_Resource, roomImage, m_ShowTransparency))
 			{
 				return false;
 			}
 
 			size_t lflf_offset = a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Offset).m_Offset).m_Offset).m_Offset;
+
 			std::vector<chunk_reader::ChunkInfo> lflf_children = a_Resource.m_Parent->m_FileContainer.GetChildren(lflf_offset);
-			size_t im00_offset = -1;
-			for (size_t i = 0; i < lflf_children.size(); i++)
+			if (lflf_children.size() == 0)
 			{
-				if (low_level::utils::chunkcmp(lflf_children[i].chunk_id, chunk_reader::IM00_CHUNK_ID) == 0)
-				{
-					im00_offset = lflf_children[i].m_Offset;
-					break;
-				}
+				return false;
 			}
 
-			if (im00_offset < 0)
+			std::vector<chunk_reader::ChunkInfo> desired = { chunk_reader::ChunkInfo(chunk_reader::IM00_CHUNK_ID) };
+			if (low_level::utils::seekChildren(lflf_children, desired) < desired.size())
 			{
 				return false;
 			}
@@ -58,31 +59,11 @@ namespace resource_editor
 			ImgInfo backgroundImage;
 
 			game::GameResource resource = a_Resource;
-			resource.m_Offset = im00_offset;
-			if (!RoomBackgroundResource::GetRoomBackgroundData(resource, backgroundImage))
+			resource.m_Offset = desired[0].m_Offset;
+			if (!RoomBackgroundResource::GetRoomBackgroundData(resource, backgroundImage, m_ShowTransparency))
 			{
 				return false;
 			}
-
-			size_t obim_offset = a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Offset).m_Offset;
-			std::vector<chunk_reader::ChunkInfo> obim_children = a_Resource.m_Parent->m_FileContainer.GetChildren(obim_offset);
-			size_t imhd_offset = -1;
-			for (size_t i = 0; i < obim_children.size(); i++)
-			{
-				if (low_level::utils::chunkcmp(obim_children[i].chunk_id, chunk_reader::IMHD_CHUNK_ID) == 0)
-				{
-					imhd_offset = obim_children[i].m_Offset;
-				}
-			}
-
-			if (imhd_offset < 0)
-			{
-				return false;
-			}
-
-			chunk_reader::IMHD_Chunk imhd_chunk;
-			memcpy(&imhd_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, imhd_offset), sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data));
-			imhd_chunk.data = low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, imhd_offset + (sizeof(chunk_reader::IMHD_Chunk) - sizeof(imhd_chunk.data)));
 
 			int CHANNELS = 4;
 			int cur = 0;
@@ -91,13 +72,13 @@ namespace resource_editor
 				int y = cur / static_cast<int>(backgroundImage.m_Width);
 				int x = cur % static_cast<int>(backgroundImage.m_Width);
 
-				if (x >= imhd_chunk.x && x < imhd_chunk.x + imhd_chunk.width &&
-					y >= imhd_chunk.y && y < imhd_chunk.y + imhd_chunk.height)
+				if (x >= roomImage.m_X && x < roomImage.m_X + roomImage.m_Width &&
+					y >= roomImage.m_Y && y < roomImage.m_Y + roomImage.m_Height)
 				{
-					int relativeX = x - imhd_chunk.x;
-					int relativeY = y - imhd_chunk.y;
+					int relativeX = x - roomImage.m_X;
+					int relativeY = y - roomImage.m_Y;
 
-					relativeY *= imhd_chunk.width;
+					relativeY *= roomImage.m_Width;
 
 					int index = relativeX + relativeY;
 
@@ -118,11 +99,16 @@ namespace resource_editor
 			}
 
 			m_ImageInfo = backgroundImage;
-			m_ImageInfo.m_Width2 = roomImage.m_Width;
-			m_ImageInfo.m_Height2 = roomImage.m_Height;
-			m_ImageInfo.m_X = imhd_chunk.x;
-			m_ImageInfo.m_Y = imhd_chunk.y;
+			m_ImageInfo.m_X = roomImage.m_X;
+			m_ImageInfo.m_Y = roomImage.m_Y;
 			imgui::window.GetDX9().CreateTexture(m_Texture, m_ImageInfo);
+
+			a_Resource.m_Properties.emplace(std::make_pair("5. Background Width", std::string(std::to_string(backgroundImage.m_Width) + "px")));
+			a_Resource.m_Properties.emplace(std::make_pair("6. Background Height", std::string(std::to_string(backgroundImage.m_Height) + "px")));
+			a_Resource.m_Properties.emplace(std::make_pair("7. Image Width", std::string(std::to_string(roomImage.m_Width) + "px")));
+			a_Resource.m_Properties.emplace(std::make_pair("8. Image Height", std::string(std::to_string(roomImage.m_Height) + "px")));
+			a_Resource.m_Properties.emplace(std::make_pair("9. x", std::string(std::to_string(roomImage.m_X) + "px")));
+			a_Resource.m_Properties.emplace(std::make_pair("10. y", std::string(std::to_string(roomImage.m_Y) + "px")));
 
 			return true;
 		}

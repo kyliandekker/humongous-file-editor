@@ -22,10 +22,10 @@ namespace resource_editor
 		ArgHeader(size_t a_Offset, ArgType a_ArgType, unsigned char* a_Data, std::string a_Str, size_t a_Size = 0);
 
 		ArgType m_ArgType;
-		size_t m_Size;
-		size_t m_Offset;
-		std::string m_Str;
-		unsigned char* m_Data;
+		size_t m_Size = 0;
+		size_t m_Offset = 0;
+		std::string m_Str= "";
+		unsigned char* m_Data = nullptr;
 	};
 
 	class ArgsAllocator

@@ -44,9 +44,9 @@ namespace resource_editor
 	size_t ArgsAllocator::Size() const
 	{
 		size_t size = 0;
-		for (size_t i = 0; i < m_Args.size(); i++)
+		for (auto& arg : m_Args)
 		{
-			size += m_Args[i].m_Size;
+			size += arg.m_Size;
 		}
 		return size;
 	}

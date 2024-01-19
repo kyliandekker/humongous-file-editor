@@ -39,9 +39,9 @@ namespace resource_editor
 					resource.m_Parent = &a_Resource;
 					resource.m_Properties =
 					{
-						{ "Offset", std::to_string(resource.m_Offset) },
-						{ "Type", getResourceTypeName(resource.m_Type) },
-						{ "Name", resource.m_Name },
+						{ "1. Name", resource.m_Name },
+						{ "2. Offset", std::to_string(resource.m_Offset) },
+						{ "3. Type", getResourceTypeName(resource.m_Type) },
 					};
 					a_Resources.push_back(resource);
 					i++;

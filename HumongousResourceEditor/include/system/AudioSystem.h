@@ -19,7 +19,7 @@ namespace resource_editor
 		/// </summary>
 		/// <param name="data">The pcm data.</param>
 		/// <param name="size">The size of the data.</param>
-		void Play(unsigned char* data, size_t size);
+		void Play(void* data, size_t size);
 
 		/// <summary>
 		/// Stops the playback of the source voice.

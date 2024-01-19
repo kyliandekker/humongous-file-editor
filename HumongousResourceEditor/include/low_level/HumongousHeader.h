@@ -16,6 +16,7 @@ namespace resource_editor
 		public:
 			HumongousHeader() = default;
 			HumongousHeader(const char* a_ChunkID);
+			HumongousHeader(unsigned char* a_ChunkID);
 			HumongousHeader(const HumongousHeader& rhs);
 			HumongousHeader(HumongousHeader* a_DataBuffer);
 
@@ -23,6 +24,7 @@ namespace resource_editor
 			unsigned char chunkSize[sizeof(uint32_t)] = {};
 
 			uint32_t ChunkSize(bool a_BigEndian = true) const;
+			uint32_t DataSize(bool a_BigEndian = true) const;
 
 			void SetChunkSize(uint32_t a_ChunkSize, bool a_BigEndian = true);
 		};

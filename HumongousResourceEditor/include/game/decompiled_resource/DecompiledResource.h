@@ -9,6 +9,8 @@ namespace resource_editor
 		class DecompiledResource
 		{
 		public:
+			virtual ~DecompiledResource() 
+			{ }
 			virtual bool GetData(game::GameResource& a_Resource) = 0;
 			virtual bool Replace(game::GameResource& a_Resource) = 0;
 			virtual bool Save(game::GameResource& a_Resource) = 0;

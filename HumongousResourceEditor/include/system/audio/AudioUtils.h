@@ -6,7 +6,7 @@ namespace resource_editor
 	{
 		namespace utils
 		{
-			double* ToSample(unsigned char* a_Data, size_t a_Buffersize);
+			double* ToSample(void* a_Data, size_t a_Buffersize);
 		}
 	}
 }

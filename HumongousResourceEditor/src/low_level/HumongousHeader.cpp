@@ -13,6 +13,11 @@ namespace resource_editor
 			memcpy(chunk_id, a_ChunkID, CHUNK_ID_SIZE);
         }
 
+        HumongousHeader::HumongousHeader(unsigned char* a_ChunkID)
+        {
+			memcpy(chunk_id, a_ChunkID, CHUNK_ID_SIZE);
+        }
+
         HumongousHeader::HumongousHeader(const HumongousHeader& rhs)
 		{
 			memcpy(chunk_id, rhs.chunk_id, CHUNK_ID_SIZE);
@@ -35,6 +40,11 @@ namespace resource_editor
 			}
 			return size32;
 		}
+
+        uint32_t HumongousHeader::DataSize(bool a_BigEndian) const
+        {
+            return ChunkSize() - sizeof(HumongousHeader);
+        }
 
 		void HumongousHeader::SetChunkSize(uint32_t a_ChunkSize, bool a_BigEndian)
 		{

@@ -16,10 +16,11 @@ namespace resource_editor
 			TalkResource() = default;
 			TalkResource(game::GameResource& a_Resource);
 			TalkResource(const TalkResource& rhs);
-			~TalkResource();
 			bool GetData(game::GameResource& a_Resource);
-			bool Replace(game::GameResource& a_Resource) override;
+            bool Replace(game::GameResource& a_Resource) override;
 			bool Save(game::GameResource& a_Resource) override;
+		private:
+			bool ReplaceTALK(game::GameResource& a_Resource);
 		};
 	}
 }

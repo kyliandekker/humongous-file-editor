@@ -38,10 +38,6 @@ namespace resource_editor
 			{
 				free(m_Samples);
 			}
-			if (m_SDAT_Chunk.data)
-			{
-				free(m_SDAT_Chunk.data);
-			}
 		}
 
 		bool SoundResource::GetData(game::GameResource& a_Resource)
@@ -151,7 +147,7 @@ namespace resource_editor
 			return false;
 		}
 
-        bool SoundResource::SaveSound(std::string a_Path, unsigned char* a_Data, size_t a_DataSize, uint16_t a_SampleRate)
+        bool SoundResource::SaveSound(std::string a_Path, void* a_Data, size_t a_DataSize, uint16_t a_SampleRate)
         {
 			FILE* file = nullptr;
 			fopen_s(&file, a_Path.c_str(), "wb");
@@ -174,7 +170,7 @@ namespace resource_editor
 			uaudio::wave_reader::DATA_Chunk data_chunk;
 			memcpy(data_chunk.chunk_id, uaudio::wave_reader::DATA_CHUNK_ID, uaudio::wave_reader::CHUNK_ID_SIZE);
 			data_chunk.chunkSize = static_cast<uint32_t>(a_DataSize);
-			data_chunk.data = a_Data;
+			data_chunk.data = reinterpret_cast<unsigned char*>(a_Data);
 
 			uaudio::wave_reader::RIFF_Chunk riff_chunk;
 			memcpy(riff_chunk.chunk_id, uaudio::wave_reader::RIFF_CHUNK_ID, CHUNK_ID_SIZE);

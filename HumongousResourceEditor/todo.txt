@@ -4,3 +4,5 @@
 - Check for memory leaks anywhere.
 - ini_op_v71
 - seekChildren instead of loop.
+- Error messages.
+- make some things const

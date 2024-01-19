@@ -24,8 +24,7 @@ namespace resource_editor
 		}
 
 		ScriptResource::~ScriptResource()
-		{
-		}
+		{ }
 
 		struct Generic_Script_Chunk : chunk_reader::HumongousHeader
 		{
@@ -41,9 +40,10 @@ namespace resource_editor
 			size_t pos = 0;
 
 			Generic_Script_Chunk chunk;
-			memcpy(&chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, a_Resource.m_Offset), sizeof(chunk_reader::HumongousHeader));
-			chunk.data = low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, a_Resource.m_Offset + sizeof(chunk_reader::HumongousHeader));
-			scrp_size = chunk.ChunkSize() - sizeof(chunk_reader::HumongousHeader);
+			a_Resource.m_Parent->m_FileContainer.GetChunk(chunk, a_Resource.m_Offset, sizeof(chunk_reader::HumongousHeader));
+			chunk.data = reinterpret_cast<unsigned char*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, a_Resource.m_Offset + sizeof(chunk_reader::HumongousHeader)));
+			
+			scrp_size = chunk.DataSize();
 
 			if (low_level::utils::chunkcmp(chunk.chunk_id, chunk_reader::LSCR_CHUNK_ID) == 0)
 			{
@@ -55,6 +55,36 @@ namespace resource_editor
 			{
 				// For some reason we skip the first 4 bytes.
 				pos += 4;
+			}
+			// Verb
+			else if (low_level::utils::chunkcmp(chunk.chunk_id, chunk_reader::VERB_CHUNK_ID) == 0)
+			{
+				unsigned char serial = unsigned char();
+				// We skip a few bytes until we hit a null-terminator.
+				while (pos < scrp_size)
+				{
+					unsigned char key = chunk.data[pos];
+					pos++;
+					serial += key;
+					if (key == '\0')
+					{
+						break;
+					}
+					int16_t add_serial = *reinterpret_cast<int16_t*>(chunk.data + pos);
+					serial += add_serial;
+					pos += 2;
+				}
+			}
+
+			if (low_level::utils::chunkcmp(chunk.chunk_id, chunk_reader::SCRP_CHUNK_ID) != 0 &&
+				low_level::utils::chunkcmp(chunk.chunk_id, chunk_reader::LSCR_CHUNK_ID) != 0 &&
+				low_level::utils::chunkcmp(chunk.chunk_id, chunk_reader::LSC2_CHUNK_ID) != 0 &&
+				low_level::utils::chunkcmp(chunk.chunk_id, chunk_reader::EXCD_CHUNK_ID) != 0 &&
+				low_level::utils::chunkcmp(chunk.chunk_id, chunk_reader::ENCD_CHUNK_ID) != 0 &&
+				low_level::utils::chunkcmp(chunk.chunk_id, chunk_reader::VERB_CHUNK_ID) != 0)
+			{
+				assert(false);
+				return false;
 			}
 
 			while (pos < scrp_size)
@@ -69,7 +99,7 @@ namespace resource_editor
 
 				ArgsAllocator args;
 				chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[b];
-				bytecode.m_Func(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, a_Resource.m_Offset + sizeof(chunk_reader::HumongousHeader) + pos), args);
+				bytecode.m_Func(reinterpret_cast<unsigned char*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, a_Resource.m_Offset + sizeof(chunk_reader::HumongousHeader) + pos)), args);
 
 				instruction.m_Name = bytecode.m_Name;
 				instruction.m_Args = args;
@@ -83,9 +113,14 @@ namespace resource_editor
 					|| (instruction.m_Code == 0xA9 && instruction.m_Args.m_Args.size() == 2)
 					)
 				{
-					size_t offset = chunk_reader::jump(instruction, a_Resource.m_Parent->m_FileContainer.m_Data);
+					size_t offset = chunk_reader::jump(instruction, reinterpret_cast<unsigned char*>(a_Resource.m_Parent->m_FileContainer.m_Data));
 
 					uint8_t tb = *reinterpret_cast<uint8_t*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, offset));
+
+					if (offset > a_Resource.m_Offset + chunk.ChunkSize())
+					{
+						printf("Test");
+					}
 
 					if (chunk_reader::OPCODES_HE90.find(tb) == chunk_reader::OPCODES_HE90.end())
 					{

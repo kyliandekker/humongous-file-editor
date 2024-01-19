@@ -5,6 +5,8 @@
 #include "imgui/ImGuiWindow.h"
 #include "imgui/tools/ExplorerWindow.h"
 #include "imgui/tools/ResourcesWindow.h"
+#include "system/AudioSystem.h"
+#include "low_level/FileContainer.h"
 
 const char g_szClassName[] = "Humongous Resource Editor";
 
@@ -33,7 +35,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		default:
+		{
 			return DefWindowProc(hwnd, msg, wParam, lParam);
+		}
 	}
 	return 0;
 }
@@ -41,7 +45,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 void UpdateRenderWindow()
 {
 	while (resource_editor::imgui::window.IsEnabled())
+	{
 		resource_editor::imgui::window.Render();
+	}
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int nShowCmd)
@@ -108,6 +114,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR, _
 		TranslateMessage(&Msg);
 		DispatchMessage(&Msg);
 	}
+	resource_editor::audioSystem.Stop();
 
 	renderThread.join();
 

@@ -10,7 +10,7 @@ namespace resource_editor
 	namespace chunk_reader
 	{
 		// According to rzil, the new position is relative from the position after the offset is read. Meaning it is scrp_pos + instruction_pos + arg_pos (of offset).
-		size_t jump(ScriptInstruction& instruction, unsigned char* data)
+		size_t jump(ScriptInstruction& instruction, unsigned char* data, bool absolute)
 		{
 			// Normal wait instructions.
 			if (instruction.m_Code == 0x5C // jump if
@@ -27,7 +27,7 @@ namespace resource_editor
 				size_t arg_size = instruction.m_Args[0].m_Size; // position after offset is read.
 				int16_t offset = *reinterpret_cast<int16_t*>(low_level::utils::add(data, abs_offset));
 
-				return abs_offset + static_cast<size_t>(offset) + arg_size;
+				return (absolute ? abs_offset : 0) + static_cast<size_t>(offset) + arg_size;
 			}
 			// Wait and jump.
 			else if (instruction.m_Code == 0xA9) // wait and then jump.
@@ -41,7 +41,7 @@ namespace resource_editor
 				size_t arg_size = instruction.m_Args[0].m_Size; // position after offset is read.
 				int16_t offset = *reinterpret_cast<int16_t*>(low_level::utils::add(data, abs_offset));
 
-				return abs_offset + static_cast<size_t>(offset) + arg_size;
+				return (absolute ? abs_offset : 0) + static_cast<size_t>(offset) + arg_size;
 			}
 
 			LOG(logger::LOGSEVERITY_ASSERT, "Should never come here");
@@ -75,7 +75,7 @@ namespace resource_editor
 			if (cmd == 75 || cmd == 194)
 			{
 				std::string message = std::string(reinterpret_cast<char*>(low_level::utils::add(data, size)));
-				return_data.AddArg({ size, ArgType::ArgType_String, low_level::utils::add(data, size), message, message.size() + 1 });
+				return_data.AddArg({ size, ArgType::ArgType_String, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), message, message.size() + 1 });
 			}
 		}
 
@@ -94,7 +94,7 @@ namespace resource_editor
 			if (cmd == 0x58)
 			{
 				std::string message = std::string(reinterpret_cast<char*>(low_level::utils::add(data, size)));
-				return_data.AddArg({ size, ArgType::ArgType_String, low_level::utils::add(data, size), message, message.size() + 1 });
+				return_data.AddArg({ size, ArgType::ArgType_String, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), message, message.size() + 1 });
 			}
 		}
 
@@ -107,7 +107,7 @@ namespace resource_editor
 			if (cmd == 0x7D)
 			{
 				std::string message = std::string(reinterpret_cast<char*>(low_level::utils::add(data, size)));
-				return_data.AddArg({ size, ArgType::ArgType_String, low_level::utils::add(data, size), message, message.size() + 1 });
+				return_data.AddArg({ size, ArgType::ArgType_String, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), message, message.size() + 1 });
 			}
 		}
 
@@ -118,12 +118,12 @@ namespace resource_editor
 			return_data.AddArg({ 0, ArgType::ArgType_Byte, data, std::string(reinterpret_cast<const char*>(&cmd)) });
 			size = sizeof(uint8_t);
 			uint16_t arr = *reinterpret_cast<uint16_t*>(low_level::utils::add(data, size));
-			return_data.AddArg({ size, ArgType::ArgType_Short, low_level::utils::add(data, size), std::string(reinterpret_cast<const char*>(&arr)) });
+			return_data.AddArg({ size, ArgType::ArgType_Short, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), std::string(reinterpret_cast<const char*>(&arr)) });
 			size += sizeof(uint16_t);
 			if (cmd == 205)
 			{
 				std::string message = std::string(reinterpret_cast<char*>(low_level::utils::add(data, size)));
-				return_data.AddArg({ size, ArgType::ArgType_String, low_level::utils::add(data, size), message, message.size() + 1 });
+				return_data.AddArg({ size, ArgType::ArgType_String, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), message, message.size() + 1 });
 			}
 		}
 
@@ -137,7 +137,7 @@ namespace resource_editor
 			{
 				int16_t arg = *reinterpret_cast<int16_t*>(data);
 				//uint16_t rel = *reinterpret_cast<uint16_t*>(utils::add(data, size));
-				return_data.AddArg({ size, ArgType::ArgType_Ref, low_level::utils::add(data, size), std::string(reinterpret_cast<const char*>(&arg)) });
+				return_data.AddArg({ size, ArgType::ArgType_Ref, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), std::string(reinterpret_cast<const char*>(&arg)) });
 			}
 		}
 
@@ -148,7 +148,7 @@ namespace resource_editor
 			return_data.AddArg({ 0, ArgType::ArgType_Byte, data, std::string(reinterpret_cast<const char*>(&cmd)) });
 			size += sizeof(uint8_t);
 			uint8_t arg = *reinterpret_cast<uint8_t*>(data);
-			return_data.AddArg({ size, ArgType::ArgType_Short, low_level::utils::add(data, size), std::string(reinterpret_cast<const char*>(&arg)) });
+			return_data.AddArg({ size, ArgType::ArgType_Short, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), std::string(reinterpret_cast<const char*>(&arg)) });
 		}
 
 		void room_ops_he60(unsigned char* data, ArgsAllocator& return_data)
@@ -160,7 +160,7 @@ namespace resource_editor
 			if (cmd == 221)
 			{
 				std::string message = std::string(reinterpret_cast<char*>(low_level::utils::add(data, size)));
-				return_data.AddArg({ size, ArgType::ArgType_String, low_level::utils::add(data, size), message, message.size() + 1 });
+				return_data.AddArg({ size, ArgType::ArgType_String, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), message, message.size() + 1 });
 			}
 		}
 
@@ -173,7 +173,7 @@ namespace resource_editor
 			if (cmd == 225)
 			{
 				std::string message = std::string(reinterpret_cast<char*>(low_level::utils::add(data, size)));
-				return_data.AddArg({ size, ArgType::ArgType_String, low_level::utils::add(data, size), message, message.size() + 1 });
+				return_data.AddArg({ size, ArgType::ArgType_String, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), message, message.size() + 1 });
 			}
 		}
 
@@ -183,7 +183,7 @@ namespace resource_editor
 			return_data.AddArg({ 0, ArgType::ArgType_String, data, message1, message1.size() + 1 });
 			size_t size = message1.size() + 1;
 			std::string message2 = std::string(reinterpret_cast<char*>(low_level::utils::add(data, size))); // Add one for the null terminated character.
-			return_data.AddArg({ size, ArgType::ArgType_String, low_level::utils::add(data, size), message2, message2.size() + 1 });
+			return_data.AddArg({ size, ArgType::ArgType_String, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), message2, message2.size() + 1 });
 		}
 
 		void sys_msg(unsigned char* data, ArgsAllocator& return_data)
@@ -192,7 +192,7 @@ namespace resource_editor
 			return_data.AddArg({ 0, ArgType::ArgType_Byte, data, std::string(reinterpret_cast<const char*>(&cmd)) });
 			size_t size = sizeof(uint8_t);
 			std::string message = std::string(reinterpret_cast<char*>(low_level::utils::add(data, size))); // Add one for the null terminated character.
-			return_data.AddArg({ size, ArgType::ArgType_String, low_level::utils::add(data, size), message, message.size() + 1 });
+			return_data.AddArg({ size, ArgType::ArgType_String, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), message, message.size() + 1 });
 		}
 
 		// TODO: Figure out what this does.
@@ -207,20 +207,20 @@ namespace resource_editor
 			return_data.AddArg({ 0, ArgType::ArgType_Byte, data, std::string(reinterpret_cast<const char*>(&cmd)) });
 			size_t size = sizeof(uint8_t);
 			uint8_t arr = *reinterpret_cast<uint16_t*>(data);
-			return_data.AddArg({ size, ArgType::ArgType_Short, low_level::utils::add(data, size), std::string(reinterpret_cast<const char*>(&arr)) });
+			return_data.AddArg({ size, ArgType::ArgType_Short, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), std::string(reinterpret_cast<const char*>(&arr)) });
 			size += sizeof(uint16_t);
 			if (cmd == 127)
 			{
 				uint8_t arg = *reinterpret_cast<uint16_t*>(data);
-				return_data.AddArg({ size, ArgType::ArgType_Short, low_level::utils::add(data, size), std::string(reinterpret_cast<const char*>(&arg)) });
+				return_data.AddArg({ size, ArgType::ArgType_Short, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), std::string(reinterpret_cast<const char*>(&arg)) });
 			}
 			else if (cmd == 138)
 			{
 				uint8_t arg = *reinterpret_cast<uint16_t*>(data);
-				return_data.AddArg({ size, ArgType::ArgType_Short, low_level::utils::add(data, size), std::string(reinterpret_cast<const char*>(&arg)) });
+				return_data.AddArg({ size, ArgType::ArgType_Short, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), std::string(reinterpret_cast<const char*>(&arg)) });
 				size += sizeof(uint16_t);
 				uint8_t arg2 = *reinterpret_cast<uint16_t*>(data);
-				return_data.AddArg({ size, ArgType::ArgType_Short, low_level::utils::add(data, size), std::string(reinterpret_cast<const char*>(&arg2)) });
+				return_data.AddArg({ size, ArgType::ArgType_Short, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), std::string(reinterpret_cast<const char*>(&arg2)) });
 			}
 		}
 
@@ -239,7 +239,7 @@ namespace resource_editor
 			if (cmd == 8)
 			{
 				uint8_t arg = *reinterpret_cast<uint8_t*>(data);
-				return_data.AddArg({ size, ArgType::ArgType_Byte, low_level::utils::add(data, size), std::string(reinterpret_cast<const char*>(&arg)) });
+				return_data.AddArg({ size, ArgType::ArgType_Byte, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), std::string(reinterpret_cast<const char*>(&arg)) });
 			}
 		}
 
@@ -249,7 +249,7 @@ namespace resource_editor
 			return_data.AddArg({ 0, ArgType::ArgType_Byte, data, std::string(reinterpret_cast<const char*>(&cmd)) });
 			size_t size = sizeof(uint8_t);
 			uint8_t arg = *reinterpret_cast<uint8_t*>(data);
-			return_data.AddArg({ size, ArgType::ArgType_Byte, low_level::utils::add(data, size), std::string(reinterpret_cast<const char*>(&arg)) });
+			return_data.AddArg({ size, ArgType::ArgType_Byte, reinterpret_cast<unsigned char*>(low_level::utils::add(data, size)), std::string(reinterpret_cast<const char*>(&arg)) });
 		}
 
 		void default_func(unsigned char*, ArgsAllocator&)

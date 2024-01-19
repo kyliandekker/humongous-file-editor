@@ -10,9 +10,13 @@ namespace resource_editor
 		#define ICON_MAX_16_FA 0xf8ff
 		#define ICON_MAX_FA 0xf8ff
 
-		#define PLAY "\xef\x81\x8b"
-		#define STOP "\xef\x81\x8d"
-		#define SAVE "\xef\x83\x87"
+		#define ICON_PLAY "\xef\x81\x8b"
+		#define ICON_STOP "\xef\x81\x8d"
+		#define ICON_SAVE "\xef\x80\x99"
+		#define ICON_LOAD "\xef\x82\x93"
+
+		#define ICON_FORWARD "\xef\x81\x8e"
+		#define ICON_BACKWARD "\xef\x81\x8a"
 
 		#define ICON_FA_FOLDER "\xef\x81\xbb"
 		#define ICON_FA_FOLDER_OPEN "\xef\x81\xbc"

@@ -16,7 +16,7 @@ namespace resource_editor
 			{
 				m_Offset = rhs.m_Offset;
 			}
-			int32_t m_Offset = 0;
+			int32_t m_Offset = -1;
 		};
 	}
 }

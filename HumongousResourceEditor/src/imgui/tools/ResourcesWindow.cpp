@@ -9,7 +9,7 @@
 #include "game/GameResource.h"
 #include "project/Resource.h"
 #include "imgui/ImguiDefines.h"
-#include "imgui/tools/ExplorerWindow.h"
+#include "project/Project.h"
 #include "imgui/tools/GameResourceWindow.h"
 
 resource_editor::imgui::ResourcesWindow resource_editor::imgui::resourcesWindow;
@@ -126,19 +126,19 @@ namespace resource_editor
 
 		void ResourcesWindow::Render()
 		{
-			if (!explorer.m_LoadedResources[m_ActiveTab])
+			if (!project::project.m_LoadedResources[m_ActiveTab])
 			{
 				return;
 			}
 
-			if (explorer.m_LoadedResources[(int)project::ResourceType::HE0] != nullptr)
+			if (project::project.m_LoadedResources[(int)project::ResourceType::HE0] != nullptr)
 			{
 				if (ImGui::Button("HE0", ImVec2(100.0f, 0.0f)))
 				{
 					SetActiveTab((int)project::ResourceType::HE0);
 				}
 			}
-			if (explorer.m_LoadedResources[(int)project::ResourceType::HE2] != nullptr)
+			if (project::project.m_LoadedResources[(int)project::ResourceType::HE2] != nullptr)
 			{
 				ImGui::SameLine(0.0, 2.0f);
 				if (ImGui::Button("HE2", ImVec2(100.0f, 0.0f)))
@@ -146,7 +146,7 @@ namespace resource_editor
 					SetActiveTab((int)project::ResourceType::HE2);
 				}
 			}
-			if (explorer.m_LoadedResources[(int)project::ResourceType::HE4] != nullptr)
+			if (project::project.m_LoadedResources[(int)project::ResourceType::HE4] != nullptr)
 			{
 				ImGui::SameLine(0.0, 2.0f);
 				if (ImGui::Button("HE4", ImVec2(100.0f, 0.0f)))
@@ -158,7 +158,7 @@ namespace resource_editor
 			if (m_ActiveTab == 0 || m_ActiveTab > (int)project::ResourceType::HE4)
 				return;
 
-			project::Resource* m_Resource = explorer.m_LoadedResources[m_ActiveTab];
+			project::Resource* m_Resource = project::project.m_LoadedResources[m_ActiveTab];
 
 			m_ShowPopUp = false;
 			m_DoubleClick = false;

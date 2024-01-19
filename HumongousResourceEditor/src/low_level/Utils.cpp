@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "low_level/Defines.h"
+#include "project/Resource.h"
 
 namespace resource_editor
 {
@@ -10,9 +11,9 @@ namespace resource_editor
 	{
 		namespace utils
 		{
-			unsigned char* add(void* a_Ptr, size_t a_Size)
+			void* add(void* a_Ptr, size_t a_Size)
 			{
-				return reinterpret_cast<unsigned char*>(a_Ptr) + a_Size;
+				return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(a_Ptr) + a_Size);
 			}
 
 			int getBit(char i, size_t a_Position)
@@ -78,6 +79,30 @@ namespace resource_editor
 					}
 				}
 
+				return found;
+			}
+
+			int32_t seekChildren(project::Resource& a_File, size_t a_Size, std::vector<chunk_reader::ChunkInfo>& a_Desired)
+			{
+				for (auto& chunkInfo : a_Desired)
+				{
+					chunkInfo.m_Offset = -1;
+				}
+
+				size_t found = 0;
+				chunk_reader::ChunkInfo info = a_File.m_FileContainer.GetChunkInfo(0);
+				while (info.m_Offset < a_Size)
+				{
+					for (auto& chunkInfo : a_Desired)
+					{
+						if (utils::chunkcmp(chunkInfo.chunk_id, info.chunk_id) == 0)
+						{
+							found++;
+							chunkInfo = info;
+						}
+					}
+					info = a_File.m_FileContainer.GetNextChunk(info.m_Offset);
+				}
 				return found;
 			}
 		}

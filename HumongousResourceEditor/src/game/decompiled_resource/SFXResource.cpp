@@ -30,53 +30,36 @@ namespace resource_editor
 			}
 		}
 
-		SFXResource::~SFXResource()
-		{
-			if (m_Samples)
-			{
-				free(m_Samples);
-			}
-			if (m_SDAT_Chunk.data)
-			{
-				free(m_SDAT_Chunk.data);
-			}
-		}
-
 		bool SFXResource::GetData(game::GameResource& a_Resource)
 		{
 			std::vector<chunk_reader::ChunkInfo> children = a_Resource.m_Parent->m_FileContainer.GetChildren(a_Resource.m_Offset);
-			size_t hshd_offset = -1;
-			size_t sdat_offset = -1;
-			for (size_t i = 0; i < children.size(); i++)
-			{
-				if (low_level::utils::chunkcmp(children[i].chunk_id, chunk_reader::HSHD_CHUNK_ID) == 0)
-				{
-					hshd_offset = children[i].m_Offset;
-				}
-				if (low_level::utils::chunkcmp(children[i].chunk_id, chunk_reader::SDAT_CHUNK_ID) == 0)
-				{
-					sdat_offset = children[i].m_Offset;
-				}
-			}
-
-			if (hshd_offset == -1)
+			if (children.size() == 0)
 			{
 				return false;
 			}
 
-			if (sdat_offset == -1)
+			std::vector<chunk_reader::ChunkInfo> desired = {
+				chunk_reader::ChunkInfo(chunk_reader::HSHD_CHUNK_ID),
+				chunk_reader::ChunkInfo(chunk_reader::SDAT_CHUNK_ID),
+			};
+
+			if (low_level::utils::seekChildren(children, desired) < desired.size())
 			{
 				return false;
 			}
 
-			memcpy(&m_HSHD_Chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, hshd_offset), sizeof(chunk_reader::HSHD_Chunk));
+			a_Resource.m_Parent->m_FileContainer.GetChunk(m_HSHD_Chunk, desired[0].m_Offset);
 
-			size_t header_size = sizeof(chunk_reader::SDAT_Chunk) - sizeof(m_SDAT_Chunk.data); // Pointer in the SDAT class is size 8 and needs to be deducted.
-			memcpy(&m_SDAT_Chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, sdat_offset), header_size);
-			m_SDAT_Chunk.data = low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, sdat_offset + header_size);
+			a_Resource.m_Parent->m_FileContainer.GetChunk(m_SDAT_Chunk, desired[1].m_Offset, sizeof(chunk_reader::HumongousHeader));
+			m_SDAT_Chunk.data = low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, desired[1].m_Offset + sizeof(chunk_reader::HumongousHeader));
 
 			m_NumSamples = m_SDAT_Chunk.ChunkSize();
 			m_Samples = audio::utils::ToSample(m_SDAT_Chunk.data, m_SDAT_Chunk.ChunkSize());
+
+			a_Resource.m_Properties.emplace(std::make_pair("4. Sample Rate", std::string(std::to_string(m_HSHD_Chunk.sample_rate) + "Hz")));
+			a_Resource.m_Properties.emplace(std::make_pair("5. Channels", std::to_string(1) + " (mono)"));
+			a_Resource.m_Properties.emplace(std::make_pair("6. Bits Per Sample", std::to_string(8)));
+			a_Resource.m_Properties.emplace(std::make_pair("7. Size", std::string(std::to_string(m_SDAT_Chunk.ChunkSize()) + " bytes")));
 
 			return true;
 		}

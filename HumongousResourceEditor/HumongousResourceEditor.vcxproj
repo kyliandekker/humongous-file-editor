@@ -207,6 +207,8 @@
     <ClInclude Include="include\imgui\tools\MainWindow.h" />
     <ClInclude Include="include\project\Project.h" />
     <ClInclude Include="include\system\Logger.h" />
+    <ClInclude Include="include\utils\IDirect3DTexture9_S.h" />
+    <ClInclude Include="include\utils\STempAllocator.h" />
     <ClInclude Include="include\utils\string.h" />
     <ClInclude Include="include\imgui\tools\ResourcesWindow.h" />
     <ClInclude Include="include\game\decompiled_resource\DecompiledResource.h" />
@@ -226,11 +228,9 @@
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="external\imgui\implot.cpp" />
     <ClCompile Include="external\imgui\implot_items.cpp" />
-    <ClCompile Include="include\low_level\ChunkInfo.cpp" />
+    <ClCompile Include="src\utils\STempAllocator.cpp" />
     <ClCompile Include="src\cmd\TalkInstruction.cpp" />
-    <ClCompile Include="src\cmd\ScriptInstruction.cpp" />
     <ClCompile Include="include\game\GameResourceType.h" />
-    <ClCompile Include="include\low_level\HumongousChunks.cpp" />
     <ClCompile Include="src\cmd\ArgsAllocator.cpp" />
     <ClCompile Include="src\cmd\OPCodes.cpp" />
     <ClCompile Include="src\game\compilers\ResourceFileCompiler.cpp" />
