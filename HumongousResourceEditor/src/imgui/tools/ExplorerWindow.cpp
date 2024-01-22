@@ -47,7 +47,7 @@ namespace resource_editor
 					}
 
 					ImGui::SetNextItemOpen(a_Resource.m_FoldedOut);
-					bool fold = ImGui::TreeNodeS(name.c_str(), id.c_str());
+					const bool fold = ImGui::TreeNodeS(name.c_str(), id.c_str());
 
 					if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 					{
@@ -81,7 +81,7 @@ namespace resource_editor
 				else if (!a_Resource.m_HasChildren)
 				{
 					name = ICON_FA_FOLDER + std::string(" ") + name;
-					bool opened = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf);
+					const bool opened = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf);
 
 					if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 					{
@@ -111,7 +111,7 @@ namespace resource_editor
 				{
 					name = ICON_FA_FILE + std::string(" ") + name;
 				}
-				bool opened = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf);
+				const bool opened = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf);
 
 				if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 				{

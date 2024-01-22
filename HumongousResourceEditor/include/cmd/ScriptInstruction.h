@@ -7,8 +7,9 @@
 
 namespace resource_editor
 {
-	struct ScriptInstruction
+	class ScriptInstruction
 	{
+	public:
 		uint8_t m_Code;
 		std::string m_Name;
 		size_t m_OffsetInSCRPChunk;

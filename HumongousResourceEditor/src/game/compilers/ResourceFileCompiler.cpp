@@ -22,7 +22,7 @@ namespace resource_editor
 		struct version_key
 		{
 			std::string ext = 0;
-			uint32_t size = 0;
+			size_t size = 0;
 
 			bool operator <(const version_key& rhs) const
 			{
@@ -75,8 +75,8 @@ namespace resource_editor
 				{ { ".LFL", 26 }, { 5, 0 } }
 			};
 
-			version_key key = { string_extensions::getExtensionFromPath(he0->m_Path), he0->m_FileContainer.m_Size };
-			version_value values = versions[key];
+			const version_key key = { string_extensions::getExtensionFromPath(he0->m_Path), he0->m_FileContainer.m_Size };
+			const version_value values = versions[key];
 
 			LOGF(logger::LOGSEVERITY_INFO, "Index file has version %i and he version %i.", values.version, values.he_version);
 
@@ -131,7 +131,7 @@ namespace resource_editor
 			he0->m_FileContainer.GetChunk(rnam_chunk, desired[0].m_Offset);
 			rnam_chunk.data = low_level::utils::add(he0->m_FileContainer.m_Data, desired[0].m_Offset + sizeof(chunk_reader::HumongousHeader));
 			
-			size_t rnam_end = desired[0].m_Offset + rnam_chunk.ChunkSize();
+			const size_t rnam_end = desired[0].m_Offset + rnam_chunk.ChunkSize();
 			size_t pos = desired[0].m_Offset + sizeof(chunk_reader::HumongousHeader) + sizeof(uint16_t);
 			std::string room_name;
 
@@ -208,19 +208,18 @@ namespace resource_editor
 			uint32_t lflf = 0;
 
 			chunk_reader::ChunkInfo header = a->m_FileContainer.GetChunkInfo(0);
-			int random_number_for_unique_id = 0;
 			while (header.m_Offset < a->m_FileContainer.m_Size)
 			{
 				if (low_level::utils::chunkcmp(header.chunk_id, chunk_reader::LFLF_CHUNK_ID) == 0)
 				{
 					chunk_reader::ChunkInfo child_header = a->m_FileContainer.GetChunkInfo(header.m_Offset);
 					uint32_t i = 0;
-					while (child_header.m_Offset < header.m_Offset + header.ChunkSize())
+					while (child_header.m_Offset < header.m_Offset + static_cast<int32_t>(header.ChunkSize()))
 					{
 						std::string chunk_id_name = std::string(reinterpret_cast<char*>(child_header.chunk_id));
 						chunk_id_name.resize(CHUNK_ID_SIZE);
 
-						std::map<std::string, game::GameResourceType>::iterator it = RESOURCE_CHUNKS.find(chunk_id_name);
+						const std::map<std::string, game::GameResourceType>::iterator it = RESOURCE_CHUNKS.find(chunk_id_name);
 						if (it != RESOURCE_CHUNKS.end())
 						{
 							GameResource resource;
@@ -254,7 +253,6 @@ namespace resource_editor
 							i++;
 						}
 						child_header = a->m_FileContainer.GetNextChunk(child_header.m_Offset);
-						random_number_for_unique_id++;
 					}
 
 					lflf++;

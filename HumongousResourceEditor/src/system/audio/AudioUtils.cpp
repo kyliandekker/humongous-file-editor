@@ -31,7 +31,7 @@ namespace resource_editor
 
 				for (size_t i = 0; i < a_Buffersize; i++)
 				{
-					int8_t psample = INT8_MAX - *(uint8_t*)pData;
+					const int8_t psample = INT8_MAX - *(uint8_t*)pData;
 					samples[i] = static_cast<double>(psample) / INT8_MAX;
 
 					pData += 1;

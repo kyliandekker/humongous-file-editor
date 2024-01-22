@@ -39,7 +39,7 @@ namespace resource_editor
 				return false;
 			}
 
-			size_t obim_offset = a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Offset).m_Offset;
+			const size_t obim_offset = a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Offset).m_Offset;
 
 			std::vector<chunk_reader::ChunkInfo> obim_children = a_Resource.m_Parent->m_FileContainer.GetChildren(obim_offset);
 			if (obim_children.size() == 0)
@@ -47,7 +47,7 @@ namespace resource_editor
 				return false;
 			}
 
-			size_t bsmap_offset = max(desired[0].m_Offset, desired[1].m_Offset);
+			const size_t bsmap_offset = max(desired[0].m_Offset, desired[1].m_Offset);
 
 			desired = { chunk_reader::ChunkInfo(chunk_reader::IMHD_CHUNK_ID) };
 			if (low_level::utils::seekChildren(obim_children, desired) < desired.size())

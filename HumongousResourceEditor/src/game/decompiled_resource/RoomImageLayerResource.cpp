@@ -42,7 +42,7 @@ namespace resource_editor
 				return false;
 			}
 
-			size_t lflf_offset = a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Offset).m_Offset).m_Offset).m_Offset;
+			const size_t lflf_offset = a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Offset).m_Offset).m_Offset).m_Offset;
 
 			std::vector<chunk_reader::ChunkInfo> lflf_children = a_Resource.m_Parent->m_FileContainer.GetChildren(lflf_offset);
 			if (lflf_children.size() == 0)
@@ -65,9 +65,9 @@ namespace resource_editor
 				return false;
 			}
 
-			int CHANNELS = 4;
+			const int CHANNELS = 4;
 			int cur = 0;
-			for (size_t i = 0; i < backgroundImage.Size(); i += CHANNELS, cur++)
+			for (int i = 0; i < backgroundImage.Size(); i += CHANNELS, cur++)
 			{
 				int y = cur / static_cast<int>(backgroundImage.m_Width);
 				int x = cur % static_cast<int>(backgroundImage.m_Width);
@@ -75,10 +75,10 @@ namespace resource_editor
 				if (x >= roomImage.m_X && x < roomImage.m_X + roomImage.m_Width &&
 					y >= roomImage.m_Y && y < roomImage.m_Y + roomImage.m_Height)
 				{
-					int relativeX = x - roomImage.m_X;
-					int relativeY = y - roomImage.m_Y;
+					const int relativeX = x - static_cast<int>(roomImage.m_X);
+					int relativeY = y - static_cast<int>(roomImage.m_Y);
 
-					relativeY *= roomImage.m_Width;
+					relativeY *= static_cast<int>(roomImage.m_Width);
 
 					int index = relativeX + relativeY;
 

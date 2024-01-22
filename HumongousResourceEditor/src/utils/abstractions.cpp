@@ -19,7 +19,7 @@ namespace resource_editor
 
 			IFileDialog* pfd;
 			HRESULT hr = CoCreateInstance(rclsid, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
-			pfd->SetFileTypes(filters.size(), filters.data());
+			pfd->SetFileTypes(static_cast<UINT>(filters.size()), filters.data());
 			if (SUCCEEDED(hr))
 			{
 				DWORD dwOptions;
@@ -36,7 +36,7 @@ namespace resource_editor
 						LPWSTR pszPath;
 						psi->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &pszPath);
 
-						std::wstring wide(pszPath);
+						const std::wstring wide(pszPath);
 						path = std::string(wide.begin(), wide.end());
 						psi->Release();
 						CoTaskMemFree(pszPath);

@@ -65,7 +65,7 @@ namespace resource_editor
 			void xorShift(unsigned char*& a_Data, size_t a_Size, char a_Key);
 
 			size_t seekChildren(std::vector<chunk_reader::ChunkInfo>& a_Children, std::vector<chunk_reader::ChunkInfo>& a_Desired);
-			int32_t seekChildren(project::Resource& a_File, size_t a_Size, std::vector<chunk_reader::ChunkInfo>& a_Desired);
+			size_t seekChildren(project::Resource& a_File, size_t a_Size, std::vector<chunk_reader::ChunkInfo>& a_Desired);
 		}
 	}
 }

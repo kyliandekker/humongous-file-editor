@@ -237,14 +237,13 @@ namespace resource_editor
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-			ImVec2 size = m_Size;
+			const ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 			ImGui::SetNextWindowPos(ImVec2(0, 0));
-			ImGui::SetNextWindowSize(size);
+			ImGui::SetNextWindowSize(m_Size);
 
 			ImGui::PushFont(m_DefaultFont);
 
-			m_MainWindow->SetSize(size);
+			m_MainWindow->SetSize(m_Size);
 			m_MainWindow->Update();
 
 			if (m_IsError)
@@ -262,7 +261,7 @@ namespace resource_editor
 
 			if (m_ShowPopUp)
 			{
-				ImGui::SetNextWindowSize(ImVec2(size.x / 2, size.y / 3));
+				ImGui::SetNextWindowSize(ImVec2(m_Size.x / 2, m_Size.y / 3));
 
 				ImGui::OpenPopup(m_PopUpTitle.c_str());
 
@@ -287,7 +286,7 @@ namespace resource_editor
 			{
 				if (tool->IsFullScreen())
 				{
-					tool->SetSize(size);
+					tool->SetSize(m_Size);
 				}
 				tool->Update();
 			}
@@ -308,7 +307,7 @@ namespace resource_editor
 				m_DX9Window.EndScene();
 			}
 
-			HRESULT result = m_DX9Window.g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
+			const HRESULT result = m_DX9Window.g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
 
 			// Handle loss of D3D9 device
 			if (result == D3DERR_DEVICELOST && m_DX9Window.g_pd3dDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET)
@@ -333,7 +332,7 @@ namespace resource_editor
 			m_Tools.push_back(&a_Tool);
 		}
 
-		void ImGuiWindow::LoggerCallback(logger::Message& a_Message)
+		void ImGuiWindow::LoggerCallback(const logger::Message& a_Message)
 		{
 			window.m_PopUpText = a_Message.message;
 			switch (a_Message.severity)

@@ -13,9 +13,9 @@ namespace resource_editor
 {
 	namespace chunk_reader
 	{
-		struct BMAP_Chunk;
-		struct APAL_Chunk;
-		struct SMAP_Chunk;
+		class BMAP_Chunk;
+		class APAL_Chunk;
+		class SMAP_Chunk;
 	}
 }
 

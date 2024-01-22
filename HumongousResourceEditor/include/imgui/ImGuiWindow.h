@@ -39,7 +39,7 @@ namespace resource_editor
 			void SetSize(ImVec2 a_Size);
 			dx9::DX9Window& GetDX9();
 
-			static void LoggerCallback(logger::Message& a_Message);
+			static void LoggerCallback(const logger::Message& a_Message);
 
 			bool m_ShowPopUp = false;
 			std::string m_PopUpText;

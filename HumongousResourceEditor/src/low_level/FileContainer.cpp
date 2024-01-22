@@ -44,7 +44,7 @@ namespace resource_editor
 			m_Size = ftell(file);
 			rewind(file);
 
-			this->m_Path = a_Path;
+			m_Path = a_Path;
 
 			m_Data = reinterpret_cast<unsigned char*>(malloc(m_Size));
 			if (m_Data != nullptr)
@@ -74,7 +74,7 @@ namespace resource_editor
 		{
 			ChunkInfo header;
 			memcpy(&header, low_level::utils::add(m_Data, a_Offset), sizeof(HumongousHeader));
-			header.m_Offset = a_Offset;
+			header.m_Offset = static_cast<int32_t>(a_Offset);
 			return header;
 		}
 
@@ -115,7 +115,7 @@ namespace resource_editor
 				}
 			}
 
-			assert(false);
+			LOG(logger::LOGSEVERITY_ASSERT, "Reached invalid chunk. Cannot go further.");
 			return next;
 		}
 
@@ -147,7 +147,7 @@ namespace resource_editor
 			ChunkInfo chunk = GetChunkInfo(a_Offset);
 			ChunkInfo next_chunk = GetChunkInfo(a_Offset);
 			next_chunk = GetNextChunk(next_chunk.m_Offset);
-			while (next_chunk.m_Offset < chunk.m_Offset + chunk.ChunkSize())
+			while (next_chunk.m_Offset < chunk.m_Offset + static_cast<int32_t>(chunk.ChunkSize()))
 			{
 				children.push_back(next_chunk);
 				next_chunk = GetNextChunk(next_chunk.m_Offset);
@@ -159,7 +159,7 @@ namespace resource_editor
 		void FileContainer::Replace(size_t a_Offset, void* a_NewChunkData, size_t a_NewSize)
 		{
 			ChunkInfo chunk = GetChunkInfo(a_Offset);
-			int32_t dif_size = static_cast<int32_t>(a_NewSize - chunk.ChunkSize());
+			const int32_t dif_size = static_cast<int32_t>(a_NewSize - chunk.ChunkSize());
 			
 			ChunkInfo next_chunk = GetChunkInfo(0);
 			if (dif_size != 0)
@@ -175,7 +175,7 @@ namespace resource_editor
 				}
 			}
 
-			size_t new_size = m_Size + dif_size;
+			const size_t new_size = m_Size + dif_size;
 			void* new_data = malloc(new_size);
 			memset(new_data, 0, new_size);
 			memcpy(new_data, m_Data, a_Offset);

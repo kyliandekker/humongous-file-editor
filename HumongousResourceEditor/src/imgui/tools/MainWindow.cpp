@@ -19,7 +19,7 @@ namespace resource_editor
 		void OpenProject()
 		{
 			std::string path;
-			std::vector<COMDLG_FILTERSPEC> filters =
+			const std::vector<COMDLG_FILTERSPEC> filters =
 			{
 				{ L"Humongous Index Files (*.HE0)", L"*.HE0" }
 			};

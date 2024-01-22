@@ -21,9 +21,8 @@ namespace resource_editor
 				case project::ResourceType::A:
 				{
 					project::Resource* a = nullptr;
-					for (size_t i = 0; i < a_Resource.m_Parent->m_Resources.size(); i++)
+					for (auto& resource : a_Resource.m_Parent->m_Resources)
 					{
-						project::Resource& resource = a_Resource.m_Parent->m_Resources[i];
 						if (string_extensions::getFileWithoutExtension(resource.m_Name).compare(string_extensions::getFileWithoutExtension(a_Resource.m_Name)) == 0 && resource.m_ResourceType == project::ResourceType::A)
 						{
 							a = &resource;
@@ -83,7 +82,7 @@ namespace resource_editor
 			{
 				if (project::project.m_LoadedResources[(int)project::ResourceType::A])
 				{
-					project::Resource* resource = project::project.m_LoadedResources[(int)project::ResourceType::A];
+					resource = project::project.m_LoadedResources[(int)project::ResourceType::A];
 					resource->m_FileContainer.Unload();
 					ClearResources(*resource);
 					project::project.m_LoadedResources[(int)project::ResourceType::A] = nullptr;

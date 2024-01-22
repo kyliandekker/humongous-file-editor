@@ -50,7 +50,7 @@ namespace resource_editor
 			va_list va_format_list;
 			va_start(va_format_list, a_Line);
 
-			size_t buffersize = vsnprintf(NULL, 0, a_Message, va_format_list) + 1;
+			const size_t buffersize = vsnprintf(NULL, 0, a_Message, va_format_list) + 1;
 			char* formatted_message = (char*)malloc(buffersize);
 			vsnprintf(formatted_message, buffersize, a_Message, va_format_list);
 
@@ -84,7 +84,7 @@ namespace resource_editor
 				m_MessagesMutex.lock();
 				if (m_Messages.size() > 0)
 				{
-					Message lm = m_Messages.front();
+					const Message lm = m_Messages.front();
 					m_Messages.pop();
 
 					DWORD written = 0;

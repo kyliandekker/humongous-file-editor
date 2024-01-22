@@ -26,8 +26,9 @@ namespace resource_editor
 		ScriptResource::~ScriptResource()
 		{ }
 
-		struct Generic_Script_Chunk : chunk_reader::HumongousHeader
+		class Generic_Script_Chunk : public chunk_reader::HumongousHeader
 		{
+		public:
 			Generic_Script_Chunk() = default;
 			unsigned char* data = nullptr;
 		};
@@ -89,7 +90,12 @@ namespace resource_editor
 
 			while (pos < scrp_size)
 			{
-				uint8_t b = chunk.data[pos];
+				const uint8_t b = chunk.data[pos];
+
+				if (chunk_reader::OPCODES_HE90.find(b) == chunk_reader::OPCODES_HE90.end())
+				{
+					LOGF(logger::LOGSEVERITY_ASSERT, "Jump command jumps to invalid bytecode. Expect code in OPCodes dictionary but got %c", b);
+				}
 
 				ScriptInstruction instruction;
 				instruction.m_Code = b;
@@ -113,18 +119,13 @@ namespace resource_editor
 					|| (instruction.m_Code == 0xA9 && instruction.m_Args.m_Args.size() == 2)
 					)
 				{
-					size_t offset = chunk_reader::jump(instruction, reinterpret_cast<unsigned char*>(a_Resource.m_Parent->m_FileContainer.m_Data));
+					const size_t offset = chunk_reader::jump(instruction, reinterpret_cast<unsigned char*>(a_Resource.m_Parent->m_FileContainer.m_Data));
 
-					uint8_t tb = *reinterpret_cast<uint8_t*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, offset));
+					const uint8_t tb = *reinterpret_cast<uint8_t*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, offset));
 
 					if (offset > a_Resource.m_Offset + chunk.ChunkSize())
 					{
-						printf("Test");
-					}
-
-					if (chunk_reader::OPCODES_HE90.find(tb) == chunk_reader::OPCODES_HE90.end())
-					{
-						LOGF(logger::LOGSEVERITY_ASSERT, "Jump command jumps to invalid bytecode. Expect code in OPCodes dictionary but got %c", tb);
+						LOG(logger::LOGSEVERITY_ASSERT, "Script references outside script, should not be possible.");
 					}
 				}
 

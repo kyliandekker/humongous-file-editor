@@ -37,14 +37,13 @@ namespace resource_editor
 			}
 
 			chunk_reader::BMAP_Chunk bmap_chunk;
-			size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
-			memcpy(&bmap_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, desired[0].m_Offset), header_size);
+			const size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data);
+			a_Resource.m_Parent->m_FileContainer.GetChunk(bmap_chunk, desired[0].m_Offset, sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data));
 			bmap_chunk.data = reinterpret_cast<unsigned char*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, desired[0].m_Offset + header_size));
-			size_t bmap_size = bmap_chunk.ChunkSize() - header_size;
 
-			size_t rmim_offset = a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Offset).m_Offset;
+			const size_t rmim_offset = a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Offset).m_Offset;
 			chunk_reader::RMIM_Chunk rmim_chunk;
-			memcpy(&rmim_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, rmim_offset), sizeof(chunk_reader::RMIM_Chunk));
+			a_Resource.m_Parent->m_FileContainer.GetChunk(rmim_chunk, rmim_offset, sizeof(chunk_reader::RMIM_Chunk));
 
 			std::vector<chunk_reader::ChunkInfo> rmda_children = a_Resource.m_Parent->m_FileContainer.GetChildren(a_Resource.m_Parent->m_FileContainer.GetParent(rmim_offset).m_Offset);
 			if (rmda_children.size() == 0)
@@ -59,12 +58,10 @@ namespace resource_editor
 			}
 
 			chunk_reader::RMHD_Chunk rmhd_chunk;
-			memcpy(&rmhd_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, desired[0].m_Offset), sizeof(chunk_reader::RMHD_Chunk));
+			a_Resource.m_Parent->m_FileContainer.GetChunk(rmhd_chunk, desired[0].m_Offset, sizeof(chunk_reader::RMHD_Chunk));
 
 			chunk_reader::APAL_Chunk apal_chunk;
-			header_size = sizeof(chunk_reader::APAL_Chunk);
-			memcpy(&apal_chunk, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, desired[1].m_Offset), header_size);
-			size_t apal_size = apal_chunk.ChunkSize() - header_size;
+			a_Resource.m_Parent->m_FileContainer.GetChunk(apal_chunk, desired[1].m_Offset, sizeof(chunk_reader::APAL_Chunk));
 
 			return GetDataBMAP(bmap_chunk, apal_chunk, bmap_chunk.fill_color, rmhd_chunk.width, rmhd_chunk.height, a_ImageInfo, a_ShowTransparency);
 		}
@@ -80,7 +77,9 @@ namespace resource_editor
 			}
 
 			if (!GetRoomBackgroundData(a_Resource, m_ImageInfo, m_ShowTransparency))
+			{
 				return false;
+			}
 
 			a_Resource.m_Properties.emplace(std::make_pair("4. Size", std::string(std::to_string(m_ImageInfo.Size()) + " bytes")));
 			a_Resource.m_Properties.emplace(std::make_pair("5. Width", std::string(std::to_string(m_ImageInfo.m_Width) + "px")));

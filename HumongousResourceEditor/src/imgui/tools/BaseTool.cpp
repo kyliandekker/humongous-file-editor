@@ -38,7 +38,9 @@ namespace resource_editor
 		void BaseTool::Update()
 		{
 			if (!m_Enabled)
+			{
 				return;
+			}
 
 			if (m_FullScreen)
 			{

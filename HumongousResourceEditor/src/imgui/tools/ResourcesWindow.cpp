@@ -85,7 +85,7 @@ namespace resource_editor
 			}
 
 			name += id;
-			bool opened = ImGui::TreeNodeEx(name.c_str(), resource.m_Resources.empty() ? ImGuiTreeNodeFlags_Leaf : ImGuiTreeNodeFlags_None);
+			const bool opened = ImGui::TreeNodeEx(name.c_str(), resource.m_Resources.empty() ? ImGuiTreeNodeFlags_Leaf : ImGuiTreeNodeFlags_None);
 
 			if (ImGui::IsItemHovered() && ImGui::IsItemClicked(1))
 			{
@@ -101,9 +101,9 @@ namespace resource_editor
 
 			if (opened)
 			{
-				for (size_t i = 0; i < resource.m_Resources.size(); i++)
+				for (auto& resource : resource.m_Resources)
 				{
-					RenderGameResource(resource.m_Resources[i], selectedResource);
+					RenderGameResource(resource, selectedResource);
 				}
 				ImGui::TreePop();
 			}
@@ -114,7 +114,7 @@ namespace resource_editor
 			}
 		}
 
-		std::array<std::string, 6> names
+		const std::array<std::string, 6> names
 		{
 			"",
 			"HE0",
@@ -156,16 +156,18 @@ namespace resource_editor
 			}
 
 			if (m_ActiveTab == 0 || m_ActiveTab > (int)project::ResourceType::HE4)
+			{
 				return;
+			}
 
 			project::Resource* m_Resource = project::project.m_LoadedResources[m_ActiveTab];
 
 			m_ShowPopUp = false;
 			m_DoubleClick = false;
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 10.0f });
-			for (size_t i = 0; i < m_Resource->m_GameResources.size(); i++)
+			for (auto& gameResource : m_Resource->m_GameResources)
 			{
-				RenderGameResource(m_Resource->m_GameResources[i], m_SelectedResource);
+				RenderGameResource(gameResource, m_SelectedResource);
 			}
 			ImGui::PopStyleVar();
 			if (m_SelectedResource)

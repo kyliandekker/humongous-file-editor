@@ -23,13 +23,13 @@ namespace resource_editor
 
 			int chunkcmp(unsigned char* a_ChunkID1, const char* a_ChunkID2)
 			{
-				int b = strncmp(reinterpret_cast<const char*>(a_ChunkID1), a_ChunkID2, CHUNK_ID_SIZE);
+				const int b = strncmp(reinterpret_cast<const char*>(a_ChunkID1), a_ChunkID2, CHUNK_ID_SIZE);
 				return b;
 			}
 
 			int chunkcmp(unsigned char* a_ChunkID1, unsigned char* a_ChunkID2)
 			{
-				int b = strncmp(reinterpret_cast<const char*>(a_ChunkID1), reinterpret_cast<const char*>(a_ChunkID2), CHUNK_ID_SIZE);
+				const int b = strncmp(reinterpret_cast<const char*>(a_ChunkID1), reinterpret_cast<const char*>(a_ChunkID2), CHUNK_ID_SIZE);
 				return b;
 			}
 
@@ -82,7 +82,7 @@ namespace resource_editor
 				return found;
 			}
 
-			int32_t seekChildren(project::Resource& a_File, size_t a_Size, std::vector<chunk_reader::ChunkInfo>& a_Desired)
+			size_t seekChildren(project::Resource& a_File, size_t a_Size, std::vector<chunk_reader::ChunkInfo>& a_Desired)
 			{
 				for (auto& chunkInfo : a_Desired)
 				{

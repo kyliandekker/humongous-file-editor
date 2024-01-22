@@ -49,7 +49,7 @@ namespace resource_editor
 		bool SoundResource::OpenResource(std::string& a_Path, uaudio::wave_reader::ChunkCollection& a_ChunkCollection)
 		{
 			std::string path;
-			std::vector<COMDLG_FILTERSPEC> filters =
+			const std::vector<COMDLG_FILTERSPEC> filters =
 			{
 				{L"WAVE files (*.wav)", L"*.wav;*.WAV"}
 			};
@@ -131,7 +131,7 @@ namespace resource_editor
 		bool SoundResource::SaveResource(std::string& a_Path)
 		{
 			std::string path;
-			std::vector<COMDLG_FILTERSPEC> filters =
+			const std::vector<COMDLG_FILTERSPEC> filters =
 			{
 				{L"WAVE files (*.wav)", L"*.wav;*.WAV"}
 			};

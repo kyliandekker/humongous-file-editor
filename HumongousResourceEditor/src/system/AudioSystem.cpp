@@ -12,7 +12,9 @@ namespace resource_editor
 		CoInitialize(0);
 
 		if (m_Engine != nullptr)
+		{
 			return;
+		}
 
 		HRESULT hr;
 

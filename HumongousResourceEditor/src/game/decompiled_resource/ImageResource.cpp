@@ -43,7 +43,7 @@ namespace resource_editor
 			std::vector<uint8_t> bits;
 			for (size_t i = 0; i < a_Length; ++i)
 			{
-				char c = a_Data[i];
+				const char c = a_Data[i];
 				for (int j = 0; j < 8; j++)
 				{
 					bits.push_back((c >> j) & 1);
@@ -69,7 +69,7 @@ namespace resource_editor
 
 			unsigned char color = a_FillColor;
 
-			size_t num_pixels = a_Info.m_Width * a_Info.m_Height;
+			const size_t num_pixels = a_Info.m_Width * a_Info.m_Height;
 
 			if (a_DataSize == 0)
 			{
@@ -93,7 +93,7 @@ namespace resource_editor
 					{
 						if (bits[pos++] == 1)
 						{
-							uint8_t bitc = CollectBits(pos, bits, 3);
+							const uint8_t bitc = CollectBits(pos, bits, 3);
 							color += delta_color[bitc];
 						}
 						else
@@ -119,7 +119,7 @@ namespace resource_editor
 
 			out.push_back(color % 256);
 
-			size_t num_pixels = a_Info.m_Width * a_Info.m_Height;
+			const size_t num_pixels = a_Info.m_Width * a_Info.m_Height;
 
 			int sub = 1;
 			int pos = 0;
@@ -130,7 +130,9 @@ namespace resource_editor
 					if (bits[pos++] == 1)
 					{
 						if (bits[pos++] == 1)
+						{
 							sub = -sub;
+						}
 						color -= sub;
 					}
 					else
@@ -155,7 +157,7 @@ namespace resource_editor
 
 			out.push_back(color % 256);
 
-			size_t num_pixels = a_Info.m_Width * a_Info.m_Height;
+			const size_t num_pixels = a_Info.m_Width * a_Info.m_Height;
 
 			int pos = 0;
 			while (out.size() < num_pixels)
@@ -164,7 +166,7 @@ namespace resource_editor
 				{
 					if (bits[pos++] == 1)
 					{
-						uint8_t shift = CollectBits(pos, bits, 3) - 4;
+						const uint8_t shift = CollectBits(pos, bits, 3) - 4;
 						if (shift != 0)
 						{
 							color += shift;
@@ -213,13 +215,13 @@ namespace resource_editor
 				return false;
 			}
 
-			size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(a_BMAP_Chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
-			size_t bmap_size = a_BMAP_Chunk.ChunkSize() - header_size;
+			const size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(a_BMAP_Chunk.data); // Pointer in the BMAP class is size 8 and needs to be deducted.
+			const size_t bmap_size = a_BMAP_Chunk.ChunkSize() - header_size;
 
-			int palen = a_BMAP_Chunk.encoding % 10;
+			const int palen = a_BMAP_Chunk.encoding % 10;
 
-			bool he = a_BMAP_Chunk.encoding >= 0x86 && a_BMAP_Chunk.encoding <= 0x8A;
-			bool he_transparent = a_BMAP_Chunk.encoding >= 0x90 && a_BMAP_Chunk.encoding <= 0x94;
+			const bool he = a_BMAP_Chunk.encoding >= 0x86 && a_BMAP_Chunk.encoding <= 0x8A;
+			const bool he_transparent = a_BMAP_Chunk.encoding >= 0x90 && a_BMAP_Chunk.encoding <= 0x94;
 
 			a_ImageInfo.m_Width = a_Width;
 			a_ImageInfo.m_Height = a_Height;
@@ -230,7 +232,7 @@ namespace resource_editor
 			}
 
 			std::vector<uint8_t> newOut;
-			for (size_t i = 0; i < a_ImageInfo.Size(); i++)
+			for (int i = 0; i < a_ImageInfo.Size(); i++)
 			{
 				newOut.push_back(a_APAL_Chunk.data[a_ImageInfo.m_Data[i] * 3]);
 				newOut.push_back(a_APAL_Chunk.data[a_ImageInfo.m_Data[i] * 3 + 1]);
@@ -300,11 +302,11 @@ namespace resource_editor
 				return false;
 			}
 
-			size_t header_size = sizeof(chunk_reader::SMAP_Chunk) - sizeof(a_SMAP_Chunk.data); // Pointer in the SMAP class is size 8 and needs to be deducted.
-			size_t smap_size = a_SMAP_Chunk.ChunkSize() - header_size;
+			const size_t header_size = sizeof(chunk_reader::SMAP_Chunk) - sizeof(a_SMAP_Chunk.data); // Pointer in the SMAP class is size 8 and needs to be deducted.
+			const size_t smap_size = a_SMAP_Chunk.ChunkSize() - header_size;
 
-			uint32_t strip_width = 8;
-			size_t num_strips = static_cast<size_t>(static_cast<size_t>(floor(static_cast<double>(a_Width / strip_width))));
+			const uint32_t strip_width = 8;
+			const size_t num_strips = static_cast<size_t>(static_cast<size_t>(floor(static_cast<double>(a_Width / strip_width))));
 
 			std::vector<uint32_t> offsets;
 			int j = 0;
@@ -334,7 +336,7 @@ namespace resource_editor
 			{
 				std::vector<std::vector<IndexColor>> data_new_block;
 
-				uint8_t code = strip.data[0];
+				const uint8_t code = strip.data[0];
 
 				bool horizontal = true;
 				if (code >= 0x03 && code <= 0x12 || code >= 0x22 && code <= 0x26)
@@ -342,11 +344,11 @@ namespace resource_editor
 					horizontal = false;
 				}
 
-				bool he_transparent = code >= 0x22 && code <= 0x30 || code >= 0x54 && code <= 0x80 || code >= 0x8F;
+				const bool he_transparent = code >= 0x22 && code <= 0x30 || code >= 0x54 && code <= 0x80 || code >= 0x8F;
 
-				int palen = code % 10;
+				const int palen = code % 10;
 
-				uint8_t color = strip.data[1];
+				const uint8_t color = strip.data[1];
 
 				ImgInfo strip_info;
 				strip_info.m_Width = strip_width;
@@ -398,10 +400,10 @@ namespace resource_editor
 				strip_info.m_Data = DataContainer(strip_info.Size(), new_data.Data());
 				total_size += strip_info.Size();
 
-				for (size_t k = 0; k < a_Height; k++)
+				for (int k = 0; k < a_Height; k++)
 				{
 					std::vector<IndexColor> new_strip;
-					for (size_t b = 0; b < strip_width; b++)
+					for (int b = 0; b < strip_width; b++)
 					{
 						new_strip.push_back({ strip_info.m_Data[(k * strip_width) + b], color });
 					}
