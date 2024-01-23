@@ -101,8 +101,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)external/dx9/$(PlatformShortname)/;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\$(PlatformShortname);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\$(PlatformShortname);$(ProjectDir)external/uaudio_wave_reader/$(PlatformShortname)/</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -123,8 +123,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)external/dx9/$(PlatformShortname)/;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\$(PlatformShortname);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\$(PlatformShortname);$(ProjectDir)external/uaudio_wave_reader/$(PlatformShortname)/</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -141,8 +141,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)external/dx9/$(PlatformShortname)/;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\$(PlatformShortname);$(ProjectDir)external/uaudio_wave_reader/$(PlatformShortname)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\$(PlatformShortname);$(ProjectDir)external/uaudio_wave_reader/$(PlatformShortname)/</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -163,12 +163,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)external/dx9/$(PlatformShortname)/;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\$(PlatformShortname);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;uaudio_wave_reader_$(PlatformShortname)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\$(PlatformShortname);$(ProjectDir)external/uaudio_wave_reader/$(PlatformShortname)/</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="dx9\DX9Window.h" />
+    <ClInclude Include="include\allocators\ChunkCollectionWrapper.h" />
     <ClInclude Include="include\cmd\ArgsAllocator.h" />
     <ClInclude Include="include\cmd\OPCodes.h" />
     <ClInclude Include="include\cmd\ScriptInstruction.h" />
@@ -208,13 +209,13 @@
     <ClInclude Include="include\project\Project.h" />
     <ClInclude Include="include\system\Logger.h" />
     <ClInclude Include="include\utils\IDirect3DTexture9_S.h" />
-    <ClInclude Include="include\utils\STempAllocator.h" />
+    <ClInclude Include="include\allocators\DataStream.h" />
     <ClInclude Include="include\utils\string.h" />
     <ClInclude Include="include\imgui\tools\ResourcesWindow.h" />
     <ClInclude Include="include\game\decompiled_resource\DecompiledResource.h" />
     <ClInclude Include="include\system\audio\AudioUtils.h" />
     <ClInclude Include="include\game\decompiled_resource\SFXResource.h" />
-    <ClInclude Include="include\utils\TempAllocator.h" />
+    <ClInclude Include="include\allocators\Data.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="external\imgui\backends\imgui_impl_dx9.cpp" />
@@ -228,7 +229,8 @@
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="external\imgui\implot.cpp" />
     <ClCompile Include="external\imgui\implot_items.cpp" />
-    <ClCompile Include="src\utils\STempAllocator.cpp" />
+    <ClCompile Include="src\allocators\ChunkCollectionWrapper.cpp" />
+    <ClCompile Include="src\allocators\DataStream.cpp" />
     <ClCompile Include="src\cmd\TalkInstruction.cpp" />
     <ClCompile Include="include\game\GameResourceType.h" />
     <ClCompile Include="src\cmd\ArgsAllocator.cpp" />
@@ -263,7 +265,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\project\Project.cpp" />
     <ClCompile Include="src\system\Logger.cpp" />
-    <ClCompile Include="src\utils\TempAllocator.cpp" />
+    <ClCompile Include="src\allocators\Data.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

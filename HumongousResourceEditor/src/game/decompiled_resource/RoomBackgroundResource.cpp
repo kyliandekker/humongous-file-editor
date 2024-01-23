@@ -43,7 +43,7 @@ namespace resource_editor
 
 			const size_t rmim_offset = a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Offset).m_Offset;
 			chunk_reader::RMIM_Chunk rmim_chunk;
-			a_Resource.m_Parent->m_FileContainer.GetChunk(rmim_chunk, rmim_offset, sizeof(chunk_reader::RMIM_Chunk));
+			a_Resource.m_Parent->m_FileContainer.GetChunk(rmim_chunk, rmim_offset);
 
 			std::vector<chunk_reader::ChunkInfo> rmda_children = a_Resource.m_Parent->m_FileContainer.GetChildren(a_Resource.m_Parent->m_FileContainer.GetParent(rmim_offset).m_Offset);
 			if (rmda_children.size() == 0)
@@ -51,17 +51,20 @@ namespace resource_editor
 				return false;
 			}
 
-			desired = { chunk_reader::ChunkInfo(chunk_reader::RMHD_CHUNK_ID), chunk_reader::ChunkInfo(chunk_reader::APAL_CHUNK_ID) };
+			desired = { chunk_reader::ChunkInfo(chunk_reader::RMHD_CHUNK_ID), chunk_reader::ChunkInfo(chunk_reader::APAL_CHUNK_ID), chunk_reader::ChunkInfo(chunk_reader::TRNS_CHUNK_ID) };
 			if (low_level::utils::seekChildren(rmda_children, desired) < desired.size())
 			{
 				return false;
 			}
 
 			chunk_reader::RMHD_Chunk rmhd_chunk;
-			a_Resource.m_Parent->m_FileContainer.GetChunk(rmhd_chunk, desired[0].m_Offset, sizeof(chunk_reader::RMHD_Chunk));
+			a_Resource.m_Parent->m_FileContainer.GetChunk(rmhd_chunk, desired[0].m_Offset);
 
 			chunk_reader::APAL_Chunk apal_chunk;
-			a_Resource.m_Parent->m_FileContainer.GetChunk(apal_chunk, desired[1].m_Offset, sizeof(chunk_reader::APAL_Chunk));
+			a_Resource.m_Parent->m_FileContainer.GetChunk(apal_chunk, desired[1].m_Offset);
+
+			chunk_reader::TRNS_Chunk trns_chunk;
+			a_Resource.m_Parent->m_FileContainer.GetChunk(trns_chunk, desired[2].m_Offset);
 
 			return GetDataBMAP(bmap_chunk, apal_chunk, bmap_chunk.fill_color, rmhd_chunk.width, rmhd_chunk.height, a_ImageInfo, a_ShowTransparency);
 		}

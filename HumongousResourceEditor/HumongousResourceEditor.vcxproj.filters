@@ -126,7 +126,7 @@
     <ClInclude Include="include\game\decompiled_resource\RoomImageResource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\utils\TempAllocator.h">
+    <ClInclude Include="include\allocators\Data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\game\decompiled_resource\RoomImageLayerResource.h">
@@ -150,10 +150,13 @@
     <ClInclude Include="include\cmd\TalkInstruction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\utils\STempAllocator.h">
+    <ClInclude Include="include\allocators\DataStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\utils\IDirect3DTexture9_S.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\allocators\ChunkCollectionWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -275,7 +278,7 @@
     <ClCompile Include="src\game\decompiled_resource\RoomImageResource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utils\TempAllocator.cpp">
+    <ClCompile Include="src\allocators\Data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\game\decompiled_resource\RoomImageLayerResource.cpp">
@@ -296,7 +299,10 @@
     <ClCompile Include="src\cmd\TalkInstruction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utils\STempAllocator.cpp">
+    <ClCompile Include="src\allocators\DataStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\allocators\ChunkCollectionWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

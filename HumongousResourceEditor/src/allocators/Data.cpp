@@ -1,4 +1,4 @@
-#include "utils/TempAllocator.h"
+#include "allocators/Data.h"
 
 #include <corecrt_malloc.h>
 #include <stdio.h>
@@ -7,7 +7,7 @@
 
 namespace resource_editor
 {
-	TempAllocator::TempAllocator(size_t a_Size, void* a_Data) : m_Size(a_Size)
+	Data::Data(size_t a_Size, void* a_Data) : m_Size(a_Size)
 	{
 		assert(a_Size > 0);
 		m_Data = malloc(a_Size);
@@ -18,7 +18,7 @@ namespace resource_editor
 		memcpy(m_Data, a_Data, a_Size);
 	}
 
-	TempAllocator::TempAllocator(size_t a_Size) : m_Size(a_Size)
+	Data::Data(size_t a_Size) : m_Size(a_Size)
 	{
 		assert(a_Size > 0);
 		m_Data = malloc(a_Size);
@@ -28,7 +28,7 @@ namespace resource_editor
 		}
 	}
 
-	TempAllocator::TempAllocator(const TempAllocator& rhs)
+	Data::Data(const Data& rhs)
 	{
 		m_Size = rhs.m_Size;
 		m_Data = malloc(m_Size);
@@ -38,7 +38,7 @@ namespace resource_editor
 		}
 	}
 
-	TempAllocator::~TempAllocator()
+	Data::~Data()
 	{
 		if (m_Data && m_Size > 0)
 		{
@@ -46,7 +46,7 @@ namespace resource_editor
 		}
 	}
 
-	TempAllocator& TempAllocator::operator=(TempAllocator& a_Other)
+	Data& Data::operator=(Data& a_Other)
 	{
 		if (&a_Other != this)
 		{
@@ -64,7 +64,7 @@ namespace resource_editor
 		return *this;
 	}
 
-	TempAllocator& TempAllocator::operator=(const TempAllocator& a_Other)
+	Data& Data::operator=(const Data& a_Other)
 	{
 		if (&a_Other != this)
 		{

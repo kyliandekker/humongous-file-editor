@@ -1,7 +1,6 @@
 #include "game/decompiled_resource/SoundResource.h"
 
 #include <vector>
-#include <uaudio_wave_reader/ChunkCollection.h>
 #include <uaudio_wave_reader/WaveReader.h>
 #include <uaudio_wave_reader/WaveChunks.h>
 
@@ -10,6 +9,7 @@
 #include "utils/abstractions.h"
 #include "utils/string.h"
 #include "system/Logger.h"
+#include "allocators/ChunkCollectionWrapper.h"
 
 namespace resource_editor
 {
@@ -46,7 +46,7 @@ namespace resource_editor
 		}
 
 		// TODO: Check for memory leaks.
-		bool SoundResource::OpenResource(std::string& a_Path, uaudio::wave_reader::ChunkCollection& a_ChunkCollection)
+		bool SoundResource::OpenResource(std::string& a_Path, uaudio::wave_reader::ChunkCollectionWrapper& a_ChunkCollection)
 		{
 			std::string path;
 			const std::vector<COMDLG_FILTERSPEC> filters =
@@ -67,11 +67,10 @@ namespace resource_editor
 					return false;
 				}
 
-				a_ChunkCollection = uaudio::wave_reader::ChunkCollection(malloc(wave_size), wave_size);
+				a_ChunkCollection = uaudio::wave_reader::ChunkCollectionWrapper(wave_size);
 				if (UAUDIOWAVEREADERFAILED(uaudio::wave_reader::WaveReader::LoadWave(path.c_str(), a_ChunkCollection)))
 				{
 					LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" could not load.", path.c_str());
-					free(a_ChunkCollection.data());
 					return false;
 				}
 
@@ -81,42 +80,36 @@ namespace resource_editor
 				if (UAUDIOWAVEREADERFAILED(a_ChunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
 				{
 					LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" is missing a data chunk.", path.c_str());
-					free(a_ChunkCollection.data());
 					return false;
 				}
 
 				if (UAUDIOWAVEREADERFAILED(a_ChunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
 				{
 					LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" is missing a fmt chunk.", path.c_str());
-					free(a_ChunkCollection.data());
 					return false;
 				}
 
-				if (fmt_chunk.byteRate != 11025)
+				if (fmt_chunk.byteRate != uaudio::wave_reader::WAVE_SAMPLE_RATE_11025)
 				{
 					LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" needs to have a byterate of 11025hz.", path.c_str());
-					free(a_ChunkCollection.data());
 					return false;
 				}
 
-				if (fmt_chunk.sampleRate != 11025)
+				if (fmt_chunk.sampleRate != uaudio::wave_reader::WAVE_SAMPLE_RATE_11025)
 				{
 					LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" needs to have a samplerate of 11025hz.", path.c_str());
-					free(a_ChunkCollection.data());
 					return false;
 				}
 
 				if (fmt_chunk.bitsPerSample != uaudio::wave_reader::WAVE_BITS_PER_SAMPLE_8)
 				{
 					LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" needs to have a bps of 8.", path.c_str());
-					free(a_ChunkCollection.data());
 					return false;
 				}
 
 				if (fmt_chunk.numChannels != uaudio::wave_reader::WAVE_CHANNELS_MONO)
 				{
 					LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" needs to be mono.", path.c_str());
-					free(a_ChunkCollection.data());
 					return false;
 				}
 
@@ -157,28 +150,25 @@ namespace resource_editor
 				return false;
 			}
 
-			uaudio::wave_reader::FMT_Chunk fmt_chunk;
+			uaudio::wave_reader::FMT_Chunk fmt_chunk(uaudio::wave_reader::FMT_CHUNK_ID);
 			fmt_chunk.audioFormat = uaudio::wave_reader::WAV_FORMAT_UNCOMPRESSED;
 			fmt_chunk.bitsPerSample = uaudio::wave_reader::WAVE_BITS_PER_SAMPLE_8;
 			fmt_chunk.blockAlign = uaudio::wave_reader::BLOCK_ALIGN_8_BIT_MONO;
 			fmt_chunk.sampleRate = a_SampleRate;
 			fmt_chunk.numChannels = uaudio::wave_reader::WAVE_CHANNELS_MONO;
 			fmt_chunk.byteRate = a_SampleRate;
-			fmt_chunk.chunkSize = sizeof(uaudio::wave_reader::FMT_Chunk) - sizeof(uaudio::wave_reader::ChunkHeader);
-			memcpy(fmt_chunk.chunk_id, uaudio::wave_reader::FMT_CHUNK_ID, uaudio::wave_reader::CHUNK_ID_SIZE);
+			fmt_chunk.SetChunkSize(sizeof(uaudio::wave_reader::FMT_Chunk) - sizeof(uaudio::wave_reader::ChunkHeader));
 
-			uaudio::wave_reader::DATA_Chunk data_chunk;
-			memcpy(data_chunk.chunk_id, uaudio::wave_reader::DATA_CHUNK_ID, uaudio::wave_reader::CHUNK_ID_SIZE);
-			data_chunk.chunkSize = static_cast<uint32_t>(a_DataSize);
+			uaudio::wave_reader::DATA_Chunk data_chunk(uaudio::wave_reader::DATA_CHUNK_ID);
+			data_chunk.SetChunkSize(static_cast<uint32_t>(a_DataSize));
 			data_chunk.data = reinterpret_cast<unsigned char*>(a_Data);
 
-			uaudio::wave_reader::RIFF_Chunk riff_chunk;
-			memcpy(riff_chunk.chunk_id, uaudio::wave_reader::RIFF_CHUNK_ID, CHUNK_ID_SIZE);
-			riff_chunk.chunkSize =
+			uaudio::wave_reader::RIFF_Chunk riff_chunk(uaudio::wave_reader::RIFF_CHUNK_ID);
+			riff_chunk.SetChunkSize(
 				sizeof(uaudio::wave_reader::FMT_Chunk) +
 				(sizeof(uaudio::wave_reader::RIFF_Chunk) - sizeof(uaudio::wave_reader::ChunkHeader)) +
 				sizeof(uaudio::wave_reader::DATA_Chunk) - sizeof(data_chunk.data) +
-				static_cast<uint32_t>(a_DataSize);
+				static_cast<uint32_t>(a_DataSize));
 			memcpy(riff_chunk.format, uaudio::wave_reader::RIFF_CHUNK_FORMAT, uaudio::wave_reader::CHUNK_ID_SIZE);
 
 			fwrite(&riff_chunk, sizeof(riff_chunk), 1, file);

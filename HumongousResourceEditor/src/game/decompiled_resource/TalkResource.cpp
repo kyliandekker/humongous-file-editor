@@ -17,8 +17,8 @@
 #include "cmd/TalkInstruction.h"
 #include "imgui/tools/ExplorerWindow.h"
 #include "cmd/OPCodes.h"
-#include "utils/TempAllocator.h"
-#include "utils/STempAllocator.h"
+#include "allocators/Data.h"
+#include "allocators/DataStream.h"
 
 namespace resource_editor
 {

@@ -1,40 +1,40 @@
-#include "utils/STempAllocator.h"
+#include "allocators/DataStream.h"
 #include "low_level/Utils.h"
 
 namespace resource_editor
 {
-    STempAllocator::STempAllocator(size_t a_Size, void* a_Data) : TempAllocator(a_Size, a_Data)
+    DataStream::DataStream(size_t a_Size, void* a_Data) : Data(a_Size, a_Data)
     { }
 
-	STempAllocator::STempAllocator(size_t a_Size) : TempAllocator(a_Size)
+	DataStream::DataStream(size_t a_Size) : Data(a_Size)
 	{ }
 
-	STempAllocator::STempAllocator(const STempAllocator& rhs) : TempAllocator(rhs)
+	DataStream::DataStream(const DataStream& rhs) : Data(rhs)
 	{ 
 		m_Pos = rhs.m_Pos;
 	}
 
-	STempAllocator& STempAllocator::operator=(const STempAllocator& a_Other)
+	DataStream& DataStream::operator=(const DataStream& a_Other)
 	{
 		if (&a_Other != this)
 		{
-			TempAllocator::operator=(a_Other);
+			Data::operator=(a_Other);
 			m_Pos = a_Other.m_Pos;
 		}
 		return *this;
 	}
 
-	STempAllocator& STempAllocator::operator=(STempAllocator& a_Other)
+	DataStream& DataStream::operator=(DataStream& a_Other)
 	{
 		if (&a_Other != this)
 		{
-			TempAllocator::operator=(a_Other);
+			Data::operator=(a_Other);
 			m_Pos = a_Other.m_Pos;
 		}
 		return *this;
 	}
 
-    bool STempAllocator::Read(void*& a_Data, size_t a_DataSize, size_t a_Size)
+    bool DataStream::Read(void*& a_Data, size_t a_DataSize, size_t a_Size)
 	{
 		if (m_Pos == m_Size || m_Pos + a_Size > m_Size)
 		{
@@ -51,7 +51,7 @@ namespace resource_editor
 		return true;
 	}
 
-    bool STempAllocator::Write(void* a_Data, size_t a_Size)
+    bool DataStream::Write(void* a_Data, size_t a_Size)
     {
 		if (m_Pos == m_Size || m_Pos + a_Size > m_Size)
 		{
@@ -63,7 +63,7 @@ namespace resource_editor
 		return true;
     }
 
-	bool STempAllocator::Seek(size_t a_Offset, size_t a_Whence)
+	bool DataStream::Seek(size_t a_Offset, size_t a_Whence)
 	{
 		switch (a_Whence)
 		{
@@ -87,7 +87,7 @@ namespace resource_editor
 		return false;
 	}
 
-	bool STempAllocator::Save()
+	bool DataStream::Save()
 	{
 		FILE* file;
 		fopen_s(&file, "D:/test.txt", "wb");
@@ -96,7 +96,7 @@ namespace resource_editor
 		return false;
 	}
 
-	size_t STempAllocator::Tell() const
+	size_t DataStream::Tell() const
 	{
 		return m_Pos;
 	}

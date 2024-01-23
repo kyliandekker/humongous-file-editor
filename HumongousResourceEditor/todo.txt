@@ -1,5 +1,4 @@
 - Return instead of nested if statements.
-- For loops should use iterators instead.
 - Scripts should work for all versions.
 - Check for memory leaks anywhere.
 - ini_op_v71

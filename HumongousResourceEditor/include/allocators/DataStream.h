@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TempAllocator.h"
+#include "Data.h"
 #include <cstdint>
 
 #ifndef SEEK_SET
@@ -15,16 +15,16 @@
 
 namespace resource_editor
 {
-	class STempAllocator : public TempAllocator
+	class DataStream : public Data
 	{
 	public:
-		STempAllocator() = default;
-		STempAllocator(size_t a_Size, void* a_Data);
-		STempAllocator(size_t a_Size);
-		STempAllocator(const STempAllocator& rhs);
+		DataStream() = default;
+		DataStream(size_t a_Size, void* a_Data);
+		DataStream(size_t a_Size);
+		DataStream(const DataStream& rhs);
 
-		STempAllocator& operator=(const STempAllocator& a_Other);
-		STempAllocator& operator=(STempAllocator& a_Other);
+		DataStream& operator=(const DataStream& a_Other);
+		DataStream& operator=(DataStream& a_Other);
 
 		bool Read(void*& a_Data, size_t a_DataSize, size_t a_Size);
 		bool Write(void* a_Data, size_t a_Size);
@@ -34,6 +34,4 @@ namespace resource_editor
 	protected:
 		size_t m_Pos = 0;
 	};
-
-	using DataStreamContainer = STempAllocator;
 }

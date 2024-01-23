@@ -1,5 +1,7 @@
 #include "game/decompiled_resource/ImageResource.h"
 
+#include <vector>
+
 #include "low_level/HumongousChunkDefinitions.h"
 #include "low_level/ChunkInfo.h"
 #include "low_level/Utils.h"
@@ -7,8 +9,8 @@
 #include "project/Resource.h"
 #include "system/audio/AudioUtils.h"
 #include "low_level/HumongousChunks.h"
-
-#include <vector>
+#include "system/Logger.h"
+#include "allocators/DataStream.h"
 
 namespace resource_editor
 {
@@ -41,6 +43,8 @@ namespace resource_editor
 		std::vector<uint8_t> CreateBitstream(unsigned char* a_Data, size_t a_Length)
 		{
 			std::vector<uint8_t> bits;
+			bits.reserve(a_Length * 8);
+
 			for (size_t i = 0; i < a_Length; ++i)
 			{
 				const char c = a_Data[i];
@@ -70,6 +74,7 @@ namespace resource_editor
 			unsigned char color = a_FillColor;
 
 			const size_t num_pixels = a_Info.m_Width * a_Info.m_Height;
+			out.reserve(num_pixels);
 
 			if (a_DataSize == 0)
 			{
@@ -105,7 +110,7 @@ namespace resource_editor
 				};
 			}
 
-			a_Info.m_Data = DataContainer(out.size(), out.data());
+			a_Info.m_Data = Data(out.size(), out.data());
 			return true;
 		}
 
@@ -120,6 +125,7 @@ namespace resource_editor
 			out.push_back(color % 256);
 
 			const size_t num_pixels = a_Info.m_Width * a_Info.m_Height;
+			out.reserve(num_pixels);
 
 			int sub = 1;
 			int pos = 0;
@@ -144,7 +150,7 @@ namespace resource_editor
 				out.push_back(color % 256);
 			};
 
-			a_Info.m_Data = DataContainer(out.size(), out.data());
+			a_Info.m_Data = Data(out.size(), out.data());
 			return true;
 		}
 
@@ -158,6 +164,7 @@ namespace resource_editor
 			out.push_back(color % 256);
 
 			const size_t num_pixels = a_Info.m_Width * a_Info.m_Height;
+			out.reserve(num_pixels);
 
 			int pos = 0;
 			while (out.size() < num_pixels)
@@ -188,13 +195,13 @@ namespace resource_editor
 				out.push_back(color % 256);
 			};
 
-			a_Info.m_Data = DataContainer(out.size(), out.data());
+			a_Info.m_Data = Data(out.size(), out.data());
 			return true;
 		}
 
 		bool ImageResource::DecodeRaw(unsigned char* a_Data, size_t a_DataSize, int a_Palen, bool a_Transparent, ImgInfo& a_Info)
 		{
-			a_Info.m_Data = ImageData(a_Info.m_Width * a_Info.m_Height, a_Data);
+			a_Info.m_Data = Data(a_Info.m_Width * a_Info.m_Height, a_Data);
 			return true;
 		}
 
@@ -247,7 +254,7 @@ namespace resource_editor
 				}
 			}
 
-			a_ImageInfo.m_Data = DataContainer(newOut.size(), newOut.data());
+			a_ImageInfo.m_Data = Data(newOut.size(), newOut.data());
 
 			return true;
 		}
@@ -382,7 +389,7 @@ namespace resource_editor
 					}
 				}
 
-				DataContainer new_data = DataContainer(strip_info.Size(), strip_info.Data());
+				Data new_data = Data(strip_info.Size(), strip_info.Data());
 
 				if (!horizontal)
 				{
@@ -397,7 +404,7 @@ namespace resource_editor
 					}
 				}
 
-				strip_info.m_Data = DataContainer(strip_info.Size(), new_data.Data());
+				strip_info.m_Data = Data(strip_info.Size(), new_data.data());
 				total_size += strip_info.Size();
 
 				for (int k = 0; k < a_Height; k++)
@@ -459,7 +466,7 @@ namespace resource_editor
 				}
 			}
 
-			a_ImageInfo.m_Data = DataContainer(newOut.size(), newOut.data());
+			a_ImageInfo.m_Data = Data(newOut.size(), newOut.data());
 
 			return true;
 		}

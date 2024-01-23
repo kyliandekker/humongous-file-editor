@@ -1,5 +1,7 @@
 #pragma once
 
+#include  <string>
+
 #include "./Utils.h"
 #include "./ChunkHeader.h"
 #include "./UAUDIO_WAVE_READER_RESULT.h"
@@ -16,15 +18,14 @@ namespace uaudio
 		 * This class does not hold information such as volume, panning, looping and pitch. It only stored the actual wave file information.
 		*/
 
-		class WaveReader;
-
 		class ChunkCollection
 		{
-		private:
+		protected:
 			void* m_Start = nullptr;
 			void* m_End = nullptr;
 			size_t m_Size = 0;
 			size_t m_Allocated = 0;
+		private:
 
 			friend class WaveReader;
 
