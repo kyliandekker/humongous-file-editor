@@ -76,98 +76,99 @@ namespace resource_editor
 		{
 			std::string path;
 			uaudio::wave_reader::ChunkCollectionWrapper chunkCollection;
-			if (OpenResource(path, chunkCollection))
+			if (!OpenResource(path, chunkCollection))
 			{
-				uaudio::wave_reader::FMT_Chunk fmt_chunk;
-				uaudio::wave_reader::DATA_Chunk data_chunk;
-
-				if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
-				{
-					LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" does not have a data chunk.", path.c_str());
-					return false;
-				}
-
-				if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
-				{
-					LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" does not have a fmt chunk.", path.c_str());
-					return false;
-				}
-
-				// Get SGEN chunk first (tells us the position of the SONG).
-				chunk_reader::SGEN_Chunk sgen_chunk;
-				a_Resource.m_Parent->m_FileContainer.GetChunk(sgen_chunk, a_Resource.m_Offset);
-
-				// Get DIGI chunk for the raw audio data.
-				size_t digi_offset = sgen_chunk.song_pos;
-
-				chunk_reader::DIGI_Chunk digi_chunk;
-				a_Resource.m_Parent->m_FileContainer.GetChunk(digi_chunk, digi_offset);
-
-				std::vector<chunk_reader::ChunkInfo> children = a_Resource.m_Parent->m_FileContainer.GetChildren(sgen_chunk.song_pos);
-				if (children.size() == 0)
-				{
-					return false;
-				}
-
-				std::vector<chunk_reader::ChunkInfo> desired = { chunk_reader::ChunkInfo(chunk_reader::HSHD_CHUNK_ID), chunk_reader::ChunkInfo(chunk_reader::SDAT_CHUNK_ID) };
-				if (low_level::utils::seekChildren(children, desired) < desired.size())
-				{
-					return false;
-				}
-
-				chunk_reader::HSHD_Chunk hshd_chunk;
-				a_Resource.m_Parent->m_FileContainer.GetChunk(hshd_chunk, desired[0].m_Offset);
-
-				chunk_reader::SDAT_Chunk sdat_chunk;
-				a_Resource.m_Parent->m_FileContainer.GetChunk(sdat_chunk, desired[1].m_Offset, sizeof(chunk_reader::HumongousHeader));
-				sdat_chunk.SetChunkSize(data_chunk.ChunkSize() + static_cast<uint32_t>(sizeof(chunk_reader::HumongousHeader)));
-
-				digi_chunk.SetChunkSize(
-					sizeof(chunk_reader::DIGI_Chunk) + // DIGI chunk itself.
-					hshd_chunk.ChunkSize() + // HSHD chunk.
-					sdat_chunk.ChunkSize() // SDAT chunk.
-				);
-
-				DataStream new_data = DataStream(digi_chunk.ChunkSize());
-				new_data.Write(&digi_chunk, sizeof(chunk_reader::DIGI_Chunk));
-				new_data.Write(&hshd_chunk, hshd_chunk.ChunkSize());
-				new_data.Write(&sdat_chunk, sizeof(chunk_reader::HumongousHeader));
-				new_data.Write(data_chunk.data, data_chunk.ChunkSize());
-
-				a_Resource.m_Parent->m_FileContainer.Replace(digi_offset, new_data.data(), new_data.size());
-
-				int32_t dif_size = digi_chunk.ChunkSize() - sgen_chunk.song_size;
-
-				chunk_reader::ChunkInfo next_chunk = a_Resource.m_Parent->m_FileContainer.GetChunkInfo(0);
-				while (next_chunk.m_Offset < a_Resource.m_Parent->m_FileContainer.m_Size)
-				{
-					if (low_level::utils::chunkcmp(next_chunk.chunk_id, chunk_reader::SGEN_CHUNK_ID) == 0)
-					{
-						if (next_chunk.m_Offset >= a_Resource.m_Offset)
-						{
-							chunk_reader::SGEN_Chunk new_sgen_chunk;
-							a_Resource.m_Parent->m_FileContainer.GetChunk(new_sgen_chunk, next_chunk.m_Offset);
-
-							// Replace the size of the changed chunk.
-							if (next_chunk.m_Offset == a_Resource.m_Offset)
-							{
-								new_sgen_chunk.song_size = digi_chunk.ChunkSize();
-							}
-							// Add the difference of size to the chunks after the current chunk.
-							else
-							{
-								new_sgen_chunk.song_pos += dif_size;
-							}
-
-							a_Resource.m_Parent->m_FileContainer.Replace(next_chunk.m_Offset, reinterpret_cast<unsigned char*>(&new_sgen_chunk), sizeof(chunk_reader::SGEN_Chunk));
-						}
-					}
-					next_chunk = a_Resource.m_Parent->m_FileContainer.GetNextChunk(next_chunk.m_Offset);
-				}
-
-				return true;
+				return false;
 			}
-			return false;
+
+			uaudio::wave_reader::FMT_Chunk fmt_chunk;
+			uaudio::wave_reader::DATA_Chunk data_chunk;
+
+			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(data_chunk, uaudio::wave_reader::DATA_CHUNK_ID)))
+			{
+				LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" does not have a data chunk.", path.c_str());
+				return false;
+			}
+
+			if (UAUDIOWAVEREADERFAILED(chunkCollection.GetChunkFromData(fmt_chunk, uaudio::wave_reader::FMT_CHUNK_ID)))
+			{
+				LOGF(logger::LOGSEVERITY_ERROR, "File \"%s\" does not have a fmt chunk.", path.c_str());
+				return false;
+			}
+
+			// Get SGEN chunk first (tells us the position of the SONG).
+			chunk_reader::SGEN_Chunk sgen_chunk;
+			a_Resource.m_Parent->m_FileContainer.GetChunk(sgen_chunk, a_Resource.m_Offset);
+
+			// Get DIGI chunk for the raw audio data.
+			size_t digi_offset = sgen_chunk.song_pos;
+
+			chunk_reader::DIGI_Chunk digi_chunk;
+			a_Resource.m_Parent->m_FileContainer.GetChunk(digi_chunk, digi_offset);
+
+			std::vector<chunk_reader::ChunkInfo> children = a_Resource.m_Parent->m_FileContainer.GetChildren(sgen_chunk.song_pos);
+			if (children.size() == 0)
+			{
+				return false;
+			}
+
+			std::vector<chunk_reader::ChunkInfo> desired = { chunk_reader::ChunkInfo(chunk_reader::HSHD_CHUNK_ID), chunk_reader::ChunkInfo(chunk_reader::SDAT_CHUNK_ID) };
+			if (low_level::utils::seekChildren(children, desired) < desired.size())
+			{
+				return false;
+			}
+
+			chunk_reader::HSHD_Chunk hshd_chunk;
+			a_Resource.m_Parent->m_FileContainer.GetChunk(hshd_chunk, desired[0].m_Offset);
+
+			chunk_reader::SDAT_Chunk sdat_chunk;
+			a_Resource.m_Parent->m_FileContainer.GetChunk(sdat_chunk, desired[1].m_Offset, sizeof(chunk_reader::HumongousHeader));
+			sdat_chunk.SetChunkSize(data_chunk.ChunkSize() + static_cast<uint32_t>(sizeof(chunk_reader::HumongousHeader)));
+
+			digi_chunk.SetChunkSize(
+				sizeof(chunk_reader::DIGI_Chunk) + // DIGI chunk itself.
+				hshd_chunk.ChunkSize() + // HSHD chunk.
+				sdat_chunk.ChunkSize() // SDAT chunk.
+			);
+
+			DataStream new_data = DataStream(digi_chunk.ChunkSize());
+			new_data.Write(&digi_chunk, sizeof(chunk_reader::DIGI_Chunk));
+			new_data.Write(&hshd_chunk, hshd_chunk.ChunkSize());
+			new_data.Write(&sdat_chunk, sizeof(chunk_reader::HumongousHeader));
+			new_data.Write(data_chunk.data, data_chunk.ChunkSize());
+
+			a_Resource.m_Parent->m_FileContainer.Replace(digi_offset, new_data.data(), new_data.size());
+
+			int32_t dif_size = digi_chunk.ChunkSize() - sgen_chunk.song_size;
+
+			chunk_reader::ChunkInfo next_chunk = a_Resource.m_Parent->m_FileContainer.GetChunkInfo(0);
+			while (next_chunk.m_Offset < a_Resource.m_Parent->m_FileContainer.m_Size)
+			{
+				if (low_level::utils::chunkcmp(next_chunk.chunk_id, chunk_reader::SGEN_CHUNK_ID) == 0)
+				{
+					if (next_chunk.m_Offset >= a_Resource.m_Offset)
+					{
+						chunk_reader::SGEN_Chunk new_sgen_chunk;
+						a_Resource.m_Parent->m_FileContainer.GetChunk(new_sgen_chunk, next_chunk.m_Offset);
+
+						// Replace the size of the changed chunk.
+						if (next_chunk.m_Offset == a_Resource.m_Offset)
+						{
+							new_sgen_chunk.song_size = digi_chunk.ChunkSize();
+						}
+						// Add the difference of size to the chunks after the current chunk.
+						else
+						{
+							new_sgen_chunk.song_pos += dif_size;
+						}
+
+						a_Resource.m_Parent->m_FileContainer.Replace(next_chunk.m_Offset, reinterpret_cast<unsigned char*>(&new_sgen_chunk), sizeof(chunk_reader::SGEN_Chunk));
+					}
+				}
+				next_chunk = a_Resource.m_Parent->m_FileContainer.GetNextChunk(next_chunk.m_Offset);
+			}
+
+			return true;
 		}
 
 		bool SongResource::Save(game::GameResource& a_Resource)

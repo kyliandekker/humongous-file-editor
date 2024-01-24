@@ -305,5 +305,8 @@
     <ClCompile Include="src\allocators\ChunkCollectionWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\game\GameResourceType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

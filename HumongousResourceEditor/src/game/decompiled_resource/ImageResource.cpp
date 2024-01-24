@@ -110,7 +110,7 @@ namespace resource_editor
 				};
 			}
 
-			a_Info.m_Data = Data(out.size(), out.data());
+			a_Info.m_Data = Data(out.data(), out.size());
 			return true;
 		}
 
@@ -150,7 +150,7 @@ namespace resource_editor
 				out.push_back(color % 256);
 			};
 
-			a_Info.m_Data = Data(out.size(), out.data());
+			a_Info.m_Data = Data(out.data(), out.size());
 			return true;
 		}
 
@@ -195,13 +195,13 @@ namespace resource_editor
 				out.push_back(color % 256);
 			};
 
-			a_Info.m_Data = Data(out.size(), out.data());
+			a_Info.m_Data = Data(out.data(), out.size());
 			return true;
 		}
 
 		bool ImageResource::DecodeRaw(unsigned char* a_Data, size_t a_DataSize, int a_Palen, bool a_Transparent, ImgInfo& a_Info)
 		{
-			a_Info.m_Data = Data(a_Info.m_Width * a_Info.m_Height, a_Data);
+			a_Info.m_Data = Data(a_Data, a_Info.m_Width * a_Info.m_Height);
 			return true;
 		}
 
@@ -254,7 +254,7 @@ namespace resource_editor
 				}
 			}
 
-			a_ImageInfo.m_Data = Data(newOut.size(), newOut.data());
+			a_ImageInfo.m_Data = Data(newOut.data(), newOut.size());
 
 			return true;
 		}
@@ -389,7 +389,7 @@ namespace resource_editor
 					}
 				}
 
-				Data new_data = Data(strip_info.Size(), strip_info.Data());
+				Data new_data = Data(strip_info.Data(), strip_info.Size());
 
 				if (!horizontal)
 				{
@@ -404,7 +404,7 @@ namespace resource_editor
 					}
 				}
 
-				strip_info.m_Data = Data(strip_info.Size(), new_data.data());
+				strip_info.m_Data = Data(new_data.data(), strip_info.Size());
 				total_size += strip_info.Size();
 
 				for (int k = 0; k < a_Height; k++)
@@ -466,7 +466,7 @@ namespace resource_editor
 				}
 			}
 
-			a_ImageInfo.m_Data = Data(newOut.size(), newOut.data());
+			a_ImageInfo.m_Data = Data(newOut.data(), newOut.size());
 
 			return true;
 		}

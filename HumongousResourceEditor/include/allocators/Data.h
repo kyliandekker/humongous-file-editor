@@ -8,7 +8,7 @@ namespace resource_editor
 	{
 	public:
 		Data() = default;
-		Data(size_t a_Size, void* a_Data);
+		Data(void* a_Data, size_t a_Size);
 		Data(size_t a_Size);
 		Data(const Data& rhs);
 		~Data();
@@ -25,6 +25,10 @@ namespace resource_editor
 		{
 			return m_Data;
 		}
+
+		virtual void Free();
+
+        bool Save();
 
 		unsigned char operator [] (int i) const { return reinterpret_cast<unsigned char*>(m_Data)[i]; }
 		unsigned char& operator [] (int i) { return reinterpret_cast<unsigned char*>(m_Data)[i]; }

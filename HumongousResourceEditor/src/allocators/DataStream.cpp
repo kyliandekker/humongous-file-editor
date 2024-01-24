@@ -3,7 +3,7 @@
 
 namespace resource_editor
 {
-    DataStream::DataStream(size_t a_Size, void* a_Data) : Data(a_Size, a_Data)
+    DataStream::DataStream(void* a_Data, size_t a_Size) : Data(a_Data, a_Size)
     { }
 
 	DataStream::DataStream(size_t a_Size) : Data(a_Size)
@@ -34,6 +34,12 @@ namespace resource_editor
 		return *this;
 	}
 
+    void DataStream::Free()
+    {
+		Data::Free();
+		m_Pos = 0;
+    }
+
     bool DataStream::Read(void*& a_Data, size_t a_DataSize, size_t a_Size)
 	{
 		if (m_Pos == m_Size || m_Pos + a_Size > m_Size)
@@ -51,7 +57,7 @@ namespace resource_editor
 		return true;
 	}
 
-    bool DataStream::Write(void* a_Data, size_t a_Size)
+    bool DataStream::Write(void const* a_Data, size_t a_Size)
     {
 		if (m_Pos == m_Size || m_Pos + a_Size > m_Size)
 		{
@@ -84,15 +90,6 @@ namespace resource_editor
 				return true;
 			}
 		}
-		return false;
-	}
-
-	bool DataStream::Save()
-	{
-		FILE* file;
-		fopen_s(&file, "D:/test.txt", "wb");
-		fwrite(m_Data, m_Size, 1, file);
-		fclose(file);
 		return false;
 	}
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "low_level/Defines.h"
 
 namespace resource_editor
 {
@@ -107,5 +108,7 @@ namespace resource_editor
 			}
 			return "";
 		}
+
+		GameResourceType getResourceByChunkID(unsigned char a_ChunkId[CHUNK_ID_SIZE]);
 	}
 }

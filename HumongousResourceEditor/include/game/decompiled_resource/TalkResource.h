@@ -6,6 +6,11 @@
 
 namespace resource_editor
 {
+	namespace chunk_reader
+	{
+		class ChunkInfo;
+	}
+
 	namespace game
 	{
 		class GameResource;
@@ -20,7 +25,8 @@ namespace resource_editor
             bool Replace(game::GameResource& a_Resource) override;
 			bool Save(game::GameResource& a_Resource) override;
 		private:
-			bool ReplaceTALK(game::GameResource& a_Resource);
+			bool ReplaceTALK(game::GameResource& a_Resource, chunk_reader::ChunkInfo& a_NewTALKChunk, chunk_reader::ChunkInfo& a_OldTALKChunk);
+			bool UpdateScripts(game::GameResource& a_Resource, chunk_reader::ChunkInfo& a_NewTALKChunk, chunk_reader::ChunkInfo& a_OldTALKChunk);
 		};
 	}
 }

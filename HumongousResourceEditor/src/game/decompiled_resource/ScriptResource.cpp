@@ -101,6 +101,7 @@ namespace resource_editor
 				instruction.m_Code = b;
 				instruction.m_OffsetInSCRPChunk = sizeof(chunk_reader::HumongousHeader) + pos;
 				instruction.m_SCRPOffset = a_Resource.m_Offset;
+				instruction.m_AbsOffset = a_Resource.m_Offset + instruction.m_OffsetInSCRPChunk;
 				pos++;
 
 				ArgsAllocator args;

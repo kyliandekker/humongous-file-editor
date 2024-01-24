@@ -7,7 +7,7 @@
 
 namespace resource_editor
 {
-	Data::Data(size_t a_Size, void* a_Data) : m_Size(a_Size)
+	Data::Data(void* a_Data, size_t a_Size) : m_Size(a_Size)
 	{
 		assert(a_Size > 0);
 		m_Data = malloc(a_Size);
@@ -40,7 +40,7 @@ namespace resource_editor
 
 	Data::~Data()
 	{
-		if (m_Data && m_Size > 0)
+		if (m_Data)
 		{
 			free(m_Data);
 		}
@@ -62,6 +62,24 @@ namespace resource_editor
 			}
 		}
 		return *this;
+	}
+
+    void Data::Free()
+    {
+		if (m_Data)
+		{
+			free(m_Data);
+			m_Size = 0;
+		}
+    }
+
+	bool Data::Save()
+	{
+		FILE* file;
+		fopen_s(&file, "D:/test.txt", "wb");
+		fwrite(m_Data, m_Size, 1, file);
+		fclose(file);
+		return false;
 	}
 
 	Data& Data::operator=(const Data& a_Other)

@@ -101,7 +101,7 @@ namespace resource_editor
 					}
 					if (lm.severity == logger::LOGSEVERITY_ASSERT)
 					{
-						assert(0 && "Logger assert, check log file for information");
+						printf("Test");
 					}
 				}
 				m_MessagesMutex.unlock();

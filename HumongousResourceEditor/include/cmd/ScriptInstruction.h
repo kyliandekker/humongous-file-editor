@@ -15,5 +15,6 @@ namespace resource_editor
 		size_t m_OffsetInSCRPChunk;
 		ArgsAllocator m_Args;
 		size_t m_SCRPOffset;
+		size_t m_AbsOffset;
 	};
 }

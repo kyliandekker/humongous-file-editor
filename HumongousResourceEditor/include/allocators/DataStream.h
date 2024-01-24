@@ -19,17 +19,18 @@ namespace resource_editor
 	{
 	public:
 		DataStream() = default;
-		DataStream(size_t a_Size, void* a_Data);
+		DataStream(void* a_Data, size_t a_Size);
 		DataStream(size_t a_Size);
 		DataStream(const DataStream& rhs);
 
 		DataStream& operator=(const DataStream& a_Other);
 		DataStream& operator=(DataStream& a_Other);
 
+		void Free() override;
+
 		bool Read(void*& a_Data, size_t a_DataSize, size_t a_Size);
-		bool Write(void* a_Data, size_t a_Size);
+		bool Write(void const* a_Data, size_t a_Size);
 		bool Seek(size_t a_Offset, size_t a_Whence);
-		bool Save();
 		size_t Tell() const;
 	protected:
 		size_t m_Pos = 0;

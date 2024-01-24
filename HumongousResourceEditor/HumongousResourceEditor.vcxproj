@@ -229,6 +229,7 @@
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="external\imgui\implot.cpp" />
     <ClCompile Include="external\imgui\implot_items.cpp" />
+    <ClCompile Include="src\game\GameResourceType.cpp" />
     <ClCompile Include="src\allocators\ChunkCollectionWrapper.cpp" />
     <ClCompile Include="src\allocators\DataStream.cpp" />
     <ClCompile Include="src\cmd\TalkInstruction.cpp" />

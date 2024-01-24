@@ -2,9 +2,15 @@
 
 namespace resource_editor
 {
-	bool TalkString::IsTalkString() const
+    TalkString::TalkString(void* a_Data)
+    {
+		m_Data = a_Data;
+    }
+
+    bool TalkString::IsTalkString() const
 	{
-		return (c_str()[0] == 0x7F && c_str()[1] == 'T');
+		// Every talk instruction starts with byte code 127 and the letter T for TALK.
+		return (data()[1] == 0x7F && data()[2] == 0x54);
 	}
 
 	size_t TalkString::GetTalkOffset() const
@@ -14,31 +20,43 @@ namespace resource_editor
 
 	std::string TalkString::GetTalkOffsetString() const
 	{
-		const size_t byte_pos_pos = find_first_of("T") + 1;
-		const size_t comma_pos = find_first_of(",");
-		const std::string talk_offset = substr(byte_pos_pos, comma_pos - byte_pos_pos);
+		// We get the pos of the offset and get the data until the comma.
+		const size_t start_pos = GetTalkOffsetPos();
+		std::string instruction = std::string(reinterpret_cast<const char*>(data()));
+		const size_t end_pos = instruction.find_first_of(",");
+		const std::string talk_offset = instruction.substr(start_pos, end_pos - start_pos);
 
 		return talk_offset;
 	}
 
 	size_t TalkString::GetTalkOffsetPos() const
 	{
-		const size_t byte_pos_pos = find_first_of("T") + 1;
-		return byte_pos_pos;
+		// We find the position of the T and add 1 to get the offset.
+		std::string instruction = std::string(reinterpret_cast<const char*>(data()));
+		const size_t start_pos = 3;
+		return start_pos;
 	}
 
 	size_t TalkString::GetTalkSize() const
 	{
-		const size_t comma_pos = find_first_of(",");
-		const size_t bracket_pos = find_first_of("[");
-		const std::string talk_size = substr(comma_pos + 1, (bracket_pos - 1) - (comma_pos + 1));
+		// We find the position of the comma and get the data until the 0x7F byte (Which is before the '[').
+		std::string instruction = std::string(reinterpret_cast<const char*>(data()));
+		const size_t start_pos = instruction.find_first_of(",") + 1;
+		const size_t end_pos = instruction.find_first_of("[") - 1;
+		const std::string talk_size = instruction.substr(start_pos, end_pos - start_pos);
 
 		return std::stoi(talk_size);
 	}
 
 	size_t TalkString::GetTalkSizePos() const
 	{
-		const size_t comma_pos = find_first_of(",");
-		return comma_pos + 1;
+		std::string instruction = std::string(reinterpret_cast<const char*>(data()));
+		const size_t start_pos = instruction.find_first_of(",") + 1;
+		return start_pos;
+	}
+
+	unsigned char* TalkString::data() const
+	{
+		return reinterpret_cast<unsigned char*>(m_Data);
 	}
 }
