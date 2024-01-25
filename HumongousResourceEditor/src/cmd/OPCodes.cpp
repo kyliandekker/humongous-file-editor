@@ -9,8 +9,23 @@ namespace resource_editor
 {
 	namespace chunk_reader
 	{
-		// According to rzil, the new position is relative from the position after the offset is read. Meaning it is scrp_pos + instruction_pos + arg_pos (of offset).
-		size_t jump(ScriptInstruction& instruction, unsigned char* data, bool absolute)
+		jump_command isJumpCode(unsigned char byte, size_t args)
+		{
+			if (byte == 0x5C // jump if
+				|| byte == 0x5D // jump if not
+				|| byte == 0x73) // jump)
+			{
+				return command_jump;
+			}
+			else if (byte == 0xA9 && args == 2)
+			{
+				return command_wait;
+			}
+			return command_none;
+		}
+
+		// According to rzil, the new position is relative from the position after the offset is read.
+		size_t jump(ScriptInstruction& instruction, unsigned char* data, size_t data_size)
 		{
 			// Normal wait instructions.
 			if (instruction.m_Code == 0x5C // jump if
@@ -18,30 +33,30 @@ namespace resource_editor
 				|| instruction.m_Code == 0x73 // jump
 				)
 			{
-				const size_t abs_offset =
-					instruction.m_SCRPOffset + // scrp offset in (a).
+				const size_t rel_offset =
 					instruction.m_OffsetInSCRPChunk + // offset of instruction in scrp chunk.
 					instruction.m_Args[0].m_Offset + // offset of arg (this will be 0 for index 0).
 					1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
 
-				const size_t arg_size = instruction.m_Args[0].m_Size; // position after offset is read.
-				const int16_t offset = *reinterpret_cast<int16_t*>(low_level::utils::add(data, abs_offset));
+				const int16_t offset = *reinterpret_cast<int16_t*>(low_level::utils::add(data, rel_offset));
 
-				return (absolute ? abs_offset : 0) + static_cast<size_t>(offset) + arg_size;
+				const size_t arg_size = instruction.m_Args[0].m_Size; // position after offset is read.
+
+				return rel_offset + static_cast<size_t>(offset) + arg_size;
 			}
 			// Wait and jump.
 			else if (instruction.m_Code == 0xA9) // wait and then jump.
 			{
-				const size_t abs_offset =
-					instruction.m_SCRPOffset + // scrp offset in (a).
+				const size_t rel_offset =
 					instruction.m_OffsetInSCRPChunk + // offset of instruction in scrp chunk.
 					instruction.m_Args[1].m_Offset + // offset of arg (this will be 0 for index 0). We want the second arg, cause the first arg says if we even have a second arg.
 					1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
 
-				const size_t arg_size = instruction.m_Args[0].m_Size; // position after offset is read.
-				const int16_t offset = *reinterpret_cast<int16_t*>(low_level::utils::add(data, abs_offset));
+				const int16_t offset = *reinterpret_cast<int16_t*>(low_level::utils::add(data, rel_offset));
 
-				return (absolute ? abs_offset : 0) + static_cast<size_t>(offset) + arg_size;
+				const size_t arg_size = instruction.m_Args[1].m_Size; // position after offset is read.
+
+				return rel_offset + static_cast<size_t>(offset) + arg_size;
 			}
 
 			LOG(logger::LOGSEVERITY_ASSERT, "Should never come here");

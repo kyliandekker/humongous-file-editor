@@ -13,7 +13,14 @@ namespace resource_editor
 
 	namespace chunk_reader
 	{
-		size_t jump(ScriptInstruction& args, unsigned char* data, bool absolute = true);
+		enum jump_command
+		{
+			command_none,
+			command_jump,
+			command_wait
+		};
+		jump_command isJumpCode(unsigned char byte, size_t args);
+		size_t jump(ScriptInstruction& args, unsigned char* data, size_t data_size);
 
 		void extended_b_op(unsigned char* data, ArgsAllocator& return_data);
 		void extended_w_op(unsigned char* data, ArgsAllocator& return_data);

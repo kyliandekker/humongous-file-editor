@@ -8,14 +8,16 @@ namespace resource_editor
 {
 	namespace chunk_reader
 	{
-        HumongousHeader::HumongousHeader(const char* a_ChunkID)
+        HumongousHeader::HumongousHeader(const char* a_ChunkID, size_t a_ChunkSize, bool a_BigEndian)
         {
 			memcpy(chunk_id, a_ChunkID, CHUNK_ID_SIZE);
+			SetChunkSize(a_ChunkSize, a_BigEndian);
         }
 
-        HumongousHeader::HumongousHeader(unsigned char* a_ChunkID)
+        HumongousHeader::HumongousHeader(unsigned char* a_ChunkID, size_t a_ChunkSize, bool a_BigEndian)
         {
 			memcpy(chunk_id, a_ChunkID, CHUNK_ID_SIZE);
+			SetChunkSize(a_ChunkSize, a_BigEndian);
         }
 
         HumongousHeader::HumongousHeader(const HumongousHeader& rhs)

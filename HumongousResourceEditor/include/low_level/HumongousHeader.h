@@ -15,8 +15,8 @@ namespace resource_editor
 		{
 		public:
 			HumongousHeader() = default;
-			HumongousHeader(const char* a_ChunkID);
-			HumongousHeader(unsigned char* a_ChunkID);
+			HumongousHeader(const char* a_ChunkID, size_t a_ChunkSize = 0, bool a_BigEndian = true);
+			HumongousHeader(unsigned char* a_ChunkID, size_t a_ChunkSize = 0, bool a_BigEndian = true);
 			HumongousHeader(const HumongousHeader& rhs);
 			HumongousHeader(HumongousHeader* a_DataBuffer);
 

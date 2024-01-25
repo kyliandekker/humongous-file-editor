@@ -273,8 +273,6 @@ namespace resource_editor
 					}
 					else if (scrp_talk_offset == talk_chunk_offset)
 					{
-						size_t scrp_talk_new_size = talk_chunk_new_size;
-
 						if (talk_chunk_new_size_str.size() != talk_chunk_old_size_str.size())
 						{
 							longer_instructions.push_back(instruction);
@@ -315,6 +313,7 @@ namespace resource_editor
 			a->m_FileContainer.Replace(0, new_a_data.data(), a->m_FileContainer.m_Size);
 
 			// Replace longer ones (in reverse).
+			//for (int t = 0; t < longer_instructions.size(); t++)
 			for (int t = longer_instructions.size() - 1; t > -1; t--)
 			{
 				// Step 1: Do the pre-calculations.
@@ -340,18 +339,17 @@ namespace resource_editor
 
 				// Step 1. Necessary for copying everything until the replacement point.
 				int32_t script_replace_pos = -1;
-				// Step 2. Necessary for after step 1.
+				// Step 2. Necessary for copying the value.
 				std::string script_replacement_val;
-				// Step 3. Necessary for after step 2.
+				// Step 3. Necessary for copying everything after the initial value.
 				int32_t script_proceeding_point = -1;
-				// Step 3. Necessary for after step 4.
 
 				if (scrp_talk_offset == talk_chunk_offset)
 				{
 					script_replace_pos = talkie_string.GetTalkSizePos() + instruction.m_OffsetInSCRPChunk;
 					script_replacement_val = talk_chunk_new_size_str;
 					script_proceeding_point = script_replace_pos + talk_chunk_old_size_str.size();
-					script_replacing_difference = talk_chunk_old_size_str.size() - script_replacement_val.size();
+					script_replacing_difference = script_replacement_val.size() - talk_chunk_old_size_str.size();
 				}
 				else
 				{
@@ -360,53 +358,49 @@ namespace resource_editor
 					script_replace_pos = talkie_string.GetTalkOffsetPos() + instruction.m_OffsetInSCRPChunk;
 					script_replacement_val = std::to_string(scrp_talk_new_offset);
 					script_proceeding_point = script_replace_pos + std::to_string(scrp_talk_offset).size();
-					script_replacing_difference = std::to_string(scrp_talk_offset).size() - script_replacement_val.size();
+					script_replacing_difference = script_replacement_val.size() - std::to_string(scrp_talk_offset).size();
 
 					chunk_reader::ChunkInfo talk_chunk_info = a_Resource.m_Parent->m_FileContainer.GetChunkInfo(scrp_talk_new_offset);
 					assert(low_level::utils::chunkcmp(talk_chunk_info.chunk_id, chunk_reader::TALK_CHUNK_ID) == 0);
 				}
 
 				header = a->m_FileContainer.GetChunkInfo(instruction.m_SCRPOffset);
-				DataStream new_script_data = DataStream(header.ChunkSize() + script_replacing_difference);
-				new_script_data.Write(low_level::utils::add(a->m_FileContainer.m_Data, instruction.m_SCRPOffset), script_replace_pos);
+				chunk_reader::ChunkHeader new_scrp_header = chunk_reader::ChunkHeader(header.chunk_id, header.ChunkSize() + script_replacing_difference);
+
+				DataStream new_script_data = DataStream(low_level::utils::add(a->m_FileContainer.m_Data, instruction.m_SCRPOffset), header.ChunkSize());
+				new_script_data.Save();
+
+				new_script_data = DataStream(new_scrp_header.ChunkSize());
+				new_script_data.Write(&new_scrp_header, sizeof(chunk_reader::ChunkHeader));
+				new_script_data.Write(low_level::utils::add(a->m_FileContainer.m_Data, instruction.m_SCRPOffset + sizeof(chunk_reader::ChunkHeader)), script_replace_pos - sizeof(chunk_reader::ChunkHeader));
 				new_script_data.Write(script_replacement_val.c_str(), script_replacement_val.size());
 				new_script_data.Write(low_level::utils::add(a->m_FileContainer.m_Data, instruction.m_SCRPOffset + script_proceeding_point), header.ChunkSize() - script_proceeding_point);
+				new_script_data.Save();
 
-				a->m_FileContainer.Replace(header.m_Offset, new_script_data.data(), new_script_data.size());
 
 				// TODO: Figure out if scripts only jump inside the script chunk or also to other scripts.
 				// Step 2: Replace offsets in jump commands inside this script only (look into other scripts later if this ends up crashing games).
 
-				game::GameResource resource;
-				resource.m_Offset = instruction.m_SCRPOffset;
-				resource.m_Parent = a;
-
 				std::vector<ScriptInstruction> instructions;
-				if (!ScriptResource::GetScriptData(resource, instructions))
+				if (!ScriptResource::GetScriptData(instruction.m_SCRPOffset, new_script_data.data(), instructions, false))
 				{
 					return false;
 				}
-
-				header = a->m_FileContainer.GetChunkInfo(instruction.m_SCRPOffset);
-				new_script_data = DataStream(low_level::utils::add(a->m_FileContainer.m_Data, instruction.m_SCRPOffset), header.ChunkSize());
 
 				for (auto& short_instruction : instructions)
 				{
 					int32_t offset_in_scrp = -1;
 
 					// Normal wait instructions.
-					if (short_instruction.m_Code == 0x5C // jump if
-						|| short_instruction.m_Code == 0x5D // jump if not
-						|| short_instruction.m_Code == 0x73 // jump
-						)
+					if (chunk_reader::isJumpCode(short_instruction.m_Code, short_instruction.m_Args.m_Args.size() == chunk_reader::command_jump)) // Normal wait command.
 					{
 						offset_in_scrp =
-							short_instruction.m_OffsetInSCRPChunk + // offset of instruction in scrp chunk.
-							short_instruction.m_Args[0].m_Offset + // offset of arg (this will be 0 for index 0).
-							1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
+							short_instruction.m_OffsetInSCRPChunk + // Offset of instruction in scrp chunk.
+							short_instruction.m_Args[0].m_Offset + // Offset of arg (this will be 0 for index 0).
+							1; // Basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
 					}
 					// Wait and jump.
-					else if (short_instruction.m_Code == 0xA9) // wait and then jump.
+					else if (chunk_reader::isJumpCode(short_instruction.m_Code, short_instruction.m_Args.m_Args.size() == chunk_reader::command_wait)) // Wait and then jump.
 					{
 						if (short_instruction.m_Args.m_Args.size() < 2)
 						{
@@ -414,24 +408,28 @@ namespace resource_editor
 						}
 
 						offset_in_scrp =
-							short_instruction.m_OffsetInSCRPChunk + // offset of instruction in scrp chunk.
-							short_instruction.m_Args[1].m_Offset + // offset of arg (this will be 0 for index 0). We want the second arg, cause the first arg says if we even have a second arg.
-							1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
+							short_instruction.m_OffsetInSCRPChunk + // Offset of instruction in scrp chunk.
+							short_instruction.m_Args[1].m_Offset + // Offset of arg (this will be 0 for index 0). We want the second arg, cause the first arg says if we even have a second arg.
+							1; // Basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
 					}
 					else
 					{
 						continue;
 					}
 
-					new_script_data.Save();
-
 					// TODO: Fix.
-					size_t offset_after_jump = chunk_reader::jump(short_instruction, reinterpret_cast<unsigned char*>(a->m_FileContainer.m_Data), false);
-					if ((short_instruction.m_OffsetInSCRPChunk < script_replace_pos && offset_after_jump > script_replace_pos) ||
-						(short_instruction.m_OffsetInSCRPChunk > script_replace_pos && offset_after_jump < script_replace_pos))
+					size_t offset_after_jump = chunk_reader::jump(short_instruction, reinterpret_cast<unsigned char*>(new_script_data.data()), new_script_data.size());
+
+					if ((short_instruction.m_AbsOffset > script_replace_pos && offset_after_jump < script_replace_pos))
 					{
-						int16_t jump_offset = *reinterpret_cast<int16_t*>(low_level::utils::add(a->m_FileContainer.m_Data, offset_in_scrp));
-						jump_offset += script_replacing_difference;
+						int16_t jump_offset = *reinterpret_cast<int16_t*>(low_level::utils::add(new_script_data.data(), offset_in_scrp));
+						jump_offset -= abs(script_replacing_difference);
+						memcpy(low_level::utils::add(new_script_data.data(), offset_in_scrp), &jump_offset, sizeof(int16_t));
+					}
+					else if ((short_instruction.m_AbsOffset < script_replace_pos && offset_after_jump > script_replace_pos))
+					{
+						int16_t jump_offset = *reinterpret_cast<int16_t*>(low_level::utils::add(new_script_data.data(), offset_in_scrp));
+						jump_offset += abs(script_replacing_difference);
 						memcpy(low_level::utils::add(new_script_data.data(), offset_in_scrp), &jump_offset, sizeof(int16_t));
 					}
 					else

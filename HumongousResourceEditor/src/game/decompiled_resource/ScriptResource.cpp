@@ -9,6 +9,8 @@
 #include "low_level/HumongousChunkDefinitions.h"
 #include "cmd/OPCodes.h"
 #include "system/Logger.h"
+#include <allocators/DataStream.h>
+#include <allocators/Data.h>
 
 namespace resource_editor
 {
@@ -33,7 +35,7 @@ namespace resource_editor
 			unsigned char* data = nullptr;
 		};
 
-		bool ScriptResource::GetScriptData(game::GameResource& a_Resource, std::vector<ScriptInstruction>& a_Instructions)
+		bool ScriptResource::GetScriptData(size_t a_Offset, void* a_Data, std::vector<ScriptInstruction>& a_Instructions, bool a_Validate)
 		{
 			a_Instructions.clear();
 
@@ -41,8 +43,8 @@ namespace resource_editor
 			size_t pos = 0;
 
 			Generic_Script_Chunk chunk;
-			a_Resource.m_Parent->m_FileContainer.GetChunk(chunk, a_Resource.m_Offset, sizeof(chunk_reader::HumongousHeader));
-			chunk.data = reinterpret_cast<unsigned char*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, a_Resource.m_Offset + sizeof(chunk_reader::HumongousHeader)));
+			memcpy(&chunk, a_Data, sizeof(chunk_reader::HumongousHeader));
+			chunk.data = reinterpret_cast<unsigned char*>(low_level::utils::add(a_Data, sizeof(chunk_reader::HumongousHeader)));
 			
 			scrp_size = chunk.DataSize();
 
@@ -94,39 +96,50 @@ namespace resource_editor
 
 				if (chunk_reader::OPCODES_HE90.find(b) == chunk_reader::OPCODES_HE90.end())
 				{
-					LOGF(logger::LOGSEVERITY_ASSERT, "Jump command jumps to invalid bytecode. Expect code in OPCodes dictionary but got %c", b);
+					printf("Test");
+					//LOGF(logger::LOGSEVERITY_ASSERT, "Found invalid bytecode. Expect code in OPCodes dictionary but got %c.", b);
 				}
 
 				ScriptInstruction instruction;
 				instruction.m_Code = b;
 				instruction.m_OffsetInSCRPChunk = sizeof(chunk_reader::HumongousHeader) + pos;
-				instruction.m_SCRPOffset = a_Resource.m_Offset;
-				instruction.m_AbsOffset = a_Resource.m_Offset + instruction.m_OffsetInSCRPChunk;
+				instruction.m_SCRPOffset = a_Offset;
+				instruction.m_AbsOffset = a_Offset + instruction.m_OffsetInSCRPChunk;
+
+				// Move to the args (if any).
 				pos++;
 
 				ArgsAllocator args;
 				chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[b];
-				bytecode.m_Func(reinterpret_cast<unsigned char*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, a_Resource.m_Offset + sizeof(chunk_reader::HumongousHeader) + pos)), args);
+				bytecode.m_Func(reinterpret_cast<unsigned char*>(low_level::utils::add(chunk.data, pos)), args);
 
 				instruction.m_Name = bytecode.m_Name;
 				instruction.m_Args = args;
 
 				a_Instructions.push_back(instruction);
 
-				// Checking jumps and seeing if they are valid.
-				if ((instruction.m_Code == 0x5C // jump if
-					|| instruction.m_Code == 0x5D // jump if not
-					|| instruction.m_Code == 0x73) // jump
-					|| (instruction.m_Code == 0xA9 && instruction.m_Args.m_Args.size() == 2)
-					)
+				if (a_Validate)
 				{
-					const size_t offset = chunk_reader::jump(instruction, reinterpret_cast<unsigned char*>(a_Resource.m_Parent->m_FileContainer.m_Data));
-
-					const uint8_t tb = *reinterpret_cast<uint8_t*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, offset));
-
-					if (offset > a_Resource.m_Offset + chunk.ChunkSize())
+					// Checking jumps and seeing if they are valid.
+					if (chunk_reader::isJumpCode(instruction.m_Code, instruction.m_Args.m_Args.size()))
 					{
-						LOG(logger::LOGSEVERITY_ASSERT, "Script references outside script, should not be possible.");
+						size_t offset = chunk_reader::jump(instruction, reinterpret_cast<unsigned char*>(a_Data), chunk.ChunkSize());
+
+						const uint8_t byte = *reinterpret_cast<uint8_t*>(low_level::utils::add(a_Data, offset));
+
+						offset += instruction.m_SCRPOffset;
+
+						if (chunk_reader::OPCODES_HE90.find(byte) == chunk_reader::OPCODES_HE90.end())
+						{
+							printf("Test");
+							//LOGF(logger::LOGSEVERITY_ASSERT, "Jump command jumps to invalid bytecode. Expect code in OPCodes dictionary but got %c.", b);
+						}
+
+						if (offset > a_Offset + chunk.ChunkSize() || offset < a_Offset)
+						{
+							printf("Test");
+							//LOG(logger::LOGSEVERITY_ASSERT, "Script references outside script, should not be possible.");
+						}
 					}
 				}
 
@@ -134,6 +147,11 @@ namespace resource_editor
 			}
 
 			return true;
+		}
+
+		bool ScriptResource::GetScriptData(game::GameResource& a_Resource, std::vector<ScriptInstruction>& a_Instructions, bool a_Validate)
+		{
+			return GetScriptData(a_Resource.m_Offset, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, a_Resource.m_Offset), a_Instructions, a_Validate);
 		}
 
 		bool ScriptResource::GetData(game::GameResource& a_Resource)
