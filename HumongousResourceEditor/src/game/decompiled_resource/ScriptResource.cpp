@@ -96,8 +96,7 @@ namespace resource_editor
 
 				if (chunk_reader::OPCODES_HE90.find(b) == chunk_reader::OPCODES_HE90.end())
 				{
-					printf("Test");
-					//LOGF(logger::LOGSEVERITY_ASSERT, "Found invalid bytecode. Expect code in OPCodes dictionary but got %c.", b);
+					LOGF(logger::LOGSEVERITY_ASSERT, "Found invalid bytecode. Expect code in OPCodes dictionary but got %c.", b);
 				}
 
 				ScriptInstruction instruction;
@@ -131,14 +130,12 @@ namespace resource_editor
 
 						if (chunk_reader::OPCODES_HE90.find(byte) == chunk_reader::OPCODES_HE90.end())
 						{
-							printf("Test");
-							//LOGF(logger::LOGSEVERITY_ASSERT, "Jump command jumps to invalid bytecode. Expect code in OPCodes dictionary but got %c.", b);
+							LOGF(logger::LOGSEVERITY_ASSERT, "Jump command jumps to invalid bytecode. Expect code in OPCodes dictionary but got %c.", b);
 						}
 
 						if (offset > a_Offset + chunk.ChunkSize() || offset < a_Offset)
 						{
-							printf("Test");
-							//LOG(logger::LOGSEVERITY_ASSERT, "Script references outside script, should not be possible.");
+							LOG(logger::LOGSEVERITY_ASSERT, "Script references outside script, should not be possible.");
 						}
 					}
 				}

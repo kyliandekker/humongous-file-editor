@@ -53,6 +53,8 @@ do{\
 
 #define LOGF(severity, message, ...)\
 do{\
+	if (severity == logger::LogSeverity::LOGSEVERITY_ASSERT)\
+		assert(false);\
 	logger::logger.LogF(severity, message, __FILE__, __LINE__, __VA_ARGS__);\
 } while (0)
 	}
