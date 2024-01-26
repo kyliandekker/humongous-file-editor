@@ -10,7 +10,9 @@ namespace resource_editor
 		{
 		public:
 			ChunkInfo() = default;
-			ChunkInfo(const char* a_ChunkID) : HumongousHeader(a_ChunkID)
+			ChunkInfo(const char* a_ChunkID, uint32_t a_ChunkSize = 0, bool a_BigEndian = true) : HumongousHeader(a_ChunkID, a_ChunkSize, a_BigEndian)
+			{ }
+			ChunkInfo(unsigned char* a_ChunkID, uint32_t a_ChunkSize = 0, bool a_BigEndian = true) : HumongousHeader(a_ChunkID, a_ChunkSize, a_BigEndian)
 			{ }
 			ChunkInfo(const ChunkInfo& rhs) : HumongousHeader(rhs)
 			{

@@ -71,6 +71,7 @@ namespace resource_editor
 			{
 				return GameResourceType::RoomImage;
 			}
+			return GameResourceType::Unknown;
 		}
 	}
 }

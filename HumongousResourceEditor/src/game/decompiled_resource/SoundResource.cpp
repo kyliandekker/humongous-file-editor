@@ -45,7 +45,6 @@ namespace resource_editor
 			return true;
 		}
 
-		// TODO: Check for memory leaks.
 		bool SoundResource::OpenResource(std::string& a_Path, uaudio::wave_reader::ChunkCollectionWrapper& a_ChunkCollection)
 		{
 			std::string path;

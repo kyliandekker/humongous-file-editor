@@ -58,7 +58,7 @@ namespace resource_editor
 			std::string path;
 			const std::vector<COMDLG_FILTERSPEC> filters =
 			{
-				{ L"HTML (*.html)", L"*.HTML" }
+				{ L"Extensible Markup Language (*.xml)", L"*.xml" }
 			};
 
 			if (!abstractions::SaveFile(path, nullptr, filters))
@@ -66,9 +66,9 @@ namespace resource_editor
 				return false;
 			}
 
-			if (!string_extensions::ends_with(path, ".html"))
+			if (!string_extensions::ends_with(path, ".xml"))
 			{
-				path += ".html";
+				path += ".xml";
 			}
 
 			std::map<std::string, uint32_t> chunks;
@@ -82,7 +82,7 @@ namespace resource_editor
 				chunks[chunk_id_name]++;
 
 				chunk_reader::ChunkInfo next = a_Resource.m_FileContainer.GetNextChunk(header.m_Offset);
-				bool b = header.m_Offset + header.ChunkSize() > next.m_Offset;
+				bool b = header.m_Offset + static_cast<int32_t>(header.ChunkSize()) > next.m_Offset;
 				text += getOpenChunkText(header.chunk_id, header.m_Offset, header.ChunkSize(), top_chunks.size(), b);
 				if (b)
 				{

@@ -4,5 +4,5 @@
 
 namespace resource_editor
 {
-	constexpr uint32_t CHUNK_ID_SIZE = 4;
+	inline constexpr uint32_t CHUNK_ID_SIZE = 4;
 }

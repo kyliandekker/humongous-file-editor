@@ -57,6 +57,8 @@ namespace resource_editor
 			return "";
 		}
 
+		GameResourceType getResourceByChunkID(unsigned char a_ChunkId[CHUNK_ID_SIZE]);
+
 		inline std::string getResourceTypeName(GameResourceType a_ResourceType)
 		{
 			switch (a_ResourceType)
@@ -108,7 +110,5 @@ namespace resource_editor
 			}
 			return "";
 		}
-
-		GameResourceType getResourceByChunkID(unsigned char a_ChunkId[CHUNK_ID_SIZE]);
 	}
 }
