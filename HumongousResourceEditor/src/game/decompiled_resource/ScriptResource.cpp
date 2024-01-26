@@ -148,7 +148,7 @@ namespace resource_editor
 
 		bool ScriptResource::GetScriptData(game::GameResource& a_Resource, std::vector<ScriptInstruction>& a_Instructions, bool a_Validate)
 		{
-			return GetScriptData(a_Resource.m_Offset, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, a_Resource.m_Offset), a_Instructions, a_Validate);
+			return GetScriptData(a_Resource.m_Offset, low_level::utils::add(a_Resource.m_Parent->m_FileContainer.data(), a_Resource.m_Offset), a_Instructions, a_Validate);
 		}
 
 		bool ScriptResource::GetData(game::GameResource& a_Resource)

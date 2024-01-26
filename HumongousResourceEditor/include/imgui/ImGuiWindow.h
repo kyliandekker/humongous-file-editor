@@ -48,10 +48,10 @@ namespace resource_editor
 			std::mutex m_RenderMutex;
 		private:
 			HWND m_Hwnd = nullptr;
-			WNDCLASSEX m_Wc;
+			WNDCLASSEX m_Wc = WNDCLASSEX();
 			bool m_Enabled = true;
 
-			ImVec2 m_Size;
+			ImVec2 m_Size = ImVec2();
 
 			dx9::DX9Window m_DX9Window;
 

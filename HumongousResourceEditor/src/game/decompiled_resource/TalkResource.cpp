@@ -63,7 +63,7 @@ namespace resource_editor
 			a_Resource.m_Parent->m_FileContainer.GetChunk(m_HSHD_Chunk, desired[0].m_Offset);
 
 			a_Resource.m_Parent->m_FileContainer.GetChunk(m_SDAT_Chunk, desired[1].m_Offset, sizeof(chunk_reader::HumongousHeader));
-			m_SDAT_Chunk.data = low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, desired[1].m_Offset + sizeof(chunk_reader::HumongousHeader));
+			m_SDAT_Chunk.data = low_level::utils::add(a_Resource.m_Parent->m_FileContainer.data(), desired[1].m_Offset + sizeof(chunk_reader::HumongousHeader));
 
 			m_NumSamples = m_SDAT_Chunk.ChunkSize();
 			m_Samples = audio::utils::ToSample(m_SDAT_Chunk.data, m_SDAT_Chunk.ChunkSize());
@@ -80,23 +80,6 @@ namespace resource_editor
 		/*
 			* General strategy:
 				* First we replace the TALK chunk with the new sound data (very easy).
-				* Afterwards, we go through every script in the (a) file and look for TALK scripts.
-				* Every TALK script consists of the letter T, followed by an offset and a size
-				  (both relating to the absolute offset of the TALK chunk and the size of this chunk in the .HE2 file).
-				* Check if the offset in a TALK script is greater than the offset of the TALK chunk that was changed.
-					* Calculate the new offset. If the amount of digits in the offset remains the same replace it immediately.
-					* If the amount of digits is smaller or greater, add it to a list of instructions we will deal with later.
-				* If the offset in a TALK script is the same as the TALK chunk that was changed, check the size.
-					* If the amount of digits is smaller or greater, add it to a list of instructions we will deal with later.
-				* Now we will deal with the instructions that were not easy to replace.
-					* First look for jump commands in the same SCRP chunk as the instruction originated from.
-						* If the jump command is after the TALK instruction and jumps back before the TALK instruction, it will need to be changed.
-						* Same happens for jump commands that are after the TALK instruction and that jump to a point after the TALK instruction.
-					* Once all instructions are dealt with, we replace the SCRP chunk with the changed jumps (the actual TALK instruction has not changed yet).
-					* After that is dealt with, we then replace the whole SCRP chunk with the new size and changed TALK instruction.
-				* Afterwards, we check if all commands even still work.
-				* Then we repack the index file.
-				* Then we unload and reload all files.
 		*/
 		bool TalkResource::ReplaceTALK(game::GameResource& a_Resource, chunk_reader::ChunkInfo& a_NewTALKChunk, chunk_reader::ChunkInfo& a_OldTALKChunk)
 		{
@@ -154,7 +137,7 @@ namespace resource_editor
 			else
 			{
 				a_Resource.m_Parent->m_FileContainer.GetChunk(sbng_chunk, desired[2].m_Offset, sizeof(chunk_reader::HumongousHeader));
-				sbng_chunk.data = reinterpret_cast<unsigned char*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, desired[2].m_Offset + sizeof(chunk_reader::HumongousHeader)));
+				sbng_chunk.data = reinterpret_cast<unsigned char*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.data(), desired[2].m_Offset + sizeof(chunk_reader::HumongousHeader)));
 			}
 
 			// Construct HSHD chunk.
@@ -190,6 +173,26 @@ namespace resource_editor
 			return true;
 		}
 
+		/*
+			* General strategy:
+				* Afterwards, we go through every script in the (a) file and look for TALK scripts.
+				* Every TALK script consists of the letter T, followed by an offset and a size
+				  (both relating to the absolute offset of the TALK chunk and the size of this chunk in the .HE2 file).
+				* Check if the offset in a TALK script is greater than the offset of the TALK chunk that was changed.
+					* Calculate the new offset. If the amount of digits in the offset remains the same replace it immediately.
+					* If the amount of digits is smaller or greater, add it to a list of instructions we will deal with later.
+				* If the offset in a TALK script is the same as the TALK chunk that was changed, check the size.
+					* If the amount of digits is smaller or greater, add it to a list of instructions we will deal with later.
+				* Now we will deal with the instructions that were not easy to replace.
+					* Copy until the value that needs to be changed, then write the new value and then write everything that was after the old value.
+					* Don't forget to set the chunksize.
+					* Replace it, get all script instructions from the chunk but do not validate the instruction jumps yet (because we have not changed them).
+					* Then look for jump instructions.
+						* If the jump command is after the TALK instruction and jumps back before the TALK instruction, it will need to be changed.
+						* Same happens for jump commands that are after the TALK instruction and that jump to a point after the TALK instruction.
+					* Once all instructions are dealt with, we replace the SCRP chunk with the changed jumps (the actual TALK instruction has not changed yet).
+				* Afterwards, we check if all commands even still work.
+		*/
 		bool TalkResource::UpdateScripts(game::GameResource& a_Resource, chunk_reader::ChunkInfo& a_NewTALKChunk, chunk_reader::ChunkInfo& a_OldTALKChunk)
 		{
 			project::Resource* he0 = project::project.m_LoadedResources[(int)project::ResourceType::HE0];
@@ -224,11 +227,11 @@ namespace resource_editor
 				* When offsets after the TALK chunk we changed get called, we change the offset (by adding the difference in size).
 			*/
 
-			Data new_a_data = Data(a->m_FileContainer.m_Data, a->m_FileContainer.m_Size);
+			Data new_a_data = Data(a->m_FileContainer.data(), a->m_FileContainer.size());
 
 			// First replace instructions that do not change in size.
 			chunk_reader::ChunkInfo header = a->m_FileContainer.GetChunkInfo(0);
-			while (header.m_Offset < a->m_FileContainer.m_Size)
+			while (header.m_Offset < a->m_FileContainer.size())
 			{
 				GameResourceType gameResourceType = getResourceByChunkID(header.chunk_id);
 				if (gameResourceType != GameResourceType::Global_Script && gameResourceType != GameResourceType::Local_Script && gameResourceType != GameResourceType::Verb_Script)
@@ -257,7 +260,7 @@ namespace resource_editor
 						continue;
 					}
 
-					TalkString talkie_string = TalkString(low_level::utils::add(a->m_FileContainer.m_Data, instruction.m_AbsOffset));
+					TalkString talkie_string = TalkString(low_level::utils::add(a->m_FileContainer.data(), instruction.m_AbsOffset));
 
 					if (!talkie_string.IsTalkString())
 					{
@@ -310,7 +313,7 @@ namespace resource_editor
 				header = a->m_FileContainer.GetNextChunk(header.m_Offset);
 			}
 
-			a->m_FileContainer.Replace(0, new_a_data.data(), a->m_FileContainer.m_Size);
+			a->m_FileContainer.Replace(0, new_a_data.data(), a->m_FileContainer.size());
 
 			// Replace longer ones (in reverse).
 			//for (int t = 0; t < longer_instructions.size(); t++)
@@ -325,7 +328,7 @@ namespace resource_editor
 					continue;
 				}
 
-				TalkString talkie_string = TalkString(low_level::utils::add(a->m_FileContainer.m_Data, instruction.m_AbsOffset));
+				TalkString talkie_string = TalkString(low_level::utils::add(a->m_FileContainer.data(), instruction.m_AbsOffset));
 
 				if (!talkie_string.IsTalkString())
 				{
@@ -369,9 +372,9 @@ namespace resource_editor
 
 				DataStream new_script_data = DataStream(new_scrp_header.ChunkSize());
 				new_script_data.Write(&new_scrp_header, sizeof(chunk_reader::ChunkHeader));
-				new_script_data.Write(low_level::utils::add(a->m_FileContainer.m_Data, instruction.m_SCRPOffset + sizeof(chunk_reader::ChunkHeader)), script_replace_pos - sizeof(chunk_reader::ChunkHeader));
+				new_script_data.Write(low_level::utils::add(a->m_FileContainer.data(), instruction.m_SCRPOffset + sizeof(chunk_reader::ChunkHeader)), script_replace_pos - sizeof(chunk_reader::ChunkHeader));
 				new_script_data.Write(script_replacement_val.c_str(), script_replacement_val.size());
-				new_script_data.Write(low_level::utils::add(a->m_FileContainer.m_Data, instruction.m_SCRPOffset + script_proceeding_point), header.ChunkSize() - script_proceeding_point);
+				new_script_data.Write(low_level::utils::add(a->m_FileContainer.data(), instruction.m_SCRPOffset + script_proceeding_point), header.ChunkSize() - script_proceeding_point);
 
 				a->m_FileContainer.Replace(header.m_Offset, new_script_data.data(), new_script_data.size());
 
@@ -453,7 +456,7 @@ namespace resource_editor
 
 			// Last check.
 			header = a->m_FileContainer.GetChunkInfo(0);
-			while (header.m_Offset < a->m_FileContainer.m_Size)
+			while (header.m_Offset < a->m_FileContainer.size())
 			{
 				if (low_level::utils::chunkcmp(header.chunk_id, chunk_reader::SCRP_CHUNK_ID) == 0 ||
 					low_level::utils::chunkcmp(header.chunk_id, chunk_reader::LSCR_CHUNK_ID) == 0 ||
@@ -482,153 +485,476 @@ namespace resource_editor
 			return true;
 		}
 
-		bool TalkResource::Replace(game::GameResource& a_Resource)
+		struct dlfl_offset
 		{
-			chunk_reader::ChunkInfo newTALKChunk, oldTALKChunk;
-			if (!ReplaceTALK(a_Resource, newTALKChunk, oldTALKChunk))
+			size_t offset;
+			size_t actual_offset;
+		};
+		struct IndexPair
+		{
+			size_t rmim_offset;
+			size_t offset;
+			size_t actual_offset;
+		};
+		struct diri_pair3
+		{
+			size_t rmim_offset;
+
+			size_t offset;
+			size_t actual_offset_of_offset;
+
+			size_t size;
+			size_t actual_offset_of_size;
+		};
+
+		/*
+			* General strategy:
+				* After all this we will repack the he0.
+					* We get all the RMIM chunks first and save them (this is necessary for every single index chunk since it is based on the offset relative from the RMIM chunk in the room).
+					* After that we go through the index file and check for the chunk IDs.
+						* If this is a chunk ID we can fill with data, we will look through the chunks in the Resource file that are related.
+					*
+		*/
+		bool TalkResource::UpdateAHE0(game::GameResource& a_Resource)
+		{
+			project::Resource* he0 = project::project.m_LoadedResources[(int)project::ResourceType::HE0];
+			project::Resource* a = project::project.m_LoadedResources[(int)project::ResourceType::A];
+
+			if (!a || !he0)
 			{
 				return false;
 			}
 
-			if (!UpdateScripts(a_Resource, newTALKChunk, oldTALKChunk))
+			// Collect all RNIM chunks.
+			std::vector<chunk_reader::ChunkInfo> rmim_offsets;
+			rmim_offsets.push_back(chunk_reader::ChunkInfo());
+
+			chunk_reader::ChunkInfo rmim_header = a->m_FileContainer.GetChunkInfo(0);
+			while (rmim_header.m_Offset < a->m_FileContainer.size())
 			{
-				return false;
+				if (low_level::utils::chunkcmp(rmim_header.chunk_id, chunk_reader::RMIM_CHUNK_ID) == 0)
+				{
+					rmim_offsets.push_back(rmim_header);
+				}
+				rmim_header = a->m_FileContainer.GetNextChunk(rmim_header.m_Offset);
 			}
 
+			std::map<std::string, std::vector<std::string>> chunks_in_index_pair =
+			{
+				{ chunk_reader::DIRS_CHUNK_ID, { chunk_reader::SCRP_CHUNK_ID } },
+				{ chunk_reader::DIRC_CHUNK_ID, { chunk_reader::AKOS_CHUNK_ID } },
+				{ chunk_reader::DIRF_CHUNK_ID, { chunk_reader::CHAR_CHUNK_ID } },
+				{ chunk_reader::DIRN_CHUNK_ID, { chunk_reader::SOUN_CHUNK_ID, chunk_reader::TALK_CHUNK_ID, chunk_reader::DIGI_CHUNK_ID } },
+				{ chunk_reader::DIRT_CHUNK_ID, { chunk_reader::TLKE_CHUNK_ID } },
+				{ chunk_reader::DIRM_CHUNK_ID, { chunk_reader::MULT_CHUNK_ID, chunk_reader::AWIZ_CHUNK_ID } },
+				{ chunk_reader::DIRR_CHUNK_ID, { chunk_reader::RMDA_CHUNK_ID } },
+			};
 
-			//		for (auto& short_instruction : instructions)
-			//		{
-			//			int32_t offset_in_scrp = -1;
+			chunk_reader::ChunkInfo he0_header = he0->m_FileContainer.GetChunkInfo(0);
+			while (he0_header.m_Offset < he0->m_FileContainer.size())
+			{
+				if (chunks_in_index_pair.find(std::string(reinterpret_cast<char*>(he0_header.chunk_id), CHUNK_ID_SIZE)) == chunks_in_index_pair.end())
+				{
+					he0_header = he0->m_FileContainer.GetNextChunk(he0_header.m_Offset);
+					continue;
+				}
+				std::vector<std::string> chunk_ids;
 
-			//			// Normal wait instructions.
-			//			if (short_instruction.m_Code == 0x5C // jump if
-			//				|| short_instruction.m_Code == 0x5D // jump if not
-			//				|| short_instruction.m_Code == 0x73 // jump
-			//				)
-			//			{
-			//				offset_in_scrp =
-			//					short_instruction.m_OffsetInSCRPChunk + // offset of instruction in scrp chunk.
-			//					short_instruction.m_Args[0].m_Offset + // offset of arg (this will be 0 for index 0).
-			//					1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
-			//			}
-			//			// Wait and jump.
-			//			else if (short_instruction.m_Code == 0xA9) // wait and then jump.
-			//			{
-			//				if (short_instruction.m_Args.m_Args.size() < 2)
-			//				{
-			//					continue;
-			//				}
+				chunk_reader::GENERIC_HE0_Chunk chunk;
+				he0->m_FileContainer.GetChunk(chunk, he0_header.m_Offset, sizeof(chunk_reader::HumongousHeader) + sizeof(chunk.num_files));
 
-			//				offset_in_scrp =
-			//					short_instruction.m_OffsetInSCRPChunk + // offset of instruction in scrp chunk.
-			//					short_instruction.m_Args[1].m_Offset + // offset of arg (this will be 0 for index 0). We want the second arg, cause the first arg says if we even have a second arg.
-			//					1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
-			//			}
-			//			else
-			//			{
-			//				continue;
-			//			}
+				std::vector<IndexPair> pairs;
 
-			//			size_t offset_after_jump = chunk_reader::jump(short_instruction, a->m_FileContainer.m_Data, false);
-			//			if ((short_instruction.m_OffsetInSCRPChunk < script_shorten_point && offset_after_jump > script_shorten_point) ||
-			//				(short_instruction.m_OffsetInSCRPChunk > script_shorten_point && offset_after_jump < script_shorten_point))
-			//			{
-			//				int16_t jump_offset = *reinterpret_cast<int16_t*>(low_level::utils::add(a->m_FileContainer.m_Data, offset_in_scrp));
-			//				jump_offset += script_size_difference;
-			//				memcpy(low_level::utils::add(scrp_data, offset_in_scrp), &jump_offset, sizeof(int16_t));
-			//			}
-			//			else
-			//			{
-			//				continue;
-			//			}
-			//		}
+				size_t pos = sizeof(chunk_reader::HumongousHeader) + sizeof(chunk.num_files);
 
-			//		a->m_FileContainer.Replace(instruction.m_SCRPOffset, scrp_data, scrp_info.ChunkSize());
-			//		free(scrp_data);
+				// First get the indexes.
+				for (size_t j = 0; j < chunk.num_files; j++)
+				{
+					uint8_t rmim_index = *reinterpret_cast<uint8_t*>(low_level::utils::add(he0->m_FileContainer.data(), he0_header.m_Offset + pos));
+					pairs.push_back({ rmim_index, 0, 0 });
+					pos += sizeof(uint8_t);
+				}
 
-			//		scrp_data = reinterpret_cast<unsigned char*>(malloc(scrp_info.ChunkSize() + script_size_difference));
-			//		if (!scrp_data)
-			//		{
-			//			continue;
-			//		}
+				// Then get the offsets.
+				for (auto& pair : pairs)
+				{
+					uint32_t byte_pos = *reinterpret_cast<uint32_t*>(low_level::utils::add(he0->m_FileContainer.data(), he0_header.m_Offset + pos));
+					pair.actual_offset = pos;
+					pair.offset = byte_pos;
+					pos += sizeof(uint32_t);
+				}
 
-			//		// Copy everything until the string replacement.
-			//		memset(scrp_data, 0, scrp_info.ChunkSize() + script_size_difference);
-			//		memcpy(scrp_data, low_level::utils::add(a->m_FileContainer.m_Data, instruction.m_SCRPOffset), script_replace_pos);
+				// These are here to store which resource we are at (because indexes do not seem to always be ordered correctly).
+				// We use these to start from different indexes.
+				std::map<uint8_t, uint32_t> rmims;
+				for (size_t j = 0; j < rmim_offsets.size(); j++)
+				{
+					rmims[j] = rmim_offsets[j].m_Offset;
+				}
 
-			//		chunk_reader::HumongousHeader old_chunk = chunk_reader::HumongousHeader(scrp_info);
-			//		old_chunk.SetChunkSize(scrp_info.ChunkSize() + script_size_difference);
+				// Allocate the data for replacing.
+				Data header_data(low_level::utils::add(he0->m_FileContainer.data(), he0_header.m_Offset), he0_header.ChunkSize());
 
-			//		// Copy the new size.
-			//		memcpy(low_level::utils::add(scrp_data, CHUNK_ID_SIZE), old_chunk.chunkSize, sizeof(old_chunk.chunkSize));
+				// TODO: Why is this here???
+				chunk_reader::ChunkInfo mult;
+				mult.SetChunkSize(0);
 
-			//		// Copy the string replacement value.
-			//		memcpy(
-			//			low_level::utils::add(scrp_data, script_replace_pos),
-			//			talk_chunk_new_size_str.c_str(),
-			//			talk_chunk_new_size_str.size()
-			//		);
+				// Go through all the pairs and replace them with new offsets.
 
-			//		memcpy(
-			//			// Offset in new data (so not full file).
-			//			low_level::utils::add(scrp_data, script_replace_pos + talk_chunk_new_size_str.size()),
-			//			// Offset in full file 
-			//			low_level::utils::add(a->m_FileContainer.m_Data, scrp_info.m_Offset + script_replace_pos + std::to_string(script_old_replacement_val).size()),
-			//			// Size of everything to copy.
-			//			scrp_info.ChunkSize() - (script_replace_pos + std::to_string(script_old_replacement_val).size())
-			//		);
+				for (auto& pair : pairs)
+				{
+					if (pair.offset == 0)
+					{
+						continue;
+					}
 
-			//		a->m_FileContainer.Replace(instruction.m_SCRPOffset, scrp_data, scrp_info.ChunkSize());
-			//		free(scrp_data);
-			//	}
+					size_t rmim_index = pair.rmim_offset;
+					std::vector<std::string>& index_chunks = chunks_in_index_pair[std::string(reinterpret_cast<char*>(chunk.chunk_id), CHUNK_ID_SIZE)];
 
-			//	// Last check.
-			//	header = a->m_FileContainer.GetChunkInfo(0);
-			//	while (header.m_Offset < a->m_FileContainer.m_Size)
-			//	{
-			//		if (low_level::utils::chunkcmp(header.chunk_id, chunk_reader::SCRP_CHUNK_ID) == 0 ||
-			//			low_level::utils::chunkcmp(header.chunk_id, chunk_reader::LSCR_CHUNK_ID) == 0 ||
-			//			low_level::utils::chunkcmp(header.chunk_id, chunk_reader::LSC2_CHUNK_ID) == 0 ||
-			//			low_level::utils::chunkcmp(header.chunk_id, chunk_reader::EXCD_CHUNK_ID) == 0 ||
-			//			low_level::utils::chunkcmp(header.chunk_id, chunk_reader::ENCD_CHUNK_ID) == 0 ||
-			//			low_level::utils::chunkcmp(header.chunk_id, chunk_reader::VERB_CHUNK_ID) == 0)
-			//		{
-			//			std::vector<ScriptInstruction> instructions;
+					chunk_reader::ChunkInfo& rmim_header = rmim_offsets[rmim_index];
+					size_t starting_offset = rmims[rmim_index];
+					chunk_reader::ChunkInfo a_header = a->m_FileContainer.GetChunkInfo(starting_offset);
+					bool found = false;
+					while (!found && rmim_header.m_Offset < rmim_header.m_Offset + rmim_header.ChunkSize())
+					{
+						// We go through all possible chunks that can be indexed in this index chunk.
+						for (std::string& chunk_name : index_chunks)
+						{
+							if (low_level::utils::chunkcmp(a_header.chunk_id, chunk_name.c_str()) != 0)
+							{
+								a_header = a->m_FileContainer.GetNextChunk(a_header.m_Offset);
+								continue;
+							}
 
-			//			game::GameResource resource;
-			//			resource.m_Offset = header.m_Offset;
-			//			resource.m_Parent = a;
+							// For some reason the DIRM chunk needs special treatment, forgot why.
+							// Either way, if it is a chunk we recognize, save the offset.
+							if (low_level::utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRM_CHUNK_ID) != 0)
+							{
+								starting_offset = a->m_FileContainer.GetNextChunk(a_header.m_Offset).m_Offset;
+							}
+							else
+							{
+								if (low_level::utils::chunkcmp(a_header.chunk_id, chunk_reader::MULT_CHUNK_ID) == 0)
+								{
+									mult = a_header;
+									starting_offset = a->m_FileContainer.GetNextChunk(a_header.m_Offset).m_Offset;
+								}
+								else if (a_header.m_Offset > mult.m_Offset && a_header.m_Offset > mult.m_Offset + mult.ChunkSize())
+								{
+									starting_offset = a->m_FileContainer.GetNextChunk(a_header.m_Offset).m_Offset;
+								}
+							}
 
-			//			ScriptResource script = ScriptResource(resource);
+							// If the new offset is not the same as the old one.
+							if (starting_offset > rmims[pair.rmim_offset])
+							{
+								found = true;
+							}
+						}
+					}
 
-			//			if (!script.GetData(resource))
-			//			{
-			//				assert(false);
-			//			}
-			//		}
-			//		header = a->m_FileContainer.GetNextChunk(header.m_Offset);
-			//	}
+					pair.offset = a_header.m_Offset - rmim_header.m_Offset;
+					memcpy(low_level::utils::add(header_data.data(), pair.actual_offset), &pair.offset, sizeof(uint32_t));
 
-			//	imgui::explorer.ClearResources(*a);
-			//	imgui::explorer.LoadResource(*a);
-			//}
+					he0->m_FileContainer.Replace(he0_header.m_Offset, header_data.data(), he0_header.ChunkSize());
+				}
 
+				he0_header = he0->m_FileContainer.GetNextChunk(he0_header.m_Offset);
+			}
 			return true;
 		}
 
-		bool TalkResource::Save(game::GameResource& a_Resource)
+
+
+
+		//{
+
+		//}
+
+		//{
+		//	size_t dlfl_offst = -1;
+
+		//	chunk_reader::ChunkInfo he0_header = files::FILES.he0->GetChunkInfo(0);
+		//	while (he0_header.offset < files::FILES.he0->size)
+		//	{
+		//		if (utils::chunkcmp(he0_header.chunk_id, chunk_reader::DLFL_CHUNK_ID) == 0)
+		//		{
+		//			dlfl_offst = he0_header.offset;
+		//			break;
+		//		}
+		//		he0_header = files::FILES.he0->GetNextChunk(he0_header.offset);
+		//	}
+
+		//	chunk_reader::DLFL_Chunk dlfl_chunk;
+		//	memcpy(&dlfl_chunk, utils::add(files::FILES.he0->data, dlfl_offst), sizeof(chunk_reader::HumongousHeader) + sizeof(dlfl_chunk.num_lflfs));
+
+		//	std::vector<dlfl_offset> pairs;
+
+		//	size_t pos_in_p = sizeof(chunk_reader::HumongousHeader) + sizeof(dlfl_chunk.num_lflfs);
+		//	for (size_t j = 0; j < dlfl_chunk.num_lflfs; j++)
+		//	{
+		//		uint32_t byte_pos = *reinterpret_cast<uint32_t*>(utils::add(files::FILES.he0->data, he0_header.offset + pos_in_p));
+		//		dlfl_offset p;
+		//		p.actual_offset = pos_in_p;
+		//		p.offset = byte_pos;
+
+		//		pairs.push_back(p);
+		//		pos_in_p += sizeof(uint32_t);
+		//	}
+
+		//	unsigned char* dlfl_data = reinterpret_cast<unsigned char*>(malloc(he0_header.ChunkSize()));
+		//	memcpy(dlfl_data, utils::add(files::FILES.he0->data, he0_header.offset), he0_header.ChunkSize());
+
+		//	for (size_t j = 0; j < pairs.size(); j++)
+		//	{
+		//		memcpy(utils::add(dlfl_data, pairs[j].actual_offset), &rmim_offsets[j].offset, sizeof(uint32_t));
+		//	}
+
+		//	files::FILES.he0->Replace(he0_header.offset, dlfl_data, he0_header.ChunkSize());
+		//	free(dlfl_data);
+		//}
+
+		//chunk_reader::ChunkInfo he0_header = files::FILES.he0->GetChunkInfo(0);
+		//while (he0_header.offset < files::FILES.he0->size)
+		//{
+		//	if (utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRS_CHUNK_ID) == 0 ||
+		//		utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRC_CHUNK_ID) == 0 ||
+		//		utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRF_CHUNK_ID) == 0 ||
+		//		utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRN_CHUNK_ID) == 0 ||
+		//		utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRT_CHUNK_ID) == 0 ||
+		//		utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRM_CHUNK_ID) == 0 ||
+		//		utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRR_CHUNK_ID) == 0
+		//		)
+		//	{
+		//		std::vector<std::string> chunk_ids;
+
+		//		chunk_reader::GENERIC_HE0_Chunk chunk;
+		//		memcpy(&chunk, utils::add(files::FILES.he0->data, he0_header.offset), sizeof(chunk_reader::HumongousHeader) + sizeof(chunk.num_files));
+
+		//		std::vector<pair> pairs;
+
+		//		size_t pos = sizeof(chunk_reader::HumongousHeader) + sizeof(chunk.num_files);
+		//		for (size_t j = 0; j < chunk.num_files; j++)
+		//		{
+		//			uint8_t rmim_index = *reinterpret_cast<uint8_t*>(utils::add(files::FILES.he0->data, he0_header.offset + pos));
+		//			pairs.push_back({ rmim_index, 0, 0 });
+		//			pos += sizeof(uint8_t);
+		//		}
+
+		//		for (size_t j = 0; j < chunk.num_files; j++)
+		//		{
+		//			uint32_t byte_pos = *reinterpret_cast<uint32_t*>(utils::add(files::FILES.he0->data, he0_header.offset + pos));
+		//			pairs[j].actual_offset = pos;
+		//			pairs[j].offset = byte_pos;
+		//			pos += sizeof(uint32_t);
+		//		}
+
+		//		for (size_t j = 0; j < pairs.size(); j++)
+		//		{
+		//			if (pairs[j].offset == 0)
+		//			{
+		//				continue;
+		//			}
+
+		//			chunk_reader::ChunkInfo chunk_info = files::FILES.a->GetChunkInfo(rmim_offsets[pairs[j].rmim_offset].offset + pairs[j].offset);
+		//			std::vector<std::string>& index_chunks = chunks_in_index_pair[std::string(reinterpret_cast<char*>(chunk.chunk_id))];
+		//			bool found = false;
+		//			for (size_t k = 0; k < index_chunks.size(); k++)
+		//			{
+		//				if (utils::chunkcmp(chunk_info.chunk_id, index_chunks[k].c_str()) == 0)
+		//				{
+		//					found = true;
+		//				}
+		//			}
+
+		//			assert(found);
+		//		}
+		//	}
+		//	else if (utils::chunkcmp(he0_header.chunk_id, chunk_reader::DLFL_CHUNK_ID) == 0)
+		//	{
+		//		chunk_reader::DLFL_Chunk dlfl_chunk;
+		//		memcpy(&dlfl_chunk, utils::add(files::FILES.he0->data, he0_header.offset), sizeof(chunk_reader::HumongousHeader) + sizeof(dlfl_chunk.num_lflfs));
+
+		//		std::vector<dlfl_offset> pairs;
+
+		//		size_t pos_in_p = sizeof(chunk_reader::HumongousHeader) + sizeof(dlfl_chunk.num_lflfs);
+		//		for (size_t j = 0; j < dlfl_chunk.num_lflfs; j++)
+		//		{
+		//			uint32_t byte_pos = *reinterpret_cast<uint32_t*>(utils::add(files::FILES.he0->data, he0_header.offset + pos_in_p));
+		//			dlfl_offset p;
+		//			p.actual_offset = pos_in_p;
+		//			p.offset = byte_pos;
+
+		//			pairs.push_back(p);
+		//			pos_in_p += sizeof(uint32_t);
+		//		}
+
+		//		for (size_t j = 0; j < pairs.size(); j++)
+		//		{
+		//			if (pairs[j].offset == 0)
+		//			{
+		//				continue;
+		//			}
+
+		//			chunk_reader::ChunkInfo chunk_info = files::FILES.a->GetChunkInfo(pairs[j].offset);
+		//			assert(utils::chunkcmp(chunk_info.chunk_id, chunk_reader::RMIM_CHUNK_ID) == 0);
+		//		}
+		//	}
+		//	he0_header = files::FILES.he0->GetNextChunk(he0_header.offset);
+		//}
+
+	bool TalkResource::Replace(game::GameResource& a_Resource)
+	{
+		chunk_reader::ChunkInfo newTALKChunk, oldTALKChunk;
+		if (!ReplaceTALK(a_Resource, newTALKChunk, oldTALKChunk))
 		{
-			std::string path;
-			if (SaveResource(path))
-			{
-				bool saved = SaveSound(path, m_SDAT_Chunk.data, m_SDAT_Chunk.ChunkSize() - sizeof(resource_editor::chunk_reader::SDAT_Chunk), m_HSHD_Chunk.sample_rate);
-				if (saved)
-				{
-					system(path.c_str());
-				}
-				return saved;
-			}
 			return false;
 		}
+
+		if (!UpdateScripts(a_Resource, newTALKChunk, oldTALKChunk))
+		{
+			return false;
+		}
+
+		if (!UpdateAHE0(a_Resource))
+		{
+			return false;
+		}
+
+
+		//		for (auto& short_instruction : instructions)
+		//		{
+		//			int32_t offset_in_scrp = -1;
+
+		//			// Normal wait instructions.
+		//			if (short_instruction.m_Code == 0x5C // jump if
+		//				|| short_instruction.m_Code == 0x5D // jump if not
+		//				|| short_instruction.m_Code == 0x73 // jump
+		//				)
+		//			{
+		//				offset_in_scrp =
+		//					short_instruction.m_OffsetInSCRPChunk + // offset of instruction in scrp chunk.
+		//					short_instruction.m_Args[0].m_Offset + // offset of arg (this will be 0 for index 0).
+		//					1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
+		//			}
+		//			// Wait and jump.
+		//			else if (short_instruction.m_Code == 0xA9) // wait and then jump.
+		//			{
+		//				if (short_instruction.m_Args.m_Args.size() < 2)
+		//				{
+		//					continue;
+		//				}
+
+		//				offset_in_scrp =
+		//					short_instruction.m_OffsetInSCRPChunk + // offset of instruction in scrp chunk.
+		//					short_instruction.m_Args[1].m_Offset + // offset of arg (this will be 0 for index 0). We want the second arg, cause the first arg says if we even have a second arg.
+		//					1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
+		//			}
+		//			else
+		//			{
+		//				continue;
+		//			}
+
+		//			size_t offset_after_jump = chunk_reader::jump(short_instruction, a->m_FileContainer.m_Data, false);
+		//			if ((short_instruction.m_OffsetInSCRPChunk < script_shorten_point && offset_after_jump > script_shorten_point) ||
+		//				(short_instruction.m_OffsetInSCRPChunk > script_shorten_point && offset_after_jump < script_shorten_point))
+		//			{
+		//				int16_t jump_offset = *reinterpret_cast<int16_t*>(low_level::utils::add(a->m_FileContainer.m_Data, offset_in_scrp));
+		//				jump_offset += script_size_difference;
+		//				memcpy(low_level::utils::add(scrp_data, offset_in_scrp), &jump_offset, sizeof(int16_t));
+		//			}
+		//			else
+		//			{
+		//				continue;
+		//			}
+		//		}
+
+		//		a->m_FileContainer.Replace(instruction.m_SCRPOffset, scrp_data, scrp_info.ChunkSize());
+		//		free(scrp_data);
+
+		//		scrp_data = reinterpret_cast<unsigned char*>(malloc(scrp_info.ChunkSize() + script_size_difference));
+		//		if (!scrp_data)
+		//		{
+		//			continue;
+		//		}
+
+		//		// Copy everything until the string replacement.
+		//		memset(scrp_data, 0, scrp_info.ChunkSize() + script_size_difference);
+		//		memcpy(scrp_data, low_level::utils::add(a->m_FileContainer.m_Data, instruction.m_SCRPOffset), script_replace_pos);
+
+		//		chunk_reader::HumongousHeader old_chunk = chunk_reader::HumongousHeader(scrp_info);
+		//		old_chunk.SetChunkSize(scrp_info.ChunkSize() + script_size_difference);
+
+		//		// Copy the new size.
+		//		memcpy(low_level::utils::add(scrp_data, CHUNK_ID_SIZE), old_chunk.chunkSize, sizeof(old_chunk.chunkSize));
+
+		//		// Copy the string replacement value.
+		//		memcpy(
+		//			low_level::utils::add(scrp_data, script_replace_pos),
+		//			talk_chunk_new_size_str.c_str(),
+		//			talk_chunk_new_size_str.size()
+		//		);
+
+		//		memcpy(
+		//			// Offset in new data (so not full file).
+		//			low_level::utils::add(scrp_data, script_replace_pos + talk_chunk_new_size_str.size()),
+		//			// Offset in full file 
+		//			low_level::utils::add(a->m_FileContainer.m_Data, scrp_info.m_Offset + script_replace_pos + std::to_string(script_old_replacement_val).size()),
+		//			// Size of everything to copy.
+		//			scrp_info.ChunkSize() - (script_replace_pos + std::to_string(script_old_replacement_val).size())
+		//		);
+
+		//		a->m_FileContainer.Replace(instruction.m_SCRPOffset, scrp_data, scrp_info.ChunkSize());
+		//		free(scrp_data);
+		//	}
+
+		//	// Last check.
+		//	header = a->m_FileContainer.GetChunkInfo(0);
+		//	while (header.m_Offset < a->m_FileContainer.size())
+		//	{
+		//		if (low_level::utils::chunkcmp(header.chunk_id, chunk_reader::SCRP_CHUNK_ID) == 0 ||
+		//			low_level::utils::chunkcmp(header.chunk_id, chunk_reader::LSCR_CHUNK_ID) == 0 ||
+		//			low_level::utils::chunkcmp(header.chunk_id, chunk_reader::LSC2_CHUNK_ID) == 0 ||
+		//			low_level::utils::chunkcmp(header.chunk_id, chunk_reader::EXCD_CHUNK_ID) == 0 ||
+		//			low_level::utils::chunkcmp(header.chunk_id, chunk_reader::ENCD_CHUNK_ID) == 0 ||
+		//			low_level::utils::chunkcmp(header.chunk_id, chunk_reader::VERB_CHUNK_ID) == 0)
+		//		{
+		//			std::vector<ScriptInstruction> instructions;
+
+		//			game::GameResource resource;
+		//			resource.m_Offset = header.m_Offset;
+		//			resource.m_Parent = a;
+
+		//			ScriptResource script = ScriptResource(resource);
+
+		//			if (!script.GetData(resource))
+		//			{
+		//				assert(false);
+		//			}
+		//		}
+		//		header = a->m_FileContainer.GetNextChunk(header.m_Offset);
+		//	}
+
+		//	imgui::explorer.ClearResources(*a);
+		//	imgui::explorer.LoadResource(*a);
+		//}
+
+		return true;
 	}
+
+	bool TalkResource::Save(game::GameResource& a_Resource)
+	{
+		std::string path;
+		if (SaveResource(path))
+		{
+			bool saved = SaveSound(path, m_SDAT_Chunk.data, m_SDAT_Chunk.ChunkSize() - sizeof(resource_editor::chunk_reader::SDAT_Chunk), m_HSHD_Chunk.sample_rate);
+			if (saved)
+			{
+				system(path.c_str());
+			}
+			return saved;
+		}
+		return false;
+	}
+}
 }

@@ -23,14 +23,12 @@ namespace resource_editor
 
 			int chunkcmp(unsigned char* a_ChunkID1, const char* a_ChunkID2)
 			{
-				const int b = strncmp(reinterpret_cast<const char*>(a_ChunkID1), a_ChunkID2, CHUNK_ID_SIZE);
-				return b;
+				return strncmp(reinterpret_cast<const char*>(a_ChunkID1), a_ChunkID2, CHUNK_ID_SIZE);
 			}
 
 			int chunkcmp(unsigned char* a_ChunkID1, unsigned char* a_ChunkID2)
 			{
-				const int b = strncmp(reinterpret_cast<const char*>(a_ChunkID1), reinterpret_cast<const char*>(a_ChunkID2), CHUNK_ID_SIZE);
-				return b;
+				return chunkcmp(a_ChunkID1, reinterpret_cast<const char*>(a_ChunkID2));
 			}
 
 			int unsignedCharCmp(unsigned char a_ChunkID1, unsigned char a_ChunkID2)

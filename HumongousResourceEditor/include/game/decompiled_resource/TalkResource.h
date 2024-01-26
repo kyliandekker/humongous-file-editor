@@ -27,6 +27,7 @@ namespace resource_editor
 		private:
 			bool ReplaceTALK(game::GameResource& a_Resource, chunk_reader::ChunkInfo& a_NewTALKChunk, chunk_reader::ChunkInfo& a_OldTALKChunk);
 			bool UpdateScripts(game::GameResource& a_Resource, chunk_reader::ChunkInfo& a_NewTALKChunk, chunk_reader::ChunkInfo& a_OldTALKChunk);
+			bool UpdateAHE0(game::GameResource& a_Resource);
 		};
 	}
 }

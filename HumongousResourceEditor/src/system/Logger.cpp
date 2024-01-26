@@ -99,10 +99,6 @@ namespace resource_editor
 					{
 						m_LoggerCallback(lm);
 					}
-					if (lm.severity == logger::LOGSEVERITY_ASSERT)
-					{
-						printf("Test");
-					}
 				}
 				m_MessagesMutex.unlock();
 			}

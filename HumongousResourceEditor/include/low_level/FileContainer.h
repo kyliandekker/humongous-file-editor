@@ -36,6 +36,22 @@ namespace resource_editor
 
 			void Decrypt(char a_Key = 0x69);
 
+			size_t size() const
+			{
+				return m_Size;
+			}
+
+			void* data()
+			{
+				return m_Data;
+			}
+
+			std::string path() const
+			{
+				return m_Path;
+			}
+
+		private:
 			size_t m_Size = 0;
 			std::string m_Path;
 			void* m_Data = nullptr;

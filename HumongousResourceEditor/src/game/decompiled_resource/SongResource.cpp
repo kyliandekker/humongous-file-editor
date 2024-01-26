@@ -59,7 +59,7 @@ namespace resource_editor
 			a_Resource.m_Parent->m_FileContainer.GetChunk(m_HSHD_Chunk, desired[0].m_Offset);
 
 			a_Resource.m_Parent->m_FileContainer.GetChunk(m_SDAT_Chunk, desired[1].m_Offset, sizeof(chunk_reader::HumongousHeader));
-			m_SDAT_Chunk.data = low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, desired[1].m_Offset + sizeof(chunk_reader::HumongousHeader));
+			m_SDAT_Chunk.data = low_level::utils::add(a_Resource.m_Parent->m_FileContainer.data(), desired[1].m_Offset + sizeof(chunk_reader::HumongousHeader));
 
 			m_NumSamples = m_SDAT_Chunk.ChunkSize();
 			m_Samples = audio::utils::ToSample(m_SDAT_Chunk.data, m_SDAT_Chunk.ChunkSize());
@@ -142,7 +142,7 @@ namespace resource_editor
 			int32_t dif_size = digi_chunk.ChunkSize() - sgen_chunk.song_size;
 
 			chunk_reader::ChunkInfo next_chunk = a_Resource.m_Parent->m_FileContainer.GetChunkInfo(0);
-			while (next_chunk.m_Offset < a_Resource.m_Parent->m_FileContainer.m_Size)
+			while (next_chunk.m_Offset < a_Resource.m_Parent->m_FileContainer.size())
 			{
 				if (low_level::utils::chunkcmp(next_chunk.chunk_id, chunk_reader::SGEN_CHUNK_ID) == 0)
 				{

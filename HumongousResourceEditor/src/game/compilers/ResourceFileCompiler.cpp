@@ -75,7 +75,7 @@ namespace resource_editor
 				{ { ".LFL", 26 }, { 5, 0 } }
 			};
 
-			const version_key key = { string_extensions::getExtensionFromPath(he0->m_Path), he0->m_FileContainer.m_Size };
+			const version_key key = { string_extensions::getExtensionFromPath(he0->m_Path), he0->m_FileContainer.size()};
 			const version_value values = versions[key];
 
 			LOGF(logger::LOGSEVERITY_INFO, "Index file has version %i and he version %i.", values.version, values.he_version);
@@ -119,7 +119,7 @@ namespace resource_editor
 
 			std::vector<chunk_reader::ChunkInfo> desired = { chunk_reader::ChunkInfo(chunk_reader::RNAM_CHUNK_ID) };
 
-			if (low_level::utils::seekChildren(*he0, he0->m_FileContainer.m_Size, desired) < desired.size())
+			if (low_level::utils::seekChildren(*he0, he0->m_FileContainer.size(), desired) < desired.size())
 			{
 				return false;
 			}
@@ -129,7 +129,7 @@ namespace resource_editor
 
 			chunk_reader::RNAM_Chunk rnam_chunk;
 			he0->m_FileContainer.GetChunk(rnam_chunk, desired[0].m_Offset);
-			rnam_chunk.data = low_level::utils::add(he0->m_FileContainer.m_Data, desired[0].m_Offset + sizeof(chunk_reader::HumongousHeader));
+			rnam_chunk.data = low_level::utils::add(he0->m_FileContainer.data(), desired[0].m_Offset + sizeof(chunk_reader::HumongousHeader));
 			
 			const size_t rnam_end = desired[0].m_Offset + rnam_chunk.ChunkSize();
 			size_t pos = desired[0].m_Offset + sizeof(chunk_reader::HumongousHeader) + sizeof(uint16_t);
@@ -138,7 +138,7 @@ namespace resource_editor
 			while (pos < rnam_end)
 			{
 				unsigned char ch;
-				memcpy(&ch, low_level::utils::add(he0->m_FileContainer.m_Data, pos), sizeof(char));
+				memcpy(&ch, low_level::utils::add(he0->m_FileContainer.data(), pos), sizeof(char));
 				if (low_level::utils::unsignedCharCmp(ch, '\0'))
 				{
 					room_names.push_back(room_name);
@@ -208,7 +208,7 @@ namespace resource_editor
 			uint32_t lflf = 0;
 
 			chunk_reader::ChunkInfo header = a->m_FileContainer.GetChunkInfo(0);
-			while (header.m_Offset < a->m_FileContainer.m_Size)
+			while (header.m_Offset < a->m_FileContainer.size())
 			{
 				if (low_level::utils::chunkcmp(header.chunk_id, chunk_reader::LFLF_CHUNK_ID) == 0)
 				{

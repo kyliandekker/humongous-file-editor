@@ -6,8 +6,11 @@
 
 #include "game/compilers/SongFileCompiler.h"
 #include "game/compilers/TalkFileCompiler.h"
+#include "game/compilers/Indexer.h"
 #include "game/compilers/ResourceFileCompiler.h"
 #include "utils/string.h"
+#include "utils/abstractions.h"
+#include "system/Logger.h"
 
 resource_editor::imgui::ExplorerTool resource_editor::imgui::explorerWindow;
 
@@ -103,7 +106,7 @@ namespace resource_editor
 			}
 			else
 			{
-				if (a_Resource.m_FileContainer.m_Size == 0)
+				if (a_Resource.m_FileContainer.size() == 0)
 				{
 					name = ICON_FA_FILE_CIRCLE_QUESTION + std::string(" ") + name;
 				}
@@ -158,7 +161,7 @@ namespace resource_editor
 				{
 					if (m_SelectedResource->m_ResourceType != project::ResourceType::Folder)
 					{
-						if (m_SelectedResource->m_FileContainer.m_Size == 0)
+						if (m_SelectedResource->m_FileContainer.size() == 0)
 						{
 							if (ImGui::MenuItem("Load"))
 							{
@@ -173,6 +176,32 @@ namespace resource_editor
 							if (ImGui::MenuItem("Unload"))
 							{
 								project::project.UnloadResource(m_SelectedResource->m_ResourceType);
+							}
+							if (m_SelectedResource->m_ResourceType == project::ResourceType::HE0)
+							{
+								if (ImGui::MenuItem("Create Index of (A)"))
+								{
+									project::Resource* resource = project::project.m_LoadedResources[(int)project::ResourceType::A];
+									if (game::Indexer::Create(*resource))
+									{
+										LOGF(logger::LOGSEVERITY_INFO, "Successfully indexed file \"%s\".", resource->m_Path.c_str());
+									}
+								}
+								else if (ImGui::MenuItem("Decrypt (A)"))
+								{
+
+								}
+							}
+							if (ImGui::MenuItem("Create Index"))
+							{
+								if (game::Indexer::Create(*m_SelectedResource))
+								{
+									LOGF(logger::LOGSEVERITY_INFO, "Successfully indexed file \"%s\".", m_SelectedResource->m_Path.c_str());
+								}
+							}
+							else if (ImGui::MenuItem("Decrypt"))
+							{
+
 							}
 						}
 					}

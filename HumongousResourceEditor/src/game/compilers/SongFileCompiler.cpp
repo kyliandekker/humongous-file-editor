@@ -25,7 +25,7 @@ namespace resource_editor
 
 			chunk_reader::ChunkInfo header = a_Resource.m_FileContainer.GetChunkInfo(0);
 			int i = 0;
-			while (header.m_Offset < a_Resource.m_FileContainer.m_Size)
+			while (header.m_Offset < a_Resource.m_FileContainer.size())
 			{
 				std::string chunk_id_name = std::string(reinterpret_cast<char*>(header.chunk_id));
 				chunk_id_name.resize(CHUNK_ID_SIZE);
@@ -49,7 +49,7 @@ namespace resource_editor
 				header = a_Resource.m_FileContainer.GetNextChunk(header.m_Offset);
 			}
 
-			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE4 resources for file \"%s\".", a_Resource.m_FileContainer.m_Path.c_str());
+			LOGF(logger::LOGSEVERITY_INFO, "Successfully gathered all .HE4 resources for file \"%s\".", a_Resource.m_FileContainer.path().c_str());
 			return true;
 		}
 	}

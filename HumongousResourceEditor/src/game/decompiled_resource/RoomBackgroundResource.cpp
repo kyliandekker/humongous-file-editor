@@ -39,7 +39,7 @@ namespace resource_editor
 			chunk_reader::BMAP_Chunk bmap_chunk;
 			const size_t header_size = sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data);
 			a_Resource.m_Parent->m_FileContainer.GetChunk(bmap_chunk, desired[0].m_Offset, sizeof(chunk_reader::BMAP_Chunk) - sizeof(bmap_chunk.data));
-			bmap_chunk.data = reinterpret_cast<unsigned char*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.m_Data, desired[0].m_Offset + header_size));
+			bmap_chunk.data = reinterpret_cast<unsigned char*>(low_level::utils::add(a_Resource.m_Parent->m_FileContainer.data(), desired[0].m_Offset + header_size));
 
 			const size_t rmim_offset = a_Resource.m_Parent->m_FileContainer.GetParent(a_Resource.m_Offset).m_Offset;
 			chunk_reader::RMIM_Chunk rmim_chunk;

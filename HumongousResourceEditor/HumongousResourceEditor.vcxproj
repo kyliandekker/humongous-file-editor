@@ -216,6 +216,7 @@
     <ClInclude Include="include\system\audio\AudioUtils.h" />
     <ClInclude Include="include\game\decompiled_resource\SFXResource.h" />
     <ClInclude Include="include\allocators\Data.h" />
+    <ClInclude Include="include\game\compilers\Indexer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="external\imgui\backends\imgui_impl_dx9.cpp" />
@@ -229,6 +230,7 @@
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="external\imgui\implot.cpp" />
     <ClCompile Include="external\imgui\implot_items.cpp" />
+    <ClCompile Include="src\game\compilers\Indexer.cpp" />
     <ClCompile Include="src\game\GameResourceType.cpp" />
     <ClCompile Include="src\allocators\ChunkCollectionWrapper.cpp" />
     <ClCompile Include="src\allocators\DataStream.cpp" />

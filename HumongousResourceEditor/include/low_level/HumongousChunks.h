@@ -264,189 +264,68 @@ namespace resource_editor
 		class OBIM_Chunk : public HumongousHeader
 		{ };
 
-		// The DLFL chunk describes when each room starts, not when each LFLF starts (for some reason).
-		// The DLFL chunk is found inside an Index file (*.HE0).
-		class DLFL_Chunk : public HumongousHeader
-		{
-		public:
-			uint16_t num_lflfs = 0;
-
-			// First position seems to be 0? Don't know exactly why.
-			// The rest is the position of every RMIM in every LFLF. These positions are all 32bit unsigned integers.
-			unsigned char* data = nullptr;
-		};
-
-		// The DIRI chunk describes when each room starts, not when each LFLF starts (for some reason).
-		// The DIRI chunk is found inside an Index file (*.HE0).
-		class DIRI_Chunk : public HumongousHeader
-		{
-		public:
-			uint16_t num_lflfs = 0;
-
-			// First position seems to be 0? Don't know exactly why.
-			// The rest is the position of every RMIM in every LFLF. These positions are all 32bit unsigned integers.
-			unsigned char* data = nullptr;
-		};
-
-		// The DIRN chunk describes each DIGI/TALK inside the Resource file (*.(A)).
-		// The DIRN chunk is found inside an Index file (*.HE0).
-		// It starts with the number of sound chunks (which does not seem entirely accurate for some reason, unless I am missing some sounds).
-		// Afterwards, there is a dictionary-type setup where the indexes are what LFLF it belongs to.
-		// After this list of indexes, the values follow, where they are all 32-bit unsigned integers pointing to the relative position of each chunk in relation to the RMIM in each LFLF.
-		// This means that if a sound appears at byte position 6, the absolute position would be RMIM position + 6.
-		class DIRN_Chunk : public HumongousHeader
-		{
-		public:
-			uint16_t num_sound_files = 0;
-
-			// The rest consists of:
-			// Indexes of the LFLF. These indexes are all 8bit unsigned integers.
-			// Afterwards, the byte position from the RMIM of the LFLF. These positions are all 32bit unsigned integers.
-			// Quick note: It does not seem to be in a particular order for some reason.
-			// Quick note 2: Room 0 does not exist and it skips right to room 1 (even though it would be index 0 in programming).
-			unsigned char* data = nullptr;
-			// Quick note: First two seem to be 0,0 in this case. No idea why.
-		};
-
-		// The DIRC chunk describes each AKOS inside the Resource file (*.(A)).
-		// The DIRC chunk is found inside an Index file (*.HE0).
-		// It starts with the number of AKOS chunks (which does not seem entirely accurate for some reason, unless I am missing some AKOSs).
-		// Afterwards, there is a dictionary-type setup where the indexes are what LFLF it belongs to.
-		// After this list of indexes, the values follow, where they are all 32-bit unsigned integers pointing to the relative position of each chunk in relation to the RMIM in each LFLF.
-		// This means that if a chunk appears at byte position 6, the absolute position would be RMIM position + 6.
-		class DIRC_Chunk : public HumongousHeader
-		{
-		public:
-			uint16_t num_akos_files = 0;
-
-			// The rest consists of:
-			// Indexes of the LFLF. These indexes are all 8bit unsigned integers.
-			// Afterwards, the byte position from the RMIM of the LFLF. These positions are all 32bit unsigned integers.
-			// Quick note: It does not seem to be in a particular order for some reason.
-			// Quick note 2: Room 0 does not exist and it skips right to room 1 (even though it would be index 0 in programming).
-			unsigned char* data = nullptr;
-			// Quick note: First two seem to be 0,0 in this case. No idea why.
-		};
-
-		// The DIRF chunk describes each CHAR inside the Resource file (*.(A)).
-		// The DIRF chunk is found inside an Index file (*.HE0).
-		// It starts with the number of CHAR chunks (which does not seem entirely accurate for some reason, unless I am missing some CHARs).
-		// Afterwards, there is a dictionary-type setup where the indexes are what LFLF it belongs to.
-		// After this list of indexes, the values follow, where they are all 32-bit unsigned integers pointing to the relative position of each chunk in relation to the RMIM in each LFLF.
-		// This means that if a chunk appears at byte position 6, the absolute position would be RMIM position + 6.
-		class DIRF_Chunk : public HumongousHeader
-		{
-		public:
-			uint16_t num_char_files = 0;
-
-			// The rest consists of:
-			// Indexes of the LFLF. These indexes are all 8bit unsigned integers.
-			// Afterwards, the byte position from the RMIM of the LFLF. These positions are all 32bit unsigned integers.
-			// Quick note: It does not seem to be in a particular order for some reason.
-			// Quick note 2: Room 0 does not exist and it skips right to room 1 (even though it would be index 0 in programming).
-			unsigned char* data = nullptr;
-			// Quick note: First two seem to be 0,0 in this case. No idea why.
-		};
-
-		// The DIRM chunk describes each CHAR inside the Resource file (*.(A)).
-		// The DIRM chunk is found inside an Index file (*.HE0).
-		// It starts with the number of MULT & AWIZ chunks (which does not seem entirely accurate for some reason, unless I am missing some MULT & AWIZ).
-		// Afterwards, there is a dictionary-type setup where the indexes are what LFLF it belongs to.
-		// After this list of indexes, the values follow, where they are all 32-bit unsigned integers pointing to the relative position of each chunk in relation to the RMIM in each LFLF.
-		// This means that if a chunk appears at byte position 6, the absolute position would be RMIM position + 6.
-		class DIRM_Chunk : public HumongousHeader
-		{
-		public:
-			uint16_t num_mult_awiz_files = 0;
-
-			// The rest consists of:
-			// Indexes of the LFLF. These indexes are all 8bit unsigned integers.
-			// Afterwards, the byte position from the RMIM of the LFLF. These positions are all 32bit unsigned integers.
-			// Quick note: It does not seem to be in a particular order for some reason.
-			// Quick note 2: Room 0 does not exist and it skips right to room 1 (even though it would be index 0 in programming).
-			unsigned char* data = nullptr;
-			// Quick note: First two seem to be 0,0 in this case. No idea why.
-		};
-
-		// The DIRT chunk describes each TLKE inside the Resource file (*.(A)).
-		// The DIRT chunk is found inside an Index file (*.HE0).
-		// It starts with the number of TLKE chunks. SpyFox 3 has none.
-		// Afterwards, there is a dictionary-type setup where the indexes are what LFLF it belongs to.
-		// After this list of indexes, the values follow, where they are all 32-bit unsigned integers pointing to the relative position of each chunk in relation to the RMIM in each LFLF.
-		// This means that if a chunk appears at byte position 6, the absolute position would be RMIM position + 6.
-		class DIRT_Chunk : public HumongousHeader
-		{
-		public:
-			uint16_t num_mult_awiz_files = 0;
-
-			// The rest consists of:
-			// Indexes of the LFLF. These indexes are all 8bit unsigned integers.
-			// Afterwards, the byte position from the RMIM of the LFLF. These positions are all 32bit unsigned integers.
-			// Quick note: It does not seem to be in a particular order for some reason.
-			// Quick note 2: Room 0 does not exist and it skips right to room 1 (even though it would be index 0 in programming).
-			unsigned char* data = nullptr;
-			// Quick note: First two seem to be 0,0 in this case. No idea why.
-		};
-
-		// The DIRR chunk describes each RMDA inside the Resource file (*.(A)).
-		// The DIRR chunk is found inside an Index file (*.HE0).
-		// It starts with the number of RMDA chunks. SpyFox 3 has none.
-		// Afterwards, there is a dictionary-type setup where the indexes are what LFLF it belongs to.
-		// After this list of indexes, the values follow, where they are all 32-bit unsigned integers pointing to the relative position of each chunk in relation to the RMIM in each LFLF.
-		// This means that if a chunk appears at byte position 6, the absolute position would be RMIM position + 6.
-		class DIRR_Chunk : public HumongousHeader
-		{
-		public:
-			uint16_t num_rmda_files = 0;
-
-			// The rest consists of:
-			// Indexes of the LFLF. These indexes are all 8bit unsigned integers.
-			// Afterwards, the byte position from the RMIM of the LFLF. These positions are all 32bit unsigned integers.
-			// Quick note: It does not seem to be in a particular order for some reason.
-			// Quick note 2: Room 0 does not exist and it skips right to room 1 (even though it would be index 0 in programming).
-			unsigned char* data = nullptr;
-			// Quick note: First two seem to be 0,0 in this case. No idea why.
-		};
-
-		// The DIRS chunk describes each SCRP inside the Resource file (*.(A)).
-		// The DIRS chunk is found inside an Index file (*.HE0).
-		// It starts with the number of SCRP chunks. SpyFox 3 has none.
-		// Afterwards, there is a dictionary-type setup where the indexes are what LFLF it belongs to.
-		// After this list of indexes, the values follow, where they are all 32-bit unsigned integers pointing to the relative position of each chunk in relation to the RMIM in each LFLF.
-		// This means that if a chunk appears at byte position 6, the absolute position would be RMIM position + 6.
-		class DIRS_Chunk : public HumongousHeader
-		{
-		public:
-			uint16_t num_scrp_files = 0;
-
-			// The rest consists of:
-			// Indexes of the LFLF. These indexes are all 8bit unsigned integers.
-			// Afterwards, the byte position from the RMIM of the LFLF. These positions are all 32bit unsigned integers.
-			// Quick note: It does not seem to be in a particular order for some reason.
-			// Quick note 2: Room 0 does not exist and it skips right to room 1 (even though it would be index 0 in programming).
-			unsigned char* data = nullptr;
-			// Quick note: First two seem to be 0,0 in this case. No idea why.
-		};
-
-		// The DIRS chunk describes each ?? inside the Resource file (*.(A)).
-		// The DIRS chunk is found inside an Index file (*.HE0).
-		// It starts with the number of ?? chunks. SpyFox 3 has none.
-		// Afterwards, there is a dictionary-type setup where the indexes are what LFLF it belongs to.
-		// After this list of indexes, the values follow, where they are all 32-bit unsigned integers pointing to the relative position of each chunk in relation to the RMIM in each LFLF.
-		// This means that if a chunk appears at byte position 6, the absolute position would be RMIM position + 6.
+		// This chunk is a generic wrapper for index chunks in the Index file (*.HE0)
+		// First is a 16-bit integer that says how many files have been indexed.
+		// It has offsets relating to specific chunks in the Resource file (*.(A)).
+		// Afterwards, there is a list of 8 bit integers that represent the room number (starting from 1).
+		// After that the values follow, where they are all 32-bit unsigned integers pointing to the relative position of each chunk in relation to the RMIM in each LFLF.
+		// This means that if the position is 6, the absolute position would be RMIM position + 6 if you want to know the absolute position.
 		class GENERIC_HE0_Chunk : public HumongousHeader
 		{
 		public:
 			uint16_t num_files = 0;
 
-			// The rest consists of:
-			// Indexes of the LFLF. These indexes are all 8bit unsigned integers.
-			// Afterwards, the byte position from the RMIM of the LFLF. These positions are all 32bit unsigned integers.
 			// Quick note: It does not seem to be in a particular order for some reason.
 			// Quick note 2: Room 0 does not exist and it skips right to room 1 (even though it would be index 0 in programming).
 			unsigned char* data = nullptr;
-			// Quick note: First two seem to be 0,0 in this case. No idea why.
+			// Quick note: Some files might start with 0,0 as their first pair.
 		};
+
+		class DLFL_Chunk : public GENERIC_HE0_Chunk
+		{ };
+
+		// The DIRN chunk indexes all SOUND files inside the Resource file (*.(A)).
+		// SOUN, TALK, and DIGI chunks.
+		// The DIRN chunk is found inside an Index file (*.HE0).
+		class DIRN_Chunk : public GENERIC_HE0_Chunk
+		{ };
+
+		// The DIRC chunk indexes all AKOS files inside the Resource file (*.(A)).
+		// AKOS chunks.
+		// The DIRC chunk is found inside an Index file (*.HE0).
+		class DIRC_Chunk : public GENERIC_HE0_Chunk
+		{ };
+
+		// The DIRF chunk indexes all CHAR files inside the Resource file (*.(A)).
+		// CHAR chunks.
+		// The DIRF chunk is found inside an Index file (*.HE0).
+		class DIRF_Chunk : public GENERIC_HE0_Chunk
+		{ };
+
+		// The DIRM chunk indexes all MULT files inside the Resource file (*.(A)).
+		// MULT and AWIZ chunks.
+		// The DIRM chunk is found inside an Index file (*.HE0).
+		class DIRM_Chunk : public GENERIC_HE0_Chunk
+		{ };
+
+		// The DIRT chunk indexes all TLKE files inside the Resource file (*.(A)).
+		// TLKE chunks.
+		// The DIRT chunk is found inside an Index file (*.HE0).
+		class DIRT_Chunk : public GENERIC_HE0_Chunk
+		{ };
+
+		// The DIRR chunk indexes all Room Background files inside the Resource file (*.(A)).
+		// RMDA chunks.
+		// The DIRR chunk is found inside an Index file (*.HE0).
+		class DIRR_Chunk : public GENERIC_HE0_Chunk
+		{ };
+
+		// The DIRS chunk indexes all Script files inside the Resource file (*.(A)).
+		// SCRP chunks.
+		// The DIRS chunk is found inside an Index file (*.HE0).
+		class DIRS_Chunk : public GENERIC_HE0_Chunk
+		{ };
+
 #pragma pack(pop)
 	}
 }
