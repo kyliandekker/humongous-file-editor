@@ -6,8 +6,9 @@
 
 #include "game/compilers/SongFileCompiler.h"
 #include "game/compilers/TalkFileCompiler.h"
-#include "game/compilers/Indexer.h"
 #include "game/compilers/ResourceFileCompiler.h"
+#include "game/compilers/Indexer.h"
+#include "game/compilers/Decrypter.h"
 #include "utils/string.h"
 #include "utils/abstractions.h"
 #include "system/Logger.h"
@@ -189,7 +190,11 @@ namespace resource_editor
 								}
 								else if (ImGui::MenuItem("Decrypt (A)"))
 								{
-
+									project::Resource* resource = project::project.m_LoadedResources[(int)project::ResourceType::A];
+									if (game::Decrypter::Decrypt(*resource))
+									{
+										LOGF(logger::LOGSEVERITY_INFO, "Successfully decrypted file \"%s\".", resource->m_Path.c_str());
+									}
 								}
 							}
 							if (ImGui::MenuItem("Create Index"))
@@ -201,7 +206,10 @@ namespace resource_editor
 							}
 							else if (ImGui::MenuItem("Decrypt"))
 							{
-
+								if (game::Decrypter::Decrypt(*m_SelectedResource))
+								{
+									LOGF(logger::LOGSEVERITY_INFO, "Successfully decrypted file \"%s\".", m_SelectedResource->m_Path.c_str());
+								}
 							}
 						}
 					}
