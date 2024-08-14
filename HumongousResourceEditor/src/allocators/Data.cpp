@@ -75,12 +75,21 @@ namespace resource_editor
 
 	bool Data::Save()
 	{
+		return Save("D:/test.txt");
+	}
+
+    bool Data::Save(const char* a_Path)
+    {
 		FILE* file;
-		fopen_s(&file, "D:/test.txt", "wb");
+		fopen_s(&file, a_Path, "wb");
+		if (!file)
+		{
+			return false;
+		}
 		fwrite(m_Data, m_Size, 1, file);
 		fclose(file);
-		return false;
-	}
+		return true;
+    }
 
 	Data& Data::operator=(const Data& a_Other)
 	{

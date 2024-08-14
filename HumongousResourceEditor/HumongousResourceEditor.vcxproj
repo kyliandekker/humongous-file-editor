@@ -176,6 +176,7 @@
     <ClInclude Include="include\cmd\TalkInstruction.h" />
     <ClInclude Include="include\game\Compiler.h" />
     <ClInclude Include="include\game\compilers\Decrypter.h" />
+    <ClInclude Include="include\game\compilers\Indexer\XMLItem.h" />
     <ClInclude Include="include\game\compilers\ResourceFileCompiler.h" />
     <ClInclude Include="include\game\compilers\TalkFileCompiler.h" />
     <ClInclude Include="include\game\decompiled_resource\ImageResource.h" />
@@ -233,6 +234,7 @@
     <ClCompile Include="external\imgui\implot_items.cpp" />
     <ClCompile Include="src\game\compilers\Decrypter.cpp" />
     <ClCompile Include="src\game\compilers\Indexer.cpp" />
+    <ClCompile Include="src\game\compilers\Indexer\XMLItem.cpp" />
     <ClCompile Include="src\game\GameResourceType.cpp" />
     <ClCompile Include="src\allocators\ChunkCollectionWrapper.cpp" />
     <ClCompile Include="src\allocators\DataStream.cpp" />

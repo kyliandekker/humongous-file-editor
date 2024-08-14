@@ -4,6 +4,7 @@
 #include "game/compilers/ResourceFileCompiler.h"
 #include "game/compilers/TalkFileCompiler.h"
 #include "game/compilers/SongFileCompiler.h"
+#include "utils/abstractions.h"
 
 resource_editor::project::Project resource_editor::project::project;
 
@@ -89,6 +90,31 @@ namespace resource_editor
 				}
 			}
 			project::project.m_LoadedResources[(int)a_ResourceType] = nullptr;
+		}
+
+		void Project::SaveResource(project::ResourceType a_ResourceType)
+		{
+			std::string path;
+			if (abstractions::SaveFile(path, nullptr, abstractions::GetFilters(a_ResourceType)))
+			{
+				project::Resource& resource = *project::project.m_LoadedResources[(int)a_ResourceType];
+
+				std::string extension = string_extensions::getExtensionFromPath(resource.m_Path);
+				if (!string_extensions::ends_with(path, extension))
+				{
+					path += "." + extension;
+				}
+
+				if (a_ResourceType == project::ResourceType::A || a_ResourceType == project::ResourceType::HE0)
+				{
+					resource.m_FileContainer.Decrypt();
+				}
+				resource.m_FileContainer.Save(path);
+				if (a_ResourceType == project::ResourceType::A || a_ResourceType == project::ResourceType::HE0)
+				{
+					resource.m_FileContainer.Decrypt();
+				}
+			}
 		}
     }
 }

@@ -162,7 +162,7 @@ namespace resource_editor
 				{
 					if (m_SelectedResource->m_ResourceType != project::ResourceType::Folder)
 					{
-						if (m_SelectedResource->m_FileContainer.size() == 0)
+						if (m_SelectedResource->m_FileContainer.size() == 0 && m_SelectedResource->m_ResourceType != project::ResourceType::A)
 						{
 							if (ImGui::MenuItem("Load"))
 							{
@@ -178,6 +178,26 @@ namespace resource_editor
 							{
 								project::project.UnloadResource(m_SelectedResource->m_ResourceType);
 							}
+							ImGui::Separator();
+							if (ImGui::MenuItem("Save"))
+							{
+								project::project.SaveResource(m_SelectedResource->m_ResourceType);
+							}
+							if (m_SelectedResource->m_ResourceType == project::ResourceType::HE0)
+							{
+								if (ImGui::MenuItem("Save (A)"))
+								{
+									project::project.SaveResource(project::ResourceType::A);
+								}
+							}
+							ImGui::Separator();
+							if (ImGui::MenuItem("Create Index"))
+							{
+								if (game::Indexer::Create(*m_SelectedResource))
+								{
+									LOGF(logger::LOGSEVERITY_INFO, "Successfully indexed file \"%s\".", m_SelectedResource->m_Path.c_str());
+								}
+							}
 							if (m_SelectedResource->m_ResourceType == project::ResourceType::HE0)
 							{
 								if (ImGui::MenuItem("Create Index of (A)"))
@@ -188,27 +208,24 @@ namespace resource_editor
 										LOGF(logger::LOGSEVERITY_INFO, "Successfully indexed file \"%s\".", resource->m_Path.c_str());
 									}
 								}
-								else if (ImGui::MenuItem("Decrypt (A)"))
+							}
+							ImGui::Separator();
+							if (ImGui::MenuItem("Decrypt"))
+							{
+								if (game::Decrypter::Decrypt(*m_SelectedResource))
+								{
+									LOGF(logger::LOGSEVERITY_INFO, "Successfully decrypted file \"%s\".", m_SelectedResource->m_Path.c_str());
+								}
+							}
+							if (m_SelectedResource->m_ResourceType == project::ResourceType::HE0)
+							{
+								if (ImGui::MenuItem("Decrypt (A)"))
 								{
 									project::Resource* resource = project::project.m_LoadedResources[(int)project::ResourceType::A];
 									if (game::Decrypter::Decrypt(*resource))
 									{
 										LOGF(logger::LOGSEVERITY_INFO, "Successfully decrypted file \"%s\".", resource->m_Path.c_str());
 									}
-								}
-							}
-							if (ImGui::MenuItem("Create Index"))
-							{
-								if (game::Indexer::Create(*m_SelectedResource))
-								{
-									LOGF(logger::LOGSEVERITY_INFO, "Successfully indexed file \"%s\".", m_SelectedResource->m_Path.c_str());
-								}
-							}
-							else if (ImGui::MenuItem("Decrypt"))
-							{
-								if (game::Decrypter::Decrypt(*m_SelectedResource))
-								{
-									LOGF(logger::LOGSEVERITY_INFO, "Successfully decrypted file \"%s\".", m_SelectedResource->m_Path.c_str());
 								}
 							}
 						}

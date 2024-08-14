@@ -58,6 +58,19 @@ namespace resource_editor
 			return true;
 		}
 
+        bool FileContainer::Save(std::string a_Path)
+        {
+			FILE* file = nullptr;
+			fopen_s(&file, a_Path.c_str(), "wb");
+			if (!file)
+			{
+				return false;
+			}
+			fwrite(m_Data, m_Size, 1, file);
+			fclose(file);
+            return true;
+        }
+
         bool FileContainer::Unload()
         {
 			if (m_Data)
@@ -87,6 +100,13 @@ namespace resource_editor
 
 		ChunkInfo FileContainer::GetNextChunk(size_t a_Offset) const
 		{
+			if (a_Offset == m_Size)
+			{
+				ChunkInfo info;
+				info.m_Offset = m_Size;
+				return info;
+			}
+
 			size_t extra_offset = 0;
 			while (reinterpret_cast<unsigned char*>(low_level::utils::add(m_Data, a_Offset + extra_offset))[0] == 128)
 			{

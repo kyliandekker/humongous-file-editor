@@ -23,7 +23,7 @@ namespace resource_editor
 			TalkResource(const TalkResource& rhs);
 			bool GetData(game::GameResource& a_Resource);
             bool Replace(game::GameResource& a_Resource) override;
-			bool Save(game::GameResource& a_Resource) override;
+			bool Save(game::GameResource& a_Resource);
 		private:
 			bool ReplaceTALK(game::GameResource& a_Resource, chunk_reader::ChunkInfo& a_NewTALKChunk, chunk_reader::ChunkInfo& a_OldTALKChunk);
 			bool UpdateScripts(game::GameResource& a_Resource, chunk_reader::ChunkInfo& a_NewTALKChunk, chunk_reader::ChunkInfo& a_OldTALKChunk);

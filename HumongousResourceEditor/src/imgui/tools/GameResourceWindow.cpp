@@ -109,8 +109,6 @@ namespace resource_editor
 						{
 							ImGui::Indent(IMGUI_INDENT);
 							ShowValue("Instruction", instruction.m_Name.c_str());
-							ShowValue("Code", std::to_string(instruction.m_Code).c_str());
-							ShowValue("Code (char)", std::string(1, instruction.m_Code).c_str());
 							ShowValue("Offset", std::to_string(instruction.m_OffsetInSCRPChunk).c_str());
 							const std::string args_name = "Arguments (" + std::to_string(instruction.m_Args.m_Args.size()) + ")##Args_" + m_Resource->m_Name + "_" + m_Resource->m_Parent->m_Path + "_" + instruction.m_Name + "_" + std::to_string(instruction.m_OffsetInSCRPChunk);
 							if (ImGui::CollapsingHeader(args_name.c_str()))
@@ -124,36 +122,32 @@ namespace resource_editor
 									{
 										case ArgType::ArgType_Byte:
 										{
+											ShowValue("Type", "Byte");
 											val = std::string(1, *reinterpret_cast<const char*>(arg.m_Data));
 											break;
 										}
 										case ArgType::ArgType_Short:
-										{
-											val = std::to_string(*reinterpret_cast<uint16_t*>(arg.m_Data));
-											break;
-										}
 										case ArgType::ArgType_Ref:
 										{
+											ShowValue("Type", "Short");
 											val = std::to_string(*reinterpret_cast<uint16_t*>(arg.m_Data));
 											break;
 										}
 										case ArgType::ArgType_Long:
 										{
+											ShowValue("Type", "Long");
 											val = std::to_string(*reinterpret_cast<uint32_t*>(arg.m_Data));
 											break;
 										}
 										case ArgType::ArgType_String:
-										{
-											val = std::string(reinterpret_cast<const char*>(arg.m_Data));
-											break;
-										}
 										case ArgType::ArgType_TalkString:
 										{
+											ShowValue("Type", "String");
 											val = std::string(reinterpret_cast<const char*>(arg.m_Data));
 											break;
 										}
 									}
-									ShowValue(std::string("Arg " + std::to_string(j)), val.c_str());
+									ShowValue(std::string("Value " + std::to_string(j)), val.c_str());
 									ImGui::Unindent(IMGUI_INDENT);
 									j++;
 								}

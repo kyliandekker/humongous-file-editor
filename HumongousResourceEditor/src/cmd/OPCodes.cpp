@@ -25,7 +25,7 @@ namespace resource_editor
 		}
 
 		// According to rzil, the new position is relative from the position after the offset is read.
-		size_t jump(ScriptInstruction& instruction, unsigned char* data, size_t data_size)
+		int32_t jump(ScriptInstruction& instruction, unsigned char* data, size_t data_size)
 		{
 			// Normal wait instructions.
 			if (instruction.m_Code == 0x5C // jump if
@@ -33,30 +33,30 @@ namespace resource_editor
 				|| instruction.m_Code == 0x73 // jump
 				)
 			{
-				const size_t rel_offset =
-					instruction.m_OffsetInSCRPChunk + // offset of instruction in scrp chunk.
-					instruction.m_Args[0].m_Offset + // offset of arg (this will be 0 for index 0).
+				const int32_t rel_offset =
+					static_cast<int32_t>(instruction.m_OffsetInSCRPChunk) + // offset of instruction in scrp chunk.
+					static_cast<int32_t>(instruction.m_Args[0].m_Offset) + // offset of arg (this will be 0 for index 0).
 					1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
 
 				const int16_t offset = *reinterpret_cast<int16_t*>(low_level::utils::add(data, rel_offset));
 
-				const size_t arg_size = instruction.m_Args[0].m_Size; // position after offset is read.
+				const int32_t arg_size = static_cast<int32_t>(instruction.m_Args[0].m_Size); // position after offset is read.
 
-				return rel_offset + static_cast<size_t>(offset) + arg_size;
+				return rel_offset + static_cast<int32_t>(offset) + arg_size;
 			}
 			// Wait and jump.
 			else if (instruction.m_Code == 0xA9) // wait and then jump.
 			{
-				const size_t rel_offset =
-					instruction.m_OffsetInSCRPChunk + // offset of instruction in scrp chunk.
-					instruction.m_Args[1].m_Offset + // offset of arg (this will be 0 for index 0). We want the second arg, cause the first arg says if we even have a second arg.
+				const int32_t rel_offset =
+					static_cast<int32_t>(instruction.m_OffsetInSCRPChunk) + // offset of instruction in scrp chunk.
+					static_cast<int32_t>(instruction.m_Args[1].m_Offset) + // offset of arg (this will be 0 for index 0). We want the second arg, cause the first arg says if we even have a second arg.
 					1; // basically, we need to start reading from the actual arg offset. Adding 1 because without this, we'd get the offset of the instruction.
 
 				const int16_t offset = *reinterpret_cast<int16_t*>(low_level::utils::add(data, rel_offset));
 
-				const size_t arg_size = instruction.m_Args[1].m_Size; // position after offset is read.
+				const int32_t arg_size = static_cast<int32_t>(instruction.m_Args[1].m_Size); // position after offset is read.
 
-				return rel_offset + static_cast<size_t>(offset) + arg_size;
+				return rel_offset + static_cast<int32_t>(offset) + arg_size;
 			}
 
 			LOG(logger::LOGSEVERITY_ASSERT, "Should never come here");

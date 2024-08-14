@@ -26,6 +26,7 @@ namespace resource_editor
 			void LoadResourceWithPath(project::Resource& a_Resource);
 			void ClearResources(project::Resource& a_Resource);
 			void UnloadResource(project::ResourceType a_ResourceType);
+			void SaveResource(project::ResourceType a_ResourceType);
 		};
 
 		extern Project project;

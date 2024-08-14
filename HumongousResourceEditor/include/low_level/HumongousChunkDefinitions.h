@@ -464,7 +464,6 @@ namespace resource_editor
 			},
 			{ NOTE_CHUNK_ID, NO_CHILD },
 			{ TLKB_CHUNK_ID, {
-					SBNG_CHUNK_ID,
 					TALK_CHUNK_ID,
 				}
 			},

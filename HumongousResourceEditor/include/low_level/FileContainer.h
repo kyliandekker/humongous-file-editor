@@ -20,6 +20,7 @@ namespace resource_editor
 			~FileContainer();
 			
 			bool Open(std::string a_Path);
+			bool Save(std::string a_Path);
 			bool Unload();
 			ChunkInfo GetChunkInfo(size_t a_Offset) const;
 			HumongousHeader GetChunk(size_t a_Offset) const;

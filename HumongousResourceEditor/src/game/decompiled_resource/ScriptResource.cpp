@@ -35,6 +35,69 @@ namespace resource_editor
 			unsigned char* data = nullptr;
 		};
 
+		std::vector<ScriptInstruction> ProcessScriptCommand(void* a_Data, size_t a_Pos, size_t a_ScriptOffset, size_t a_ScriptSize, bool a_Validate)
+		{
+			std::vector<ScriptInstruction> instructions;
+
+			while (a_Pos < a_ScriptSize)
+			{
+				const uint8_t b = reinterpret_cast<unsigned char*>(a_Data)[a_Pos];
+
+				if (chunk_reader::OPCODES_HE90.find(b) == chunk_reader::OPCODES_HE90.end())
+				{
+					LOGF(logger::LOGSEVERITY_ASSERT, "Found invalid bytecode. Expect code in OPCodes dictionary but got %c.", b);
+				}
+
+				ScriptInstruction instruction;
+				instruction.m_Code = b;
+				instruction.m_OffsetInSCRPChunk = a_Pos;
+				instruction.m_SCRPOffset = a_ScriptOffset;
+				instruction.m_AbsOffset = a_ScriptOffset + instruction.m_OffsetInSCRPChunk + sizeof(chunk_reader::ChunkHeader);
+
+				a_Pos++;
+
+				ArgsAllocator args;
+				chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[b];
+				bytecode.m_Func(reinterpret_cast<unsigned char*>(low_level::utils::add(a_Data, a_Pos)), args);
+
+				instruction.m_Name = bytecode.m_Name;
+				instruction.m_Args = args;
+
+				instructions.push_back(instruction);
+
+				if (a_Validate)
+				{
+					// Checking jumps and seeing if they are valid.
+					if (chunk_reader::isJumpCode(instruction.m_Code, instruction.m_Args.m_Args.size()))
+					{
+						int32_t offset = chunk_reader::jump(instruction, reinterpret_cast<unsigned char*>(a_Data), a_ScriptSize);
+
+						const uint8_t byte = *reinterpret_cast<uint8_t*>(low_level::utils::add(a_Data, offset));
+
+						offset += instruction.m_SCRPOffset;
+
+						DataStream new_script_data = DataStream(a_Data, a_ScriptSize);
+						new_script_data.Save("D:/test465.txt");
+
+						if (chunk_reader::OPCODES_HE90.find(byte) == chunk_reader::OPCODES_HE90.end())
+						{
+							LOGF(logger::LOGSEVERITY_ASSERT, "Jump command jumps to invalid bytecode. Expect code in OPCodes dictionary but got %c.", byte);
+						}
+
+						if (offset > static_cast<int32_t>(a_ScriptOffset + a_ScriptSize + sizeof(chunk_reader::ChunkHeader)) || offset < 0)
+						{
+							LOG(logger::LOGSEVERITY_ASSERT, "Script references outside script, should not be possible.");
+						}
+
+						ProcessScriptCommand(a_Data, offset, a_ScriptOffset, a_ScriptSize, true);
+					}
+				}
+
+				a_Pos += args.Size();
+			}
+			return instructions;
+		}
+
 		bool ScriptResource::GetScriptData(size_t a_Offset, void* a_Data, std::vector<ScriptInstruction>& a_Instructions, bool a_Validate)
 		{
 			a_Instructions.clear();
@@ -45,7 +108,7 @@ namespace resource_editor
 			Generic_Script_Chunk chunk;
 			memcpy(&chunk, a_Data, sizeof(chunk_reader::HumongousHeader));
 			chunk.data = reinterpret_cast<unsigned char*>(low_level::utils::add(a_Data, sizeof(chunk_reader::HumongousHeader)));
-			
+
 			scrp_size = chunk.DataSize();
 
 			if (low_level::utils::chunkcmp(chunk.chunk_id, chunk_reader::LSCR_CHUNK_ID) == 0)
@@ -90,58 +153,7 @@ namespace resource_editor
 				return false;
 			}
 
-			while (pos < scrp_size)
-			{
-				const uint8_t b = chunk.data[pos];
-
-				if (chunk_reader::OPCODES_HE90.find(b) == chunk_reader::OPCODES_HE90.end())
-				{
-					LOGF(logger::LOGSEVERITY_ASSERT, "Found invalid bytecode. Expect code in OPCodes dictionary but got %c.", b);
-				}
-
-				ScriptInstruction instruction;
-				instruction.m_Code = b;
-				instruction.m_OffsetInSCRPChunk = sizeof(chunk_reader::HumongousHeader) + pos;
-				instruction.m_SCRPOffset = a_Offset;
-				instruction.m_AbsOffset = a_Offset + instruction.m_OffsetInSCRPChunk;
-
-				// Move to the args (if any).
-				pos++;
-
-				ArgsAllocator args;
-				chunk_reader::bytecode bytecode = chunk_reader::OPCODES_HE90[b];
-				bytecode.m_Func(reinterpret_cast<unsigned char*>(low_level::utils::add(chunk.data, pos)), args);
-
-				instruction.m_Name = bytecode.m_Name;
-				instruction.m_Args = args;
-
-				a_Instructions.push_back(instruction);
-
-				if (a_Validate)
-				{
-					// Checking jumps and seeing if they are valid.
-					if (chunk_reader::isJumpCode(instruction.m_Code, instruction.m_Args.m_Args.size()))
-					{
-						size_t offset = chunk_reader::jump(instruction, reinterpret_cast<unsigned char*>(a_Data), chunk.ChunkSize());
-
-						const uint8_t byte = *reinterpret_cast<uint8_t*>(low_level::utils::add(a_Data, offset));
-
-						offset += instruction.m_SCRPOffset;
-
-						if (chunk_reader::OPCODES_HE90.find(byte) == chunk_reader::OPCODES_HE90.end())
-						{
-							LOGF(logger::LOGSEVERITY_ASSERT, "Jump command jumps to invalid bytecode. Expect code in OPCodes dictionary but got %c.", b);
-						}
-
-						if (offset > a_Offset + chunk.ChunkSize() || offset < a_Offset)
-						{
-							LOG(logger::LOGSEVERITY_ASSERT, "Script references outside script, should not be possible.");
-						}
-					}
-				}
-
-				pos += args.Size();
-			}
+			a_Instructions = ProcessScriptCommand(chunk.data, pos, a_Offset, scrp_size, a_Validate);
 
 			return true;
 		}

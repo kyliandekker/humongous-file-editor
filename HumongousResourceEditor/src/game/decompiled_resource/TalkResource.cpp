@@ -322,6 +322,10 @@ namespace resource_editor
 				// Step 1: Do the pre-calculations.
 				ScriptInstruction& instruction = longer_instructions[t];
 
+				chunk_reader::ChunkInfo header = a->m_FileContainer.GetChunkInfo(instruction.m_SCRPOffset);
+				Data d(low_level::utils::add(a->m_FileContainer.data(), instruction.m_SCRPOffset), a->m_FileContainer.GetChunk(instruction.m_SCRPOffset).ChunkSize());
+				d.Save();
+
 				// o72_getScriptString and o72_talkActor
 				if (instruction.m_Code != 0x04 && instruction.m_Code != 0xBA)
 				{
@@ -371,10 +375,16 @@ namespace resource_editor
 				chunk_reader::ChunkHeader new_scrp_header = chunk_reader::ChunkHeader(header.chunk_id, header.ChunkSize() + script_replacing_difference);
 
 				DataStream new_script_data = DataStream(new_scrp_header.ChunkSize());
+				// Write new header.
 				new_script_data.Write(&new_scrp_header, sizeof(chunk_reader::ChunkHeader));
-				new_script_data.Write(low_level::utils::add(a->m_FileContainer.data(), instruction.m_SCRPOffset + sizeof(chunk_reader::ChunkHeader)), script_replace_pos - sizeof(chunk_reader::ChunkHeader));
+				// Write data until the replacement point.
+				new_script_data.Write(low_level::utils::add(a->m_FileContainer.data(), instruction.m_SCRPOffset + sizeof(chunk_reader::ChunkHeader)), script_replace_pos);
+				// Write the replacement value.
 				new_script_data.Write(script_replacement_val.c_str(), script_replacement_val.size());
-				new_script_data.Write(low_level::utils::add(a->m_FileContainer.data(), instruction.m_SCRPOffset + script_proceeding_point), header.ChunkSize() - script_proceeding_point);
+				// Write everything after the replacement value.
+				new_script_data.Write(low_level::utils::add(a->m_FileContainer.data(), instruction.m_SCRPOffset + script_proceeding_point + sizeof(chunk_reader::ChunkHeader)), header.ChunkSize() - script_proceeding_point - sizeof(chunk_reader::ChunkHeader));
+				
+				new_script_data.Save("D:/test3.txt");
 
 				a->m_FileContainer.Replace(header.m_Offset, new_script_data.data(), new_script_data.size());
 
@@ -423,19 +433,28 @@ namespace resource_editor
 						continue;
 					}
 
-					size_t offset_after_jump = chunk_reader::jump(short_instruction, reinterpret_cast<unsigned char*>(new_script_data.data()), new_script_data.size());
+					unsigned char* actual_scrp_data = reinterpret_cast<unsigned char*>(low_level::utils::add(new_script_data.data(), sizeof(chunk_reader::ChunkHeader)));
+
+					size_t offset_after_jump = chunk_reader::jump(short_instruction, actual_scrp_data, new_script_data.size() - sizeof(chunk_reader::ChunkHeader));
+
+					const uint8_t byte = *reinterpret_cast<uint8_t*>(low_level::utils::add(a->m_FileContainer.data(), offset_after_jump));
+
+					if (chunk_reader::OPCODES_HE90.find(byte) == chunk_reader::OPCODES_HE90.end())
+					{
+						LOGF(logger::LOGSEVERITY_ASSERT, "Jump command jumps to invalid bytecode. Expect code in OPCodes dictionary but got %c.", byte);
+					}
 
 					if ((short_instruction.m_OffsetInSCRPChunk > script_replace_pos && offset_after_jump < script_replace_pos))
 					{
 						int16_t jump_offset = *reinterpret_cast<int16_t*>(low_level::utils::add(new_script_data.data(), offset_in_scrp));
 						jump_offset += script_replacing_difference;
-						memcpy(low_level::utils::add(new_script_data.data(), offset_in_scrp), &jump_offset, sizeof(int16_t));
+						memcpy(low_level::utils::add(actual_scrp_data, offset_in_scrp), &jump_offset, sizeof(int16_t));
 					}
 					else if ((short_instruction.m_OffsetInSCRPChunk < script_replace_pos && offset_after_jump > script_replace_pos))
 					{
 						int16_t jump_offset = *reinterpret_cast<int16_t*>(low_level::utils::add(new_script_data.data(), offset_in_scrp));
 						jump_offset += script_replacing_difference;
-						memcpy(low_level::utils::add(new_script_data.data(), offset_in_scrp), &jump_offset, sizeof(int16_t));
+						memcpy(low_level::utils::add(actual_scrp_data, offset_in_scrp), &jump_offset, sizeof(int16_t));
 					}
 					else
 					{
@@ -469,6 +488,9 @@ namespace resource_editor
 					game::GameResource resource;
 					resource.m_Offset = header.m_Offset;
 					resource.m_Parent = a;
+
+					DataStream new_script_data = DataStream(low_level::utils::add(a->m_FileContainer.data(), header.m_Offset), header.ChunkSize());
+					new_script_data.Save("D:/test4.txt");
 
 					ScriptResource script = ScriptResource(resource);
 
@@ -526,7 +548,11 @@ namespace resource_editor
 
 			// Collect all RNIM chunks.
 			std::vector<chunk_reader::ChunkInfo> rmim_offsets;
-			rmim_offsets.push_back(chunk_reader::ChunkInfo());
+			{
+				chunk_reader::ChunkInfo first_header = chunk_reader::ChunkInfo(chunk_reader::RMIM_CHUNK_ID, 0);
+				first_header.m_Offset = 0;
+				rmim_offsets.push_back(first_header);
+			}
 
 			chunk_reader::ChunkInfo rmim_header = a->m_FileContainer.GetChunkInfo(0);
 			while (rmim_header.m_Offset < a->m_FileContainer.size())
@@ -590,7 +616,7 @@ namespace resource_editor
 				std::map<uint8_t, int32_t> rmims;
 				for (uint8_t j = 0; j < rmim_offsets.size(); j++)
 				{
-					rmims[j] = rmim_offsets[j].m_Offset;
+					rmims[j] = 0;
 				}
 
 				// Allocate the data for replacing.
@@ -610,57 +636,44 @@ namespace resource_editor
 					size_t rmim_index = pair.rmim_offset;
 					std::vector<std::string>& index_chunks = chunks_in_index_pair[std::string(reinterpret_cast<char*>(chunk.chunk_id), CHUNK_ID_SIZE)];
 
-					chunk_reader::ChunkInfo& rmim_header = rmim_offsets[rmim_index];
-					int32_t starting_offset = rmims[static_cast<uint8_t>(rmim_index)];
-					chunk_reader::ChunkInfo a_header = a->m_FileContainer.GetChunkInfo(starting_offset);
-					bool found = false;
+					rmim_header = rmim_offsets[rmim_index];
 
-					while (!found && rmim_header.m_Offset < rmim_header.m_Offset + static_cast<int32_t>(rmim_header.ChunkSize()))
+					int32_t num = -1;
+					chunk_reader::ChunkInfo a_header = a->m_FileContainer.GetChunkInfo(rmim_offsets[pair.rmim_offset].m_Offset);
+					while (num != rmims[pair.rmim_offset] && a_header.m_Offset < a->m_FileContainer.size())
 					{
-						bool included = false;
-
-						// We go through all possible chunks that can be indexed in this index chunk.
-						for (std::string& chunk_name : index_chunks)
+						for (size_t k = 0; k < index_chunks.size(); k++)
 						{
-							if (low_level::utils::chunkcmp(a_header.chunk_id, chunk_name.c_str()) == 0)
+							if (low_level::utils::chunkcmp(a_header.chunk_id, index_chunks[k].c_str()) == 0)
 							{
-								included = true;
+								if (low_level::utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRM_CHUNK_ID) != 0)
+								{
+									num++;
+								}
+								else
+								{
+									if (low_level::utils::chunkcmp(a_header.chunk_id, chunk_reader::MULT_CHUNK_ID) == 0)
+									{
+										mult = a_header;
+										num++;
+									}
+									else
+									{
+										if (a_header.m_Offset > mult.m_Offset && a_header.m_Offset > mult.m_Offset + mult.ChunkSize())
+										{
+											num++;
+										}
+									}
+								}
 							}
 						}
-
-						if (!included)
+						if (num != rmims[pair.rmim_offset])
 						{
 							a_header = a->m_FileContainer.GetNextChunk(a_header.m_Offset);
-							continue;
-						}
-
-						// The DIRM chunk uses both AWIZ and MULT chunks. AWIZ chunks can be inside the MULT chunk, however.
-						// That is why it needs special treatment.
-						if (low_level::utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRM_CHUNK_ID) != 0)
-						{
-							starting_offset = a->m_FileContainer.GetNextChunk(a_header.m_Offset).m_Offset;
-						}
-						else
-						{
-							if (low_level::utils::chunkcmp(a_header.chunk_id, chunk_reader::MULT_CHUNK_ID) == 0)
-							{
-								mult = a_header;
-								starting_offset = a->m_FileContainer.GetNextChunk(a_header.m_Offset).m_Offset;
-							}
-
-							int32_t mult_next_offset = mult.m_Offset + mult.ChunkSize();
-							if (a_header.m_Offset > mult_next_offset && a_header.m_Offset > mult.m_Offset)
-							{
-								starting_offset = a->m_FileContainer.GetNextChunk(a_header.m_Offset).m_Offset;
-							}
-						}
-
-						// If the new offset is not the same as the old one.
-						if (starting_offset > rmims[pair.rmim_offset])
-						{
-							found = true;
 						}
 					}
+
+					rmims[pair.rmim_offset] = num + 1;
 
 					pair.offset = a_header.m_Offset - rmim_header.m_Offset;
 					memcpy(low_level::utils::add(header_data.data(), pair.actual_offset), &pair.offset, sizeof(uint32_t));
@@ -715,6 +728,104 @@ namespace resource_editor
 			he0->m_FileContainer.Replace(dlfl_offst, dlfl_data.data(), he0_header.ChunkSize());
 
 			// TODO: Check if it parses correctly.
+
+			he0_header = he0->m_FileContainer.GetChunkInfo(0);
+			while (he0_header.m_Offset < he0->m_FileContainer.size())
+			{
+				if (low_level::utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRS_CHUNK_ID) == 0 ||
+					low_level::utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRC_CHUNK_ID) == 0 ||
+					low_level::utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRF_CHUNK_ID) == 0 ||
+					low_level::utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRN_CHUNK_ID) == 0 ||
+					low_level::utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRT_CHUNK_ID) == 0 ||
+					low_level::utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRM_CHUNK_ID) == 0 ||
+					low_level::utils::chunkcmp(he0_header.chunk_id, chunk_reader::DIRR_CHUNK_ID) == 0
+					)
+				{
+					{
+						if (chunks_in_index_pair.find(std::string(reinterpret_cast<char*>(he0_header.chunk_id), CHUNK_ID_SIZE)) == chunks_in_index_pair.end())
+						{
+							he0_header = he0->m_FileContainer.GetNextChunk(he0_header.m_Offset);
+							continue;
+						}
+
+						chunk_reader::GENERIC_HE0_Chunk chunk;
+						he0->m_FileContainer.GetChunk(chunk, he0_header.m_Offset, sizeof(chunk_reader::HumongousHeader) + sizeof(chunk.num_files));
+
+						std::vector<IndexPair> pairs;
+						pairs.reserve(chunk.num_files);
+
+						int32_t pos = sizeof(chunk_reader::HumongousHeader) + sizeof(chunk.num_files);
+
+						// First get the indexes.
+						for (size_t j = 0; j < chunk.num_files; j++)
+						{
+							uint8_t rmim_index = *reinterpret_cast<uint8_t*>(low_level::utils::add(he0->m_FileContainer.data(), he0_header.m_Offset + pos));
+							pairs.push_back({ rmim_index, 0, 0 });
+							pos += sizeof(uint8_t);
+						}
+
+						// Then get the offsets.
+						for (auto& pair : pairs)
+						{
+							int32_t byte_pos = *reinterpret_cast<int32_t*>(low_level::utils::add(he0->m_FileContainer.data(), he0_header.m_Offset + pos));
+							pair.actual_offset = pos;
+							pair.offset = byte_pos;
+							pos += sizeof(int32_t);
+						}
+
+						for (auto& pair : pairs)
+						{
+							if (pair.offset == 0)
+							{
+								continue;
+							}
+
+							chunk_reader::ChunkInfo chunk_info = a->m_FileContainer.GetChunkInfo(rmim_offsets[pair.rmim_offset].m_Offset + pair.offset);
+							std::vector<std::string>& index_chunks = chunks_in_index_pair[std::string(reinterpret_cast<char*>(chunk.chunk_id))];
+							bool found = false;
+							for (size_t k = 0; k < index_chunks.size(); k++)
+							{
+								if (low_level::utils::chunkcmp(chunk_info.chunk_id, index_chunks[k].c_str()) == 0)
+								{
+									found = true;
+								}
+							}
+
+							assert(found);
+						}
+					}
+				}
+				else if (low_level::utils::chunkcmp(he0_header.chunk_id, chunk_reader::DLFL_CHUNK_ID) == 0)
+				{
+					std::vector<dlfl_offset> pairs;
+					pairs.reserve(dlfl_chunk.num_files);
+
+					size_t pos_in_p = sizeof(chunk_reader::HumongousHeader) + sizeof(dlfl_chunk.num_files);
+					for (size_t j = 0; j < dlfl_chunk.num_files; j++)
+					{
+						uint32_t byte_pos = *reinterpret_cast<uint32_t*>(low_level::utils::add(he0->m_FileContainer.data(), dlfl_offst + pos_in_p));
+						dlfl_offset p;
+						p.actual_offset = static_cast<int32_t>(pos_in_p);
+						p.offset = byte_pos;
+
+						pairs.push_back(p);
+						pos_in_p += sizeof(uint32_t);
+					}
+
+					for (auto& pair : pairs)
+					{
+						if (pair.offset == 0)
+						{
+							continue;
+						}
+
+						chunk_reader::ChunkInfo chunk_info = a->m_FileContainer.GetChunkInfo(pair.offset);
+						assert(low_level::utils::chunkcmp(chunk_info.chunk_id, chunk_reader::RMIM_CHUNK_ID) == 0);
+					}
+				}
+
+				he0_header = he0->m_FileContainer.GetNextChunk(he0_header.m_Offset);
+			}
 
 			return true;
 		}

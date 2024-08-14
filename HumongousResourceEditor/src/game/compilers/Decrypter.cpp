@@ -10,21 +10,8 @@ namespace resource_editor
 		bool Decrypter::Decrypt(project::Resource& a_Resource)
 		{
 			std::string path;
-			const std::vector<COMDLG_FILTERSPEC> possible_filters =
-			{
-				{ L"", L"" },
-				{ L"Humongous Index Files (*.HE0)", L"*.HE0" },
-				{ L"Humongous Talk Files (*.HE2)", L"*.HE2" },
-				{ L"Humongous Song Files (*.HE4)", L"*.HE4" },
-				{ L"", L"" },
-				{ L"Humongous Resource Files (*.(A))", L"*.(A)" },
-			};
-			const std::vector<COMDLG_FILTERSPEC> filters =
-			{
-				possible_filters[(int)a_Resource.m_ResourceType]
-			};
 
-			if (!abstractions::SaveFile(path, nullptr, filters))
+			if (!abstractions::SaveFile(path, nullptr, abstractions::GetFilters(a_Resource.m_ResourceType)))
 			{
 				return false;
 			}

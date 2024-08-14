@@ -29,6 +29,7 @@ namespace resource_editor
 		virtual void Free();
 
         bool Save();
+        bool Save(const char* a_Path);
 
 		unsigned char operator [] (int i) const { return reinterpret_cast<unsigned char*>(m_Data)[i]; }
 		unsigned char& operator [] (int i) { return reinterpret_cast<unsigned char*>(m_Data)[i]; }

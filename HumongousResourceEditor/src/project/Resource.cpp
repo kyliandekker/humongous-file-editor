@@ -107,7 +107,7 @@ namespace resource_editor
 					m_Resources.push_back(resource);
 				}
 			}
-
+			
 			for (auto& resource : m_Resources)
 			{
 				resource.Scan();

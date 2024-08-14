@@ -1,60 +1,86 @@
 #include "game/compilers/Indexer.h"
+
+#include <format>
+
 #include "utils/abstractions.h"
 #include "utils/string.h"
 #include "low_level/ChunkInfo.h"
 #include "project/Resource.h"
+#include "game/compilers/Indexer/XMLItem.h"
+#include "low_level/HumongousChunkDefinitions.h"
 
 namespace resource_editor
 {
 	namespace game
 	{
-		std::string getOpenChunkText(unsigned char* chunk_id, size_t offset, size_t total_size, size_t recursion, bool close)
+		std::map<std::string, size_t> m_Occurences;
+		std::map<std::string, std::map<std::string, bool>> m_Childs;
+		FILE* m_File = nullptr;
+
+		xml::XMLItem format(chunk_reader::ChunkInfo& a_Header, const chunk_reader::FileContainer& a_FileContainer, int a_Indent = 0)
 		{
-			std::string chunk_id_name = std::string(reinterpret_cast<char*>(chunk_id));
+			std::string chunk_id_name = std::string(reinterpret_cast<char*>(a_Header.chunk_id));
 			chunk_id_name.resize(CHUNK_ID_SIZE);
 
-			std::string text;
-			for (size_t j = 0; j < recursion; j++)
+			m_Occurences[chunk_id_name]++;
+			if (m_Childs.find(chunk_id_name) == m_Childs.end())
 			{
-				text += "\t";
+				m_Childs[chunk_id_name] = {};
 			}
-			text += "<";
-			text += chunk_id_name;
-			text += " position=\"";
-			text += std::to_string(offset);
-			text += "\"";
-			text += " total_size=\"";
-			text += std::to_string(total_size);
-			text += "\"";
-			text += " size=\"";
-			text += std::to_string(total_size - sizeof(chunk_reader::HumongousHeader));
-			text += "\"";
-			if (!close)
-			{
-				text += "/";
-			}
-			text += ">\n";
-			return text;
-		};
 
-		std::string getCloseChunkText(unsigned char* chunk_id, size_t recursion)
+			xml::XMLItem item;
+			item.m_Name = chunk_id_name;
+			item.m_Indent = a_Indent;
+			item.AddProperty("offset", std::to_string(a_Header.m_Offset));
+			item.AddProperty("size", std::to_string(a_Header.ChunkSize()));
+
+			chunk_reader::ChunkInfo header = a_FileContainer.GetNextChunk(a_Header.m_Offset);
+
+			std::vector<std::string> childs = chunk_reader::SCHEMA.at(chunk_id_name);
+			while (header.m_Offset < a_Header.m_Offset + a_Header.ChunkSize())
+			{
+				std::string child_chunk_id_name = std::string(reinterpret_cast<char*>(header.chunk_id));
+				child_chunk_id_name.resize(CHUNK_ID_SIZE);
+
+				for (auto& schemaItem : childs)
+				{
+					if (schemaItem == child_chunk_id_name)
+					{
+						m_Childs[chunk_id_name][child_chunk_id_name] = true;
+					}
+				}
+
+				item.m_Childs.push_back(format(header, a_FileContainer, a_Indent + 1));
+
+				// TODO: This breaks if the chunk is somehow faulty. GetNextChunk keeps this in mind, but first looks for the chunk after the header.
+				header = a_FileContainer.GetChunkInfo(header.m_Offset + header.ChunkSize());
+			}
+
+			return item;
+		}
+
+		void WriteXMLItemToFile(xml::XMLItem& a_Item)
 		{
-			std::string chunk_id_name = std::string(reinterpret_cast<char*>(chunk_id));
-			chunk_id_name.resize(CHUNK_ID_SIZE);
+			std::string open_text = a_Item.SerializeOpen() + "\n";
+			fwrite(open_text.c_str(), open_text.length(), 1, m_File);
 
-			std::string text;
-			for (size_t j = 0; j < recursion; j++)
+			for (auto& item : a_Item.m_Childs)
 			{
-				text += "\t";
+				WriteXMLItemToFile(item);
 			}
-			text += "</";
-			text += chunk_id_name;
-			text += ">\n";
-			return text;
-		};
+
+			if (!a_Item.m_Childs.empty())
+			{
+				std::string close_text = a_Item.SerializeClose() + "\n";
+				fwrite(close_text.c_str(), close_text.length(), 1, m_File);
+			}
+		}
 
 		bool Indexer::Create(project::Resource& a_Resource)
 		{
+			m_Occurences.clear();
+			m_Childs.clear();
+
 			std::string path;
 			const std::vector<COMDLG_FILTERSPEC> filters =
 			{
@@ -71,52 +97,56 @@ namespace resource_editor
 				path += ".xml";
 			}
 
-			std::map<std::string, uint32_t> chunks;
+			std::vector<xml::XMLItem> items;
+
 			chunk_reader::ChunkInfo header = a_Resource.m_FileContainer.GetChunkInfo(0);
-			std::vector<chunk_reader::ChunkInfo> top_chunks;
-			std::string text;
 			while (header.m_Offset < a_Resource.m_FileContainer.size())
 			{
-				std::string chunk_id_name = std::string(reinterpret_cast<char*>(header.chunk_id));
-				chunk_id_name.resize(CHUNK_ID_SIZE);
-				chunks[chunk_id_name]++;
-
-				chunk_reader::ChunkInfo next = a_Resource.m_FileContainer.GetNextChunk(header.m_Offset);
-				bool b = header.m_Offset + static_cast<int32_t>(header.ChunkSize()) > next.m_Offset;
-				text += getOpenChunkText(header.chunk_id, header.m_Offset, header.ChunkSize(), top_chunks.size(), b);
-				if (b)
-				{
-					top_chunks.push_back(header);
-				}
-				header = next;
-				for (size_t i = top_chunks.size(); i-- > 0; )
-				{
-					if (top_chunks[i].m_Offset + top_chunks[i].ChunkSize() == header.m_Offset)
-					{
-						chunk_reader::ChunkInfo closed = top_chunks[i];
-						top_chunks.erase(top_chunks.begin() + i);
-						text += getCloseChunkText(closed.chunk_id, top_chunks.size());
-					}
-				}
+				items.push_back(format(header, a_Resource.m_FileContainer));
+				header = a_Resource.m_FileContainer.GetChunkInfo(header.m_Offset + header.ChunkSize());
 			}
 
-			FILE* file = nullptr;
-			fopen_s(&file, path.c_str(), "wb");
-			if (!file)
+			fopen_s(&m_File, path.c_str(), "wb");
+			if (!m_File)
 			{
 				return false;
 			}
-			
-			for (auto i : chunks)
+
+			for (auto& chunkOccurrence : m_Occurences)
 			{
-				std::string chunk_text = i.first + ": " + std::to_string(i.second) + "\n";
-				fwrite(chunk_text.c_str(), chunk_text.length(), 1, file);
+				std::string chunk_text = std::format("{{'{}': {}}}", chunkOccurrence.first.c_str(), chunkOccurrence.second) + "\n";
+				fwrite(chunk_text.c_str(), chunk_text.length(), 1, m_File);
 			}
-			fwrite("\n", 1, 1, file);
 
-			fwrite(text.c_str(), text.length(), 1, file);
+			fwrite("\n", 1, 1, m_File);
 
-			fclose(file);
+			std::string childChunkText;
+			size_t j = 0;
+			for (auto& childChunks : m_Childs)
+			{
+				std::string chunkText;
+				size_t i = 0;
+				for (auto& chunk : childChunks.second)
+				{
+					chunkText += std::format("'{}'{}", chunk.first, i == childChunks.second.size() - 1 ? "" : ", ");
+					i++;
+				}
+				chunkText = std::format("{{{}}}", chunkText);
+
+				childChunkText += std::format("'{}': {}{}", childChunks.first, chunkText, j == m_Childs.size() - 1 ? "" : ",\n");
+				j++;
+			}
+			childChunkText = std::format("{{{}}}\n", childChunkText);
+
+			fwrite(childChunkText.c_str(), childChunkText.size(), 1, m_File);
+
+			for (auto& item : items)
+			{
+				WriteXMLItemToFile(item);
+			}
+
+			fclose(m_File);
+			m_File = nullptr;
 			return true;
 		}
 	}
